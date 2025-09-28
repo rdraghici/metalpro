@@ -8,33 +8,66 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
+    /* Brand & Industrial Colors */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 215 25% 27%;
+    
+    /* Steel Blue Primary Palette */
+    --primary: 215 85% 27%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 215 85% 22%;
+    --primary-light: 215 60% 85%;
+    
+    /* Industrial Secondary */
+    --secondary: 215 16% 47%;
+    --secondary-foreground: 0 0% 98%;
+    --secondary-hover: 215 20% 40%;
+    
+    /* Accent - Trust Orange */
+    --accent: 25 95% 55%;
+    --accent-foreground: 0 0% 98%;
+    --accent-hover: 25 95% 50%;
+    
+    /* Surface Colors */
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 27%;
+    --card-border: 215 20% 92%;
+    --card-hover: 215 40% 98%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 27%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --muted: 215 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Form & Interactive */
+    --border: 215 20% 88%;
+    --input: 215 20% 96%;
+    --input-border: 215 20% 82%;
+    --ring: 215 85% 27%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 98%;
+    --warning: 45 93% 55%;
+    --warning-foreground: 0 0% 98%;
+    --info: 215 85% 60%;
+    --info-foreground: 0 0% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(215 85% 27%), hsl(215 85% 35%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(215 20% 98%));
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 55%), hsl(25 95% 60%));
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Shadows */
+    --shadow-soft: 0 2px 8px hsl(215 25% 27% / 0.08);
+    --shadow-medium: 0 4px 16px hsl(215 25% 27% / 0.12);
+    --shadow-strong: 0 8px 32px hsl(215 25% 27% / 0.16);
+    --shadow-industrial: 0 1px 3px hsl(215 25% 27% / 0.12), 0 1px 2px hsl(215 25% 27% / 0.08);
 
     --radius: 0.5rem;
 
@@ -56,33 +89,39 @@ All colors MUST be HSL.
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 215 25% 12%;
+    --foreground: 215 20% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 25% 16%;
+    --card-foreground: 215 20% 95%;
+    --card-border: 215 20% 22%;
+    --card-hover: 215 25% 18%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 25% 16%;
+    --popover-foreground: 215 20% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 215 85% 60%;
+    --primary-foreground: 215 25% 12%;
+    --primary-hover: 215 85% 65%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 20% 25%;
+    --secondary-foreground: 215 20% 95%;
+    --secondary-hover: 215 20% 30%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 215 20% 22%;
+    --muted-foreground: 215 16% 65%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 25 95% 60%;
+    --accent-foreground: 215 25% 12%;
+    --accent-hover: 25 95% 65%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 215 20% 95%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 215 20% 22%;
+    --input: 215 20% 22%;
+    --input-border: 215 20% 28%;
+    --ring: 215 85% 60%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +139,102 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  /* Custom Animations */
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 0.2s ease-out;
+  }
+
+  /* Typography Scale */
+  .text-display {
+    font-size: 3.5rem;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+
+  .text-headline {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .text-title {
+    font-size: 1.875rem;
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .text-subtitle {
+    font-size: 1.25rem;
+    line-height: 1.4;
+    font-weight: 500;
+  }
+
+  .text-body-large {
+    font-size: 1.125rem;
+    line-height: 1.6;
+  }
+
+  .text-caption {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: hsl(var(--muted-foreground));
+  }
+
+  /* Utilities */
+  .shadow-industrial {
+    box-shadow: var(--shadow-industrial);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-card {
+    background: var(--gradient-card);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
   }
 }
