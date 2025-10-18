@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/catalog/ProductGrid";
@@ -8,11 +8,39 @@ import FilterChips from "@/components/catalog/FilterChips";
 import Pagination from "@/components/catalog/Pagination";
 import Breadcrumbs from "@/components/catalog/Breadcrumbs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getProductsWithFilters, getAvailableFamilies, getAvailableGrades, getAvailableStandards } from "@/lib/api/products";
-import type { Product, ProductFilters, ProductSort } from "@/types";
+import { getProductsWithFilters, getAvailableGrades, getAvailableStandards } from "@/lib/api/products";
+import type { Product, ProductFilters, ProductSort, ProductFamily } from "@/types";
 import type { FilterOptions } from "@/components/catalog/FilterPanel";
 
-export default function Catalog() {
+const familyInfo: Record<ProductFamily, { name: string; description: string }> = {
+  profiles: {
+    name: "Profile Metalice",
+    description: "Profile metalice de înaltă calitate: HEA, UNP, IPE, UPN. Ideale pentru construcții industriale și civile.",
+  },
+  plates: {
+    name: "Table de Oțel",
+    description: "Table de oțel în diverse grade: DC01, S235JR, S355JR. Pentru aplicații industriale exigente.",
+  },
+  pipes: {
+    name: "Țevi și Tuburi",
+    description: "Țevi și tuburi rectangulare și rotunde. Potrivite pentru construcții și instalații.",
+  },
+  fasteners: {
+    name: "Elemente de Asamblare",
+    description: "Șuruburi, piulițe și alte elemente de fixare conform standardelor DIN și ISO.",
+  },
+  stainless: {
+    name: "Oțel Inoxidabil",
+    description: "Materiale din oțel inoxidabil 304, 316L, 321. Rezistente la coroziune pentru aplicații speciale.",
+  },
+  nonferrous: {
+    name: "Metale Neferoase",
+    description: "Aluminiu, cupru, bronz și alte metale neferoase pentru diverse aplicații industriale.",
+  },
+};
+
+export default function CategoryPage() {
+  const { family } = useParams<{ family: ProductFamily }>();
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -30,18 +58,21 @@ export default function Catalog() {
     ],
   });
 
-  // Fetch filter options on mount
+  const categoryInfo = family ? familyInfo[family] : null;
+
+  // Fetch filter options for this category
   useEffect(() => {
+    if (!family) return;
+
     const fetchFilterOptions = async () => {
       try {
-        const [families, grades, standards] = await Promise.all([
-          getAvailableFamilies(),
-          getAvailableGrades(),
-          getAvailableStandards(),
+        const [grades, standards] = await Promise.all([
+          getAvailableGrades(family),
+          getAvailableStandards(family),
         ]);
 
         setFilterOptions({
-          families,
+          families: [family],
           grades,
           standards,
           availabilities: [
@@ -56,15 +87,15 @@ export default function Catalog() {
     };
 
     fetchFilterOptions();
-  }, []);
+  }, [family]);
 
   // Parse filters from URL
   const parseFiltersFromURL = (): ProductFilters => {
     const filters: ProductFilters = {};
 
-    const family = searchParams.get("family");
+    // Always filter by the current family
     if (family) {
-      filters.family = family.split(",") as any[];
+      filters.family = [family];
     }
 
     const grade = searchParams.get("grade");
@@ -116,6 +147,8 @@ export default function Catalog() {
 
   // Fetch products
   useEffect(() => {
+    if (!family) return;
+
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
@@ -138,9 +171,24 @@ export default function Catalog() {
     };
 
     fetchProducts();
-  }, [searchParams]);
+  }, [family, searchParams]);
 
   const totalPages = Math.ceil(total / itemsPerPage);
+
+  if (!family || !categoryInfo) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-2">Categorie invalidă</h1>
+            <p className="text-muted-foreground">Categoria selectată nu există.</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -149,20 +197,19 @@ export default function Catalog() {
         {/* Hero Section */}
         <section className="gradient-hero text-white py-12">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-4">Catalog Produse</h1>
+            <h1 className="text-4xl font-bold mb-4">{categoryInfo.name}</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Explorează gama completă de materiale metalice disponibile.
-              Filtrează după categorie, grad, dimensiuni și disponibilitate.
+              {categoryInfo.description}
             </p>
           </div>
         </section>
 
-        {/* Catalog Content */}
+        {/* Category Content */}
         <section className="py-12">
           <div className="container mx-auto px-4">
             {/* Breadcrumbs */}
             <div className="mb-6">
-              <Breadcrumbs />
+              <Breadcrumbs family={family} />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

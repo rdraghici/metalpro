@@ -1,5 +1,6 @@
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
@@ -44,9 +45,11 @@ const HeroSection = () => {
 
           {/* CTA Buttons */}
           <div className="flex items-center justify-center gap-4 animate-scale-in">
-            <Button variant="accent" size="xl" className="group">
-              Vezi Catalogul
-              <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            <Button variant="accent" size="xl" className="group" asChild>
+              <Link to="/catalog">
+                Vezi Catalogul
+                <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
             </Button>
             <Button variant="outline" size="xl" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
               Încarcă Lista BOM

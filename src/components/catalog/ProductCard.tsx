@@ -65,7 +65,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   };
 
   return (
-    <Link to={`/products/${product.family}/${product.slug}`} className="block group">
+    <Link to={`/product/${product.slug}`} className="block group">
       <Card className="h-full hover:shadow-medium transition-all duration-300 hover:-translate-y-1 border-card-border">
         <CardContent className="p-6">
           {/* Header with badges */}

@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import ProductCard from "./ProductCard";
 import type { Product } from "@/types";
 import { Package } from "lucide-react";

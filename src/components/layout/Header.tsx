@@ -1,7 +1,8 @@
-import { Search, ShoppingCart, Phone } from "lucide-react";
+import { ShoppingCart, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import SearchBar from "@/components/search/SearchBar";
 
 const Header = () => {
   return (
@@ -18,7 +19,7 @@ const Header = () => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           {/* Logo */}
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <div className="w-10 h-10 gradient-hero rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
             </div>
@@ -26,17 +27,11 @@ const Header = () => {
               <h1 className="text-xl font-bold text-foreground">MetalPro</h1>
               <p className="text-xs text-muted-foreground">Materiale metalice B2B</p>
             </div>
-          </div>
+          </Link>
 
           {/* Search Bar */}
           <div className="flex-1 max-w-xl mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Caută profile, table, țevi... (ex: HEA 200, S235JR)"
-                className="pl-10 h-12 bg-card border-card-border"
-              />
-            </div>
+            <SearchBar placeholder="Caută profile, table, țevi... (ex: HEA 200, S235JR)" />
           </div>
 
           {/* Actions */}
@@ -57,23 +52,23 @@ const Header = () => {
         {/* Navigation */}
         <nav className="mt-4 pt-4 border-t border-border">
           <div className="flex items-center gap-8">
-            <Button variant="ghost" className="text-base font-medium">
-              Profile Metalice
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/profiles">Profile Metalice</Link>
             </Button>
-            <Button variant="ghost" className="text-base font-medium">
-              Table de Oțel
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/plates">Table de Oțel</Link>
             </Button>
-            <Button variant="ghost" className="text-base font-medium">
-              Țevi și Tuburi
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/pipes">Țevi și Tuburi</Link>
             </Button>
-            <Button variant="ghost" className="text-base font-medium">
-              Elemente de Asamblare
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/fasteners">Elemente de Asamblare</Link>
             </Button>
-            <Button variant="ghost" className="text-base font-medium">
-              Oțel Inoxidabil
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/stainless">Oțel Inoxidabil</Link>
             </Button>
-            <Button variant="ghost" className="text-base font-medium">
-              Metale Neferoase
+            <Button variant="ghost" className="text-base font-medium" asChild>
+              <Link to="/catalog/nonferrous">Metale Neferoase</Link>
             </Button>
           </div>
         </nav>
