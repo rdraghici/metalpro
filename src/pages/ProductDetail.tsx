@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Package, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Package, ShoppingCart, CheckCircle } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import Breadcrumbs from "@/components/catalog/Breadcrumbs";
@@ -14,11 +14,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProductConfig } from "@/hooks/useProductConfig";
 import { getProductBySlug } from "@/lib/api/products";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@/types";
+import type { AddToCartPayload } from "@/types/cart";
 
 export default function ProductDetail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -58,19 +63,52 @@ export default function ProductDetail() {
     fetchProduct();
   }, [slug]);
 
-  const handleAddToEstimate = () => {
+  const handleAddToEstimate = async () => {
     if (!isValid || !product) return;
 
-    // In production, this would add to cart/estimate
-    console.log("Adding to estimate:", {
-      product: product.id,
-      config,
-      weight: weightEstimate.totalWeight,
-      price: priceEstimate.total,
-    });
+    try {
+      // Build the cart payload from current configuration
+      const payload: AddToCartPayload = {
+        productId: product.id,
+        quantity: config.quantity,
+        unit: config.sellingUnit,
+        specs: {
+          grade: product.grade,
+          standard: product.standards[0], // First standard
+          dimensionSummary: product.title,
+          lengthM: config.lengthOption === 'custom' ? config.customLength :
+                   config.lengthOption === '12m' ? 12 : 6,
+          finish: config.finish,
+          cutList: config.cutToLength ? config.cutList : undefined,
+        },
+      };
 
-    // Show toast notification (would be implemented)
-    alert(`Adăugat la estimare: ${product.title}`);
+      // Add to cart
+      await addToCart(payload, product);
+
+      // Show success toast
+      toast({
+        title: "Produs adăugat în coș",
+        description: (
+          <div className="flex items-start gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
+            <div>
+              <p className="font-semibold">{product.title}</p>
+              <p className="text-sm text-muted-foreground">
+                {config.quantity} {config.sellingUnit} • ~{weightEstimate.totalWeight.toFixed(2)} kg
+              </p>
+            </div>
+          </div>
+        ),
+      });
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast({
+        title: "Eroare",
+        description: "Nu s-a putut adăuga produsul în coș. Vă rugăm încercați din nou.",
+        variant: "destructive",
+      });
+    }
   };
 
   const getAvailabilityBadge = () => {

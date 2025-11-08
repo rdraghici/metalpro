@@ -1,10 +1,28 @@
 import { ShoppingCart, Phone } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import SearchBar from "@/components/search/SearchBar";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { itemCount, toggleDrawer } = useCart();
+
+  const handleRequestQuote = () => {
+    if (itemCount === 0) {
+      toast({
+        title: "Coșul este gol",
+        description: "Adaugă produse în coș pentru a cere o ofertă.",
+        variant: "destructive",
+      });
+      return;
+    }
+    navigate('/rfq');
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
       {/* Contact Ribbon */}
@@ -36,14 +54,21 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="lg" className="relative">
+            <Button
+              variant="outline"
+              size="lg"
+              className="relative"
+              onClick={toggleDrawer}
+            >
               <ShoppingCart className="h-5 w-5" />
               <span className="hidden sm:inline ml-2">Estimare</span>
-              <Badge className="absolute -top-2 -right-2 bg-accent text-accent-foreground min-w-[20px] h-5 flex items-center justify-center p-0 text-xs">
-                0
-              </Badge>
+              {itemCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 bg-primary text-primary-foreground min-w-[20px] h-5 flex items-center justify-center p-0 text-xs">
+                  {itemCount}
+                </Badge>
+              )}
             </Button>
-            <Button variant="hero" size="lg">
+            <Button variant="hero" size="lg" onClick={handleRequestQuote}>
               Cere Ofertă
             </Button>
           </div>

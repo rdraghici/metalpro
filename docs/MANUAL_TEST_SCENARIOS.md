@@ -1923,9 +1923,1004 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
+## Phase 4: Estimate Cart & RFQ Flow
+
+### Test Scenario 4.1: Add Product to Cart
+
+**Priority**: Critical
+
+**Estimated Time**: 4 minutes
+
+
+**Given**: User is on a product detail page (e.g., /product/profil-hea-200-s235jr-en-10025)
+
+**When**: User configures product:
+- Selling unit: Metri (m)
+- Length: 6m
+- Quantity: 10
+- Finish: Standard
+
+**And**: User clicks "Adaugă la Estimare" button
+
+**Then**:
+- [ ] Toast notification appears showing "Produs adăugat în coș"
+- [ ] Toast displays product name, quantity, and estimated weight
+- [ ] Cart drawer automatically opens from right side
+- [ ] Product appears in cart drawer with correct configuration
+- [ ] Cart badge in header updates to show "1"
+- [ ] Button remains enabled for adding more
+
+
+**When**: User adds the same product again with different config:
+- Quantity: 5
+- Finish: Zincat (+15%)
+
+**Then**:
+- [ ] Second line item is added to cart (not merged)
+- [ ] Cart badge shows "2"
+- [ ] Both items visible in cart drawer
+- [ ] Totals update to reflect both items
+
+---
+
+### Test Scenario 4.2: Cart Drawer Functionality
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User has 2 products in cart
+
+**When**: User clicks cart badge in header
+
+**Then**:
+- [ ] Cart drawer opens from right side with slide animation
+- [ ] Drawer title shows "Coș Estimare"
+- [ ] Subtitle shows "2 produse în coș"
+- [ ] All cart items are visible
+- [ ] Each item shows:
+  - Product image/icon
+  - Product title and SKU
+  - Configuration badges (grade, finish, length)
+  - Quantity and unit
+  - Estimated weight
+  - Unit price and subtotal
+  - Remove button (trash icon)
+- [ ] Totals panel displays:
+  - Total weight
+  - Subtotal
+  - TVA (19%)
+  - Delivery estimate
+  - Grand total in RON
+
+
+**When**: User clicks "Cere Ofertă Finală" button
+
+**Then**:
+- [ ] Drawer closes
+- [ ] Browser navigates to /rfq
+- [ ] RFQ form loads
+
+
+**When**: User clicks "Vezi Coș Complet" button
+
+**Then**:
+- [ ] Drawer closes
+- [ ] Browser navigates to /cart
+- [ ] Full cart page loads
+
+
+**When**: User clicks outside drawer or presses Escape
+
+**Then**:
+- [ ] Drawer closes smoothly
+- [ ] Cart data remains intact
+
+---
+
+### Test Scenario 4.3: Cart Page - Full View
+
+**Priority**: Critical
+
+**Estimated Time**: 6 minutes
+
+
+**Given**: User navigates to /cart with items in cart
+
+**When**: Page loads
+
+**Then**:
+- [ ] Page header shows "Coș Estimare"
+- [ ] Item count displays "X produse în coș"
+- [ ] Info alert explains prices are estimative
+- [ ] All cart items displayed as cards
+- [ ] Right sidebar shows:
+  - Totals panel
+  - Action buttons
+  - Help card with contact info
+- [ ] "Golește Coșul" button visible in header
+
+
+**When**: User clicks edit button on a line item
+
+**Then**:
+- [ ] Quantity input becomes editable
+- [ ] Unit dropdown appears
+- [ ] Save (checkmark) and Cancel (X) buttons appear
+
+
+**When**: User changes quantity from 10 to 15
+
+**And**: User clicks save button
+
+**Then**:
+- [ ] Quantity updates to 15
+- [ ] Line subtotal recalculates
+- [ ] Total weight updates
+- [ ] Grand total updates
+- [ ] Edit mode closes
+- [ ] All updates occur in < 150ms
+
+
+**When**: User clicks trash icon on a line item
+
+**Then**:
+- [ ] Item is removed from cart
+- [ ] Totals update immediately
+- [ ] Item count decreases
+- [ ] If last item removed, empty state appears
+
+
+**When**: User clicks "Golește Coșul" button
+
+**And**: User confirms in alert dialog
+
+**Then**:
+- [ ] All items removed
+- [ ] Empty state displayed
+- [ ] Message: "Coșul tău este gol"
+- [ ] "Explorează Catalogul" button visible
+
+
+**When**: Cart has items and user checks disclaimer checkbox
+
+**Then**:
+- [ ] Checkbox becomes checked
+- [ ] "Cere Ofertă Finală" button becomes enabled
+
+
+**When**: User clicks "Cere Ofertă Finală" (with disclaimer checked)
+
+**Then**:
+- [ ] Browser navigates to /rfq
+
+---
+
+### Test Scenario 4.4: Cart Persistence Across Sessions
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+
+**Given**: User has 3 items in cart
+
+**When**: User refreshes the page (F5)
+
+**Then**:
+- [ ] Page reloads
+- [ ] All 3 items still in cart
+- [ ] Quantities correct
+- [ ] Totals correct
+- [ ] Cart badge shows "3"
+
+
+**When**: User closes browser tab
+
+**And**: User opens new tab to http://localhost:8080
+
+**Then**:
+- [ ] Cart badge shows "3"
+- [ ] Opening cart drawer shows all 3 items
+- [ ] All data persisted
+
+
+**When**: User clears browser localStorage manually
+
+**And**: User refreshes page
+
+**Then**:
+- [ ] Cart is empty
+- [ ] Cart badge shows no number
+- [ ] Opening drawer shows empty state
+
+---
+
+### Test Scenario 4.5: RFQ Form - Step 1: Company Information
+
+**Priority**: Critical
+
+**Estimated Time**: 8 minutes
+
+
+**Given**: User navigates to /rfq with items in cart
+
+**When**: Page loads
+
+**Then**:
+- [ ] URL is /rfq
+- [ ] Page title shows "Cerere de Ofertă (RFQ)"
+- [ ] Step indicator shows Step 1 of 5 active
+- [ ] "Companie" step is highlighted
+- [ ] Form displays "Informații Companie" card
+- [ ] All required fields marked with red asterisk *
+
+
+**When**: User enters CUI/VAT: "14399840"
+
+**And**: User clicks "Validează" button
+
+**Then**:
+- [ ] Button shows loading spinner: "Validare..."
+- [ ] Button is disabled during validation
+- [ ] After ~800ms, validation completes
+- [ ] CUI remains "14399840" (format preserved as entered)
+- [ ] Green success alert appears
+- [ ] Alert shows: "CUI/VAT validat în baza ANAF"
+
+
+**When**: CUI validation succeeds with business data
+
+**Then**:
+- [ ] Legal name field auto-fills: "S.C. METALPRO INDUSTRIES S.R.L."
+- [ ] County field auto-fills: "CLUJ"
+- [ ] Green "Verificat" badge appears
+
+
+**When**: User enters CUI with "RO" prefix: "RO14399840"
+
+**And**: User clicks "Validează"
+
+**Then**:
+- [ ] CUI remains "RO14399840" (RO prefix preserved)
+- [ ] Validation succeeds
+- [ ] Business data auto-fills correctly
+- [ ] Input shows "RO14399840" (original format kept)
+
+
+**When**: User enters invalid CUI: "123"
+
+**And**: User clicks "Validează"
+
+**Then**:
+- [ ] Red error alert appears
+- [ ] Message shows: "CUI/VAT este prea scurt (minim 2 cifre)"
+- [ ] Legal name does not auto-fill
+
+
+**When**: User enters invalid CUI with wrong checksum: "14399841"
+
+**And**: User clicks "Validează"
+
+**Then**:
+- [ ] Red error alert shows
+- [ ] Message: "CUI/VAT nu este valid (cifră de control incorectă)"
+
+
+**When**: User completes all required fields:
+- Legal name: "S.C. TEST METAL S.R.L."
+- CUI/VAT: "RO12345678" (validated)
+- Street: "Str. Testului, nr. 10"
+- City: "Cluj-Napoca"
+- County: "Cluj" (from dropdown)
+- Postal code: "400001"
+- Contact person: "Ion Popescu"
+- Phone: "+40712345678"
+- Email: "ion@testmetal.ro"
+
+**And**: User clicks "Continuă" button
+
+**Then**:
+- [ ] No validation errors
+- [ ] Step 1 marked as completed (checkmark)
+- [ ] Form advances to Step 2
+- [ ] Step indicator updates
+- [ ] "Livrare" step becomes active
+
+---
+
+### Test Scenario 4.6: RFQ Form - Step 2: Delivery Address
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User is on Step 2 of RFQ form
+
+**When**: Step loads
+
+**Then**:
+- [ ] "Adresa de Livrare" card displays
+- [ ] "Identică cu adresa de facturare" checkbox is CHECKED by default
+- [ ] Summary shows billing address below checkbox
+- [ ] All address fields are DISABLED
+- [ ] Fields are pre-filled with billing address from Step 1
+
+
+**When**: User unchecks "Identică cu adresa de facturare"
+
+**Then**:
+- [ ] All address fields become ENABLED
+- [ ] Fields clear (or retain previous delivery address if exists)
+- [ ] User can type in fields
+
+
+**When**: User enters different delivery address:
+- Street: "Str. Livrare, nr. 25"
+- City: "București"
+- County: "București"
+- Postal code: "010101"
+
+**And**: User selects desired delivery date (5 days from today)
+
+**Then**:
+- [ ] Calendar picker opens
+- [ ] Calendar is in Romanian locale
+- [ ] Dates before today are disabled
+- [ ] Selected date displays in Romanian format (ex: "5 ianuarie 2025")
+
+
+**When**: User clicks "Înapoi" button
+
+**Then**:
+- [ ] Form returns to Step 1
+- [ ] All data from Step 1 is still intact
+- [ ] No data is lost
+
+
+**When**: User clicks "Continuă" from Step 1 again
+
+**And**: User is back on Step 2
+
+**Then**:
+- [ ] Delivery address data is preserved
+- [ ] Checkbox state is preserved
+- [ ] Desired date is preserved
+
+
+**When**: User clicks "Continuă" button on Step 2
+
+**Then**:
+- [ ] Step 2 marked as completed
+- [ ] Form advances to Step 3
+- [ ] "Preferințe" step becomes active
+
+---
+
+### Test Scenario 4.7: RFQ Form - Step 3: Preferences
+
+**Priority**: High
+
+**Estimated Time**: 4 minutes
+
+
+**Given**: User is on Step 3 of RFQ form
+
+**When**: Step loads
+
+**Then**:
+- [ ] "Preferințe & Cerințe Speciale" card displays
+- [ ] Incoterm dropdown shows placeholder: "Selectează Incoterm (sau lasă implicit)"
+- [ ] Payment terms textarea is empty
+- [ ] Special requirements textarea is empty
+- [ ] Helpful tips alert is visible
+
+
+**When**: User clicks Incoterm dropdown
+
+**Then**:
+- [ ] Dropdown opens showing 5 options:
+  - EXW - Ex Works
+  - FCA - Free Carrier
+  - CPT - Carriage Paid To
+  - DAP - Delivered at Place
+  - DDP - Delivered Duty Paid
+
+
+**When**: User selects "DAP - Delivered at Place"
+
+**Then**:
+- [ ] Dropdown value updates
+- [ ] Blue info alert appears below
+- [ ] Alert shows description: "DAP: Vânzătorul livrează marfa la adresa specificată"
+
+
+**When**: User types in "Special Requirements" field: "Debitare urgentă necesară pentru proiect"
+
+**Then**:
+- [ ] Text appears in textarea
+- [ ] Character counter shows: "XX / 1000 caractere"
+- [ ] Counter updates in real-time
+
+
+**When**: User types in "Payment Terms" field: "30 zile de la facturare"
+
+**Then**:
+- [ ] Text is accepted
+- [ ] No validation errors
+
+
+**When**: User clicks "Continuă" button
+
+**Then**:
+- [ ] Step 3 marked as completed
+- [ ] Form advances to Step 4
+- [ ] "Atașamente" step becomes active
+
+
+**Note**: All fields in this step are optional, so form should proceed even if left blank
+
+---
+
+### Test Scenario 4.8: RFQ Form - Step 4: Attachments & File Upload
+
+**Priority**: High
+
+**Estimated Time**: 7 minutes
+
+
+**Given**: User is on Step 4 of RFQ form
+
+**When**: Step loads
+
+**Then**:
+- [ ] "Atașamente & Notițe" card displays
+- [ ] Upload area with dashed border visible
+- [ ] Upload icon and instructions visible
+- [ ] "Selectează Fișiere" button present
+- [ ] Empty state: "Nu există fișiere încărcate"
+- [ ] Notes textarea is empty
+
+
+**When**: User clicks "Selectează Fișiere" button
+
+**Then**:
+- [ ] File picker dialog opens
+- [ ] Only .csv, .xlsx, .pdf, .jpg, .png files are selectable
+
+
+**When**: User selects a valid PDF file (< 10MB)
+
+**Then**:
+- [ ] File appears in uploaded files list
+- [ ] File row shows:
+  - PDF icon (red)
+  - File name
+  - "PDF" badge
+  - File size (e.g., "2.5 MB")
+  - Remove button (X icon)
+- [ ] Green success alert: "Fișierele vor fi atașate cererii"
+
+
+**When**: User tries to upload a 15MB file
+
+**Then**:
+- [ ] File is rejected
+- [ ] Red error alert appears
+- [ ] Message: "Fișierul 'X' este prea mare (maxim 10MB)"
+- [ ] File does NOT appear in list
+
+
+**When**: User tries to upload a .exe file
+
+**Then**:
+- [ ] File is rejected
+- [ ] Error message: "Tipul fișierului 'X' nu este permis"
+
+
+**When**: User drags a .csv file over upload area
+
+**Then**:
+- [ ] Upload area highlights (hover effect)
+
+
+**When**: User drops the file
+
+**Then**:
+- [ ] File is processed
+- [ ] File appears in uploaded files list
+- [ ] CSV icon (green) displayed
+- [ ] "CSV" badge shown
+
+
+**When**: User uploads multiple files at once:
+- BOM.csv (500 KB)
+- Drawing.pdf (3 MB)
+- Photo.jpg (1.5 MB)
+
+**Then**:
+- [ ] All 3 files appear in list
+- [ ] Each has appropriate icon and badge
+- [ ] Total count shows "Fișiere încărcate (3)"
+
+
+**When**: User clicks X button on one file
+
+**Then**:
+- [ ] File is removed from list
+- [ ] Count updates to "Fișiere încărcate (2)"
+- [ ] No confirmation dialog needed
+
+
+**When**: User types in Notes textarea: "Lista BOM anexată. Vă rog să confirmați disponibilitatea materialelor."
+
+**Then**:
+- [ ] Text appears in textarea
+- [ ] Character counter shows: "XX / 2000 caractere"
+
+
+**When**: User clicks "Continuă la Verificare" button
+
+**Then**:
+- [ ] Step 4 marked as completed
+- [ ] Form advances to Step 5
+- [ ] "Verificare" step becomes active
+
+---
+
+### Test Scenario 4.9: RFQ Form - Step 5: Review & Submit
+
+**Priority**: Critical
+
+**Estimated Time**: 10 minutes
+
+
+**Given**: User is on Step 5 (final review) of RFQ form
+
+**When**: Step loads
+
+**Then**:
+- [ ] Blue info alert at top: "Verificați Informațiile"
+- [ ] "Informații Companie" card displays with:
+  - Company name
+  - CUI/VAT number with "Verificat" badge
+  - Complete billing address
+  - Contact person, phone, email
+  - "Editează" button in header
+- [ ] "Adresa de Livrare" card displays with:
+  - Delivery address
+  - "Identică cu adresa de facturare" badge (if applicable)
+  - Desired delivery date (formatted in Romanian)
+  - "Editează" button
+- [ ] "Produse Estimate" card displays with:
+  - Total item count
+  - Total weight
+  - All cart line items with quantities and prices
+  - Subtotal, TVA, Delivery estimate
+  - Grand total in bold
+- [ ] "Preferințe & Cerințe" card (if data exists)
+- [ ] "Atașamente" card showing all uploaded files
+- [ ] "Acceptare Termeni" card with 2 unchecked checkboxes
+- [ ] "Trimite Cerere de Ofertă" button is DISABLED
+
+
+**When**: User clicks "Editează" button on Company card
+
+**Then**:
+- [ ] Form navigates back to Step 1
+- [ ] All company data is intact
+- [ ] User can edit fields
+
+
+**When**: User clicks "Continuă" to return to Review
+
+**Then**:
+- [ ] Form returns to Step 5
+- [ ] Changes are reflected in review
+
+
+**When**: User checks first disclaimer checkbox: "Înțeleg că prețurile sunt strict estimative"
+
+**Then**:
+- [ ] Checkbox becomes checked
+- [ ] "Trimite" button still DISABLED (both required)
+
+
+**When**: User checks second checkbox: "Accept termenii și condițiile"
+
+**Then**:
+- [ ] Checkbox becomes checked
+- [ ] "Trimite Cerere de Ofertă" button becomes ENABLED
+- [ ] Button has primary styling
+
+
+**When**: User unchecks first checkbox
+
+**Then**:
+- [ ] "Trimite" button becomes DISABLED again
+- [ ] Red error alert appears: "Vă rugăm să acceptați ambii termeni"
+
+
+**When**: User checks both checkboxes again
+
+**And**: User clicks "Trimite Cerere de Ofertă" button
+
+**Then**:
+- [ ] Button shows loading state: "Se trimite..."
+- [ ] Button is disabled during submission
+- [ ] Loading spinner appears
+- [ ] After ~1.5 seconds, submission completes
+- [ ] Browser navigates to /rfq/confirmation with reference number in URL
+
+
+**When**: Submission fails (simulate network error)
+
+**Then**:
+- [ ] Toast error notification appears
+- [ ] Message: "Nu s-a putut trimite cererea"
+- [ ] User remains on Step 5
+- [ ] Button becomes enabled again
+- [ ] User can retry
+
+---
+
+### Test Scenario 4.10: RFQ Confirmation Page
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User successfully submitted RFQ
+
+**When**: Confirmation page loads (/rfq/confirmation?ref=RFQ-2025-1234)
+
+**Then**:
+- [ ] URL contains reference number parameter
+- [ ] Green checkmark icon displayed (large, centered)
+- [ ] Success message: "Cererea a fost trimisă cu succes!"
+- [ ] Reference number card shows:
+  - Label: "Număr de Referință"
+  - Reference number in large monospace font: "RFQ-2025-1234"
+  - Note to save the number
+- [ ] "Ce urmează?" card displays 4-step timeline:
+  1. Confirmare Email
+  2. Procesare Cerere
+  3. Primire Ofertă (maximum 24h)
+  4. Negociere & Finalizare
+- [ ] Contact card shows:
+  - Phone: +40 xxx xxx xxx
+  - Email: sales@metalpro.ro
+  - Business hours: L-V, 08:00-16:30
+- [ ] Two action buttons:
+  - "Înapoi la Pagina Principală" (primary)
+  - "Explorează Catalogul" (outline)
+- [ ] Footer note about spam folder
+
+
+**When**: User checks cart badge in header
+
+**Then**:
+- [ ] Cart badge shows no number (cart was cleared)
+- [ ] Opening cart drawer shows empty state
+
+
+**When**: User clicks "Înapoi la Pagina Principală" button
+
+**Then**:
+- [ ] Browser navigates to /
+- [ ] Home page loads
+
+
+**When**: User navigates back to /rfq/confirmation without ref parameter
+
+**Then**:
+- [ ] Page redirects to home page
+- [ ] No error displayed
+
+---
+
+### Test Scenario 4.11: RFQ Form - Empty Cart Protection
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+
+**Given**: User has empty cart
+
+**When**: User navigates directly to /rfq
+
+**Then**:
+- [ ] Page loads
+- [ ] Red alert displays: "Coșul este gol"
+- [ ] Message: "Pentru a putea cere o ofertă, trebuie să adaugi produse în coș"
+- [ ] "Înapoi la Catalog" button is visible
+- [ ] RFQ form is NOT displayed
+
+
+**When**: User clicks "Înapoi la Catalog" button
+
+**Then**:
+- [ ] Browser navigates to /catalog
+
+---
+
+### Test Scenario 4.12: Cart & RFQ Integration - Complete Flow
+
+**Priority**: Critical
+
+**Estimated Time**: 15 minutes
+
+
+**Given**: User starts from empty cart
+
+**When**: User performs complete flow:
+
+1. Navigate to product: /product/profil-hea-200-s235jr-en-10025
+2. Add to cart (10m, Standard finish)
+3. Navigate to another product
+4. Add to cart (5 units, Zincat finish)
+5. Click cart badge in header
+6. Verify 2 items in drawer
+7. Click "Cere Ofertă Finală"
+8. Complete Step 1: Company Info with CUI validation
+9. Complete Step 2: Delivery (same as billing + desired date)
+10. Complete Step 3: Preferences (select DAP Incoterm)
+11. Complete Step 4: Upload 2 files (CSV + PDF)
+12. Review Step 5: Verify all data
+13. Accept both disclaimers
+14. Submit RFQ
+
+**Then**:
+- [ ] Each step transitions smoothly
+- [ ] Data persists across steps
+- [ ] No errors occur
+- [ ] Submission succeeds
+- [ ] Confirmation page loads with reference number
+- [ ] Cart is cleared
+- [ ] Reference number format: RFQ-YYYY-XXXX
+
+
+**When**: User opens browser DevTools console
+
+**Then**:
+- [ ] Console logs show:
+  - "RFQ Submitted: {referenceNumber, company, totalItems, totalValue}"
+  - "📧 Email notifications sent"
+  - "✅ To customer: [email]"
+  - "✅ To sales team: sales@metalpro.ro"
+- [ ] No JavaScript errors
+- [ ] No React warnings
+
+---
+
+### Test Scenario 4.13: Cart Totals Calculation Accuracy
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User has empty cart
+
+**When**: User adds product: HEA 200, 10m, S235JR
+- Unit weight: 10.5 kg/m
+- Base price: 45.50 RON/kg
+- Quantity: 1 piece at 6m length
+
+**Then**:
+- [ ] Weight estimate: 6m × 10.5 kg/m = 63.00 kg
+- [ ] Subtotal: 63 kg × 45.50 RON/kg = 2,866.50 RON
+- [ ] TVA (19%): 2,866.50 × 0.19 = 544.64 RON
+- [ ] Grand Total: 2,866.50 + 544.64 = 3,411.14 RON
+- [ ] Delivery band: "150-300 RON" (weight between 100-500kg)
+
+
+**When**: User changes finish to "Zincat (+15%)"
+
+**Then**:
+- [ ] Subtotal increases by 15%: 2,866.50 × 1.15 = 3,296.48 RON
+- [ ] TVA recalculates: 3,296.48 × 0.19 = 626.33 RON
+- [ ] Grand Total: 3,296.48 + 626.33 = 3,922.81 RON
+- [ ] Weight remains: 63.00 kg (finish doesn't affect weight)
+
+
+**When**: User changes quantity to 5 pieces
+
+**Then**:
+- [ ] Weight: 63 kg × 5 = 315.00 kg
+- [ ] Subtotal: 3,296.48 × 5 = 16,482.40 RON
+- [ ] TVA: 16,482.40 × 0.19 = 3,131.66 RON
+- [ ] Grand Total: 16,482.40 + 3,131.66 = 19,614.06 RON
+- [ ] Delivery band: "300-500 RON" (weight between 100-500kg)
+
+---
+
+### Test Scenario 4.14: CUI/VAT Validation - Edge Cases
+
+**Priority**: High
+
+**Estimated Time**: 6 minutes
+
+
+**Given**: User is on RFQ Step 1: Company Information
+
+**When**: User enters various CUI formats and validates:
+
+| Input | Expected Result |
+|-------|----------------|
+| "14399840" | ✅ Valid → kept as "14399840" (valid checksum) |
+| "RO14399840" | ✅ Valid → kept as "RO14399840" (format preserved) |
+| "  RO14399840  " | ✅ Valid → cleaned to "RO14399840" |
+| "ro14399840" | ✅ Valid → uppercased to "RO14399840" |
+| "18547290" | ✅ Valid → kept as "18547290" (valid checksum) |
+| "RO 143 998 40" | ✅ Valid → cleaned to "RO14399840" |
+| "123" | ❌ "CUI/VAT este prea scurt" |
+| "12345678901234" | ❌ "CUI/VAT este prea lung" |
+| "ABC123" | ❌ "trebuie să conțină doar cifre" |
+| "14399841" | ❌ "cifră de control incorectă" (wrong checksum) |
+| "" (empty) | ❌ "CUI/VAT este obligatoriu" |
+
+**Then**:
+- [ ] All validations work correctly
+- [ ] Appropriate error messages display
+- [ ] Valid CUIs are formatted consistently
+- [ ] Invalid CUIs prevent form submission
+
+---
+
+### Test Scenario 4.15: File Upload - Size & Type Validation
+
+**Priority**: High
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User is on RFQ Step 4: Attachments
+
+**When**: User attempts to upload files:
+
+| File | Size | Type | Expected Result |
+|------|------|------|----------------|
+| BOM.csv | 500 KB | CSV | ✅ Accepted |
+| Price_List.xlsx | 2 MB | Excel | ✅ Accepted |
+| Drawing.pdf | 8 MB | PDF | ✅ Accepted |
+| Photo.jpg | 1.5 MB | Image | ✅ Accepted |
+| BigFile.pdf | 15 MB | PDF | ❌ "prea mare (maxim 10MB)" |
+| Virus.exe | 100 KB | EXE | ❌ "tipul fișierului nu este permis" |
+| Document.doc | 1 MB | Word | ❌ "tipul fișierului nu este permis" |
+
+**Then**:
+- [ ] Valid files appear in uploaded list
+- [ ] Invalid files show error alerts
+- [ ] No invalid files in uploaded list
+- [ ] Error messages are clear and helpful
+
+---
+
+### Test Scenario 4.16: Responsive Design - Cart & RFQ (Mobile)
+
+**Priority**: High
+
+**Estimated Time**: 8 minutes
+
+
+**Given**: User accesses site on mobile (375px width)
+
+**When**: User adds product to cart
+
+**Then**:
+- [ ] Cart drawer opens full-screen on mobile
+- [ ] All elements are touch-friendly (min 44px)
+- [ ] Scrolling works smoothly
+- [ ] Buttons are accessible
+
+
+**When**: User navigates to /cart page
+
+**Then**:
+- [ ] Page layout stacks vertically
+- [ ] Cart items display in single column
+- [ ] Totals panel moves below items (not sidebar)
+- [ ] All text remains readable
+- [ ] No horizontal scrolling
+
+
+**When**: User navigates to /rfq
+
+**Then**:
+- [ ] Step indicator shows compact mobile version
+- [ ] Shows current step number and title
+- [ ] Progress counter: "Pasul X din 5"
+- [ ] Form fields stack vertically
+- [ ] County dropdown works on mobile
+- [ ] Date picker is mobile-friendly
+- [ ] File upload works with mobile file picker
+- [ ] All buttons are full-width on mobile
+
+---
+
+### Test Scenario 4.17: Browser Back/Forward Navigation
+
+**Priority**: Medium
+
+**Estimated Time**: 4 minutes
+
+
+**Given**: User is completing RFQ form
+
+**When**: User completes Step 1 and proceeds to Step 2
+
+**And**: User clicks browser back button
+
+**Then**:
+- [ ] Form returns to Step 1
+- [ ] URL updates (if using URL state)
+- [ ] Step 1 data is preserved
+- [ ] No data loss
+
+
+**When**: User clicks browser forward button
+
+**Then**:
+- [ ] Form returns to Step 2
+- [ ] Step 2 data is preserved
+
+
+**When**: User completes all steps and submits
+
+**And**: User is on confirmation page
+
+**And**: User clicks browser back button
+
+**Then**:
+- [ ] User remains on confirmation page (or home)
+- [ ] Cart remains empty
+- [ ] RFQ is not resubmitted
+
+---
+
+### Test Scenario 4.18: Performance - Cart Operations
+
+**Priority**: Medium
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User has 10 items in cart
+
+**When**: User updates quantity on one item
+
+**Then**:
+- [ ] Totals update in < 150ms
+- [ ] No UI lag or jank
+- [ ] Smooth animation
+
+
+**When**: User adds 20 items to cart rapidly
+
+**Then**:
+- [ ] All items appear in cart
+- [ ] No performance degradation
+- [ ] Scrolling remains smooth
+- [ ] Badge updates correctly
+
+
+**When**: User opens cart drawer with 20 items
+
+**Then**:
+- [ ] Drawer opens smoothly
+- [ ] All items render without delay
+- [ ] Scrolling is performant
+
+---
+
 ## Edge Cases & Error Scenarios
 
-### Test Scenario 3.1: Invalid URL Parameters
+### Test Scenario 5.1: Invalid URL Parameters
 
 **Priority**: Medium
 
@@ -1951,7 +2946,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-### Test Scenario 3.2: Network Failure Simulation
+### Test Scenario 5.2: Network Failure Simulation
 
 **Priority**: Low
 
@@ -1971,7 +2966,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-### Test Scenario 3.3: Special Characters in Search
+### Test Scenario 5.3: Special Characters in Search
 
 **Priority**: Low
 
@@ -1991,7 +2986,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ## Performance Tests
 
-### Test Scenario 4.1: Page Load Performance
+### Test Scenario 6.1: Page Load Performance
 
 **Priority**: Medium
 
@@ -2016,7 +3011,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-### Test Scenario 4.2: Filter Performance
+### Test Scenario 6.2: Filter Performance
 
 **Priority**: Medium
 
@@ -2036,7 +3031,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ## Accessibility Tests
 
-### Test Scenario 5.1: Keyboard Navigation
+### Test Scenario 7.1: Keyboard Navigation
 
 **Priority**: High
 
@@ -2080,7 +3075,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-### Test Scenario 5.2: Screen Reader Testing
+### Test Scenario 7.2: Screen Reader Testing
 
 **Priority**: Medium
 
@@ -2100,7 +3095,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-### Test Scenario 5.3: Color Contrast
+### Test Scenario 7.3: Color Contrast
 
 **Priority**: Medium
 
@@ -2120,7 +3115,7 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ## Browser Compatibility
 
-### Test Scenario 6.1: Cross-Browser Testing
+### Test Scenario 8.1: Cross-Browser Testing
 
 **Priority**: High
 
