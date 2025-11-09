@@ -51,8 +51,10 @@ const HeroSection = () => {
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
-            <Button variant="outline" size="xl" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
-              Încarcă Lista BOM
+            <Button variant="outline" size="xl" className="bg-white/10 border-white/20 text-white hover:bg-white/20" asChild>
+              <Link to="/bom-upload">
+                Încarcă Lista BOM
+              </Link>
             </Button>
           </div>
 

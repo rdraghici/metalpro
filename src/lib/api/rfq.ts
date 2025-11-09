@@ -1,4 +1,5 @@
 import type { RFQFormData, RFQSubmissionResponse, RFQ } from '@/types/rfq';
+import { createOrderHistoryEntry } from './orderHistory';
 
 /**
  * Submit RFQ (Request for Quote)
@@ -10,9 +11,10 @@ import type { RFQFormData, RFQSubmissionResponse, RFQ } from '@/types/rfq';
  * 4. Return RFQ reference number and confirmation
  *
  * @param data - Complete RFQ form data
+ * @param userId - User ID if logged in (optional)
  * @returns Promise with submission response
  */
-export async function submitRFQ(data: RFQFormData): Promise<RFQSubmissionResponse> {
+export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQSubmissionResponse> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1500));
 
@@ -56,12 +58,33 @@ export async function submitRFQ(data: RFQFormData): Promise<RFQSubmissionRespons
     // - To sales team: New RFQ notification
     await sendRFQNotifications(rfq);
 
-    // 4. Log for analytics
+    // 4. Save to order history if user is logged in
+    if (userId) {
+      try {
+        await createOrderHistoryEntry(userId, {
+          companyInfo: data.company,
+          deliveryInfo: {
+            deliveryAddress: data.deliveryAddress,
+            desiredDeliveryDate: data.desiredDeliveryDate,
+            incoterm: data.incoterm,
+          },
+          cartItems: data.cartSnapshot.lines,
+          specialRequirements: data.specialRequirements,
+        });
+        console.log('✅ Order saved to history for user:', userId);
+      } catch (error) {
+        console.error('Failed to save order to history:', error);
+        // Don't fail the whole RFQ submission if history save fails
+      }
+    }
+
+    // 5. Log for analytics
     console.log('RFQ Submitted:', {
       referenceNumber,
       company: data.company.legalName,
       totalItems: data.cartSnapshot.lines.length,
       totalValue: data.cartSnapshot.totals.grandTotal,
+      userId: userId || 'guest',
     });
 
     return {

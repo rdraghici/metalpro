@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -14,8 +14,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Building2, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
+import { Building2, CheckCircle2, Loader2, AlertCircle, Info } from 'lucide-react';
 import { validateCUI, lookupCUIFromANAF } from '@/lib/validation/cuiValidator';
+import { useAuth } from '@/context/AuthContext';
 import type { CompanyInfo } from '@/types/rfq';
 
 // Romanian counties for dropdown
@@ -51,6 +52,9 @@ interface CompanyInfoStepProps {
 }
 
 const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, onBack }) => {
+  const { user, isAuthenticated } = useAuth();
+  const [isAutoFilled, setIsAutoFilled] = useState(false);
+
   const [cuiValidationState, setCuiValidationState] = useState<{
     isValidating: boolean;
     isValid: boolean | null;
@@ -83,6 +87,42 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
       email: initialData?.contact?.email || '',
     },
   });
+
+  // Auto-fill form with user data if logged in
+  useEffect(() => {
+    if (isAuthenticated && user && !initialData) {
+      setIsAutoFilled(true);
+
+      // Fill company data if business account
+      if (user.company) {
+        if (user.company.name) setValue('legalName', user.company.name);
+        if (user.company.cui) setValue('cuiVat', user.company.cui);
+        if (user.company.address) setValue('street', user.company.address);
+        if (user.company.city) setValue('city', user.company.city);
+        if (user.company.county) setValue('county', user.company.county);
+        if (user.company.postalCode) setValue('postalCode', user.company.postalCode);
+
+        // Mark CUI as verified if company is verified
+        if (user.company.isVerified) {
+          setCuiValidationState({
+            isValidating: false,
+            isValid: true,
+            message: 'CUI verificat din contul tău',
+            details: {
+              legalName: user.company.name,
+              status: 'Activ',
+              county: user.company.county,
+            },
+          });
+        }
+      }
+
+      // Fill contact data
+      if (user.name) setValue('contactPerson', user.name);
+      if (user.phone) setValue('phone', user.phone);
+      if (user.email) setValue('email', user.email);
+    }
+  }, [isAuthenticated, user, initialData, setValue]);
 
   const cuiValue = watch('cuiVat');
 
@@ -177,6 +217,17 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Auto-fill notification */}
+          {isAutoFilled && (
+            <Alert className="bg-blue-50 border-blue-200">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Datele au fost pre-completate</strong> din contul tău.{' '}
+                {user?.company ? 'Poți edita orice câmp înainte de a continua.' : 'Completează restul informațiilor.'}
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* CUI/VAT Number with Validation */}
           <div className="space-y-2">
             <Label htmlFor="cuiVat">

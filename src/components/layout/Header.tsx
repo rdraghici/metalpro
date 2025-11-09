@@ -1,15 +1,25 @@
-import { ShoppingCart, Phone } from "lucide-react";
+import { ShoppingCart, Phone, User, LogOut, Package, History } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import SearchBar from "@/components/search/SearchBar";
 import { useCart } from "@/context/CartContext";
+import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { itemCount, toggleDrawer } = useCart();
+  const { user, isGuest, logout } = useAuth();
 
   const handleRequestQuote = () => {
     if (itemCount === 0) {
@@ -21,6 +31,23 @@ const Header = () => {
       return;
     }
     navigate('/rfq');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast({
+        title: "Deconectat cu succes",
+        description: "La revedere!",
+      });
+      navigate('/');
+    } catch (error) {
+      toast({
+        title: "Eroare",
+        description: "Nu s-a putut efectua deconectarea",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -54,6 +81,7 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Shopping Cart */}
             <Button
               variant="outline"
               size="lg"
@@ -68,6 +96,63 @@ const Header = () => {
                 </Badge>
               )}
             </Button>
+
+            {/* Auth UI - Dynamic based on guest/logged-in state */}
+            {isGuest ? (
+              // Guest User - Show "Cont" button
+              <Button variant="outline" size="lg" asChild>
+                <Link to="/login">
+                  <User className="h-5 w-5 sm:mr-2" />
+                  <span className="hidden sm:inline">Cont</span>
+                </Link>
+              </Button>
+            ) : (
+              // Logged-in User - Show dropdown menu
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="lg" className="gap-2">
+                    <div className="w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+                      {user?.company?.name?.charAt(0) || user?.name?.charAt(0) || 'U'}
+                    </div>
+                    <span className="hidden sm:inline">{user?.name?.split(' ')[0]}</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span>{user?.name}</span>
+                      <span className="text-xs font-normal text-muted-foreground">{user?.email}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link to="/account" className="cursor-pointer">
+                      <User className="h-4 w-4 mr-2" />
+                      Contul Meu
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account?tab=projects" className="cursor-pointer">
+                      <Package className="h-4 w-4 mr-2" />
+                      Proiecte Salvate
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to="/account?tab=orders" className="cursor-pointer">
+                      <History className="h-4 w-4 mr-2" />
+                      Istoric Comenzi
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Deconectare
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
+            {/* Request Quote Button */}
             <Button variant="hero" size="lg" onClick={handleRequestQuote}>
               Cere Ofertă
             </Button>

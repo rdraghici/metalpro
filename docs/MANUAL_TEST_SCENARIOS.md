@@ -3221,6 +3221,1678 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
+## Phase 5: BOM Upload & Auto-Mapping
+
+### Test Scenario 5.1: Navigate to BOM Upload Page
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: User is on the home page
+
+**When**: User clicks the "Încarcă BOM" button in the header navigation
+
+**Then**:
+- [ ] Browser navigates to /bom-upload
+- [ ] Page title displays "Încărcare BOM"
+- [ ] Subtitle explains: "Încărcați fișierul Bill of Materials (BOM) pentru a adăuga produse în coș rapid"
+- [ ] Blue info alert displays with "Cum funcționează?" title
+- [ ] Info alert shows 5 numbered steps
+- [ ] "Descarcă Șablon CSV" button is visible
+- [ ] Upload dropzone is visible with drag & drop instructions
+- [ ] "Înapoi la Catalog" button is visible in top-left
+
+---
+
+### Test Scenario 5.2: Download BOM Template
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is on /bom-upload page
+
+**When**: User clicks "Descarcă Șablon CSV" button
+
+**Then**:
+- [ ] File downloads immediately
+- [ ] File name is "metalpro-bom-template.csv"
+- [ ] File size is less than 10KB
+- [ ] Toast notification appears: "Șablon descărcat"
+
+**When**: User opens the downloaded CSV file
+
+**Then**:
+- [ ] File contains 9 column headers: "Familie", "Standard", "Grad", "Dimensiune", "Lungime (m)", "Cantitate", "Unitate", "Finisaj", "Note"
+- [ ] File contains 3 sample rows with realistic Romanian product data
+- [ ] Sample data includes different product types (corniere, țevi pătrate, plăci)
+- [ ] File is UTF-8 encoded and opens correctly in Excel
+
+---
+
+### Test Scenario 5.3: File Upload - Drag and Drop
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has a valid BOM CSV file
+
+**When**: User drags the file over the upload dropzone
+
+**Then**:
+- [ ] Dropzone background changes to blue/primary color
+- [ ] Border becomes solid primary color
+- [ ] Upload icon changes color to primary
+
+**When**: User drops the file on the dropzone
+
+**Then**:
+- [ ] Dropzone returns to normal state
+- [ ] Green success card appears showing file name and size
+- [ ] File name is displayed correctly
+- [ ] File size is displayed in KB or MB
+- [ ] X button appears to clear the file
+- [ ] Processing spinner appears briefly
+- [ ] Results section loads after ~1-2 seconds
+
+---
+
+### Test Scenario 5.4: File Upload - Click to Select
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User is on /bom-upload page
+
+**When**: User clicks the "Selectează Fișier" button
+
+**Then**:
+- [ ] Browser file picker dialog opens
+- [ ] Dialog accepts .csv, .xlsx, .xls files
+
+**When**: User selects a valid CSV file
+
+**Then**:
+- [ ] Dialog closes
+- [ ] Green success card appears with file info
+- [ ] File processing starts automatically
+
+---
+
+### Test Scenario 5.5: File Validation - Invalid File Type
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User is on /bom-upload page
+
+**When**: User attempts to upload a .txt file
+
+**Then**:
+- [ ] Red error alert appears
+- [ ] Error message: "Tipul fișierului nu este acceptat. Acceptăm: .csv, .xlsx, .xls"
+- [ ] File is not processed
+- [ ] Upload dropzone remains empty
+
+---
+
+### Test Scenario 5.6: File Validation - File Too Large
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User has a CSV file larger than 10MB
+
+**When**: User attempts to upload the file
+
+**Then**:
+- [ ] Red error alert appears
+- [ ] Error message: "Fișierul este prea mare. Mărimea maximă: 10MB"
+- [ ] File is not processed
+
+---
+
+### Test Scenario 5.7: BOM Parsing - Auto-Detect Headers
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User uploads a CSV with Romanian headers
+
+**Test Data**:
+```csv
+Familie,Standard,Grad,Dimensiune,Lungime (m),Cantitate,Unitate,Finisaj,Note
+profiles,EN 10025,S235JR,HEA 100,6,10,buc,BRUT,Test
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Headers are automatically detected
+- [ ] No parse errors appear
+- [ ] 1 row appears in the BOM table
+- [ ] Row data is correctly mapped to columns
+
+**Given**: User uploads a CSV with English headers
+
+**Test Data**:
+```csv
+Family,Standard,Grade,Dimension,Length,Quantity,Unit,Finish,Notes
+profiles,EN 10025,S235JR,HEA 100,6,10,pcs,RAW,Test
+```
+
+**Then**:
+- [ ] English headers are detected and mapped
+- [ ] Row data displays correctly
+
+---
+
+### Test Scenario 5.8: Auto-Matching - High Confidence Match
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User uploads a BOM with exact product matches
+
+**Test Data**:
+```csv
+Familie,Standard,Grad,Dimensiune,Cantitate,Unitate
+profiles,EN 10025,S235JR,HEA 100,10,buc
+profiles,EN 10025,S235JR,HEA 200,5,buc
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] "Statistici Auto-Matching" card displays
+- [ ] "Încredere Mare" count shows 2
+- [ ] "Încredere Medie" shows 0
+- [ ] "Încredere Scăzută" shows 0
+- [ ] "Nepotrivite" shows 0
+- [ ] "Rata de Potrivire" shows 100%
+- [ ] Each row has a green "Încredere Mare" badge
+- [ ] Each row shows matched product name
+- [ ] Match reason displays with score (e.g., "Score: 95/100")
+- [ ] Rows are selectable (checkbox enabled)
+
+---
+
+### Test Scenario 5.9: Auto-Matching - Medium Confidence Match
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a BOM with partial product matches
+
+**Test Data**:
+```csv
+Familie,Grad,Dimensiune,Cantitate,Unitate
+profiles,S235JR,HEA,10,buc
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Row shows yellow "Încredere Medie" badge
+- [ ] Row background has subtle yellow tint
+- [ ] Matched product is shown
+- [ ] Match reason explains partial match
+- [ ] Row is selectable
+
+---
+
+### Test Scenario 5.10: Auto-Matching - Low Confidence Match
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a BOM with minimal matching data
+
+**Test Data**:
+```csv
+Familie,Cantitate,Unitate
+profiles,10,buc
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Row shows orange "Încredere Scăzută" badge
+- [ ] Row background has subtle orange tint
+- [ ] Row is NOT selectable (checkbox disabled)
+- [ ] Edit button is enabled for manual mapping
+
+---
+
+### Test Scenario 5.11: Auto-Matching - No Match
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a BOM with unmatchable data
+
+**Test Data**:
+```csv
+Familie,Grad,Dimensiune,Cantitate,Unitate
+invalid_family,INVALID_GRADE,999x999x999,10,buc
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Row shows red "Nepotrivit" badge with X icon
+- [ ] Row background has subtle red tint
+- [ ] "Produs Potrivit" cell shows "Nicio potrivire"
+- [ ] Row is NOT selectable
+- [ ] Edit button is enabled
+- [ ] Alert appears: "X rânduri nu au putut fi potrivite automat"
+
+---
+
+### Test Scenario 5.12: Statistics Dashboard Display
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a BOM with mixed confidence levels
+
+**Test Data**: 10 rows (5 high, 3 medium, 1 low, 1 none)
+
+**When**: File is processed
+
+**Then**:
+- [ ] Statistics card shows 5 colored boxes
+- [ ] Green box: "5" with "Încredere Mare"
+- [ ] Yellow box: "3" with "Încredere Medie"
+- [ ] Orange box: "1" with "Încredere Scăzută"
+- [ ] Red box: "1" with "Nepotrivite"
+- [ ] Blue box: "80%" with "Rata de Potrivire"
+- [ ] Match rate calculation is correct: (5+3)/10 * 100 = 80%
+
+---
+
+### Test Scenario 5.13: Manual Mapping - Open Dialog
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: BOM results table contains an unmatched row
+
+**When**: User clicks the Edit button (pencil icon) on an unmatched row
+
+**Then**:
+- [ ] Modal dialog opens
+- [ ] Dialog title: "Mapare Manuală - Rând #X"
+- [ ] Gray info card displays original BOM row data:
+  - Familie
+  - Grad
+  - Dimensiune
+  - Cantitate + Unitate
+- [ ] "Categorie Produs" dropdown is visible
+- [ ] "Căutare Produs" input field is visible with search icon
+- [ ] Product list area shows message: "X găsite"
+- [ ] "Anulează" button is visible
+- [ ] "Confirmă Maparea" button is disabled (no selection yet)
+
+---
+
+### Test Scenario 5.14: Manual Mapping - Filter by Category
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Manual mapping dialog is open
+
+**When**: User selects "Profile Metalice" from category dropdown
+
+**Then**:
+- [ ] Product list updates immediately
+- [ ] Only products from "Profile Metalice" category are shown
+- [ ] Product count updates: "X găsite"
+- [ ] Each product card shows title, SKU, grade, and family badges
+
+**When**: User selects "Toate categoriile"
+
+**Then**:
+- [ ] All products are shown again
+- [ ] Product count increases
+
+---
+
+### Test Scenario 5.15: Manual Mapping - Search Products
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Manual mapping dialog is open
+
+**When**: User types "HEA 200" in search field
+
+**Then**:
+- [ ] Product list filters in real-time
+- [ ] Only products matching "HEA 200" in title/SKU/grade are shown
+- [ ] Search is case-insensitive
+- [ ] Product count updates
+
+**When**: User clears the search field
+
+**Then**:
+- [ ] All products reappear
+- [ ] Product count resets
+
+---
+
+### Test Scenario 5.16: Manual Mapping - Select Product
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Manual mapping dialog shows filtered products
+
+**When**: User clicks on a product card
+
+**Then**:
+- [ ] Product card gets blue border
+- [ ] Product card background changes to light blue
+- [ ] Checkmark icon appears next to product title
+- [ ] Green confirmation card appears at bottom showing:
+  - "Produs Selectat:"
+  - Product title
+  - SKU and Grade
+- [ ] "Confirmă Maparea" button becomes enabled
+
+**When**: User clicks a different product
+
+**Then**:
+- [ ] Previous selection is deselected
+- [ ] New product is selected
+- [ ] Green confirmation card updates
+
+---
+
+### Test Scenario 5.17: Manual Mapping - Confirm Mapping
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User has selected a product in manual mapping dialog
+
+**When**: User clicks "Confirmă Maparea" button
+
+**Then**:
+- [ ] Dialog closes
+- [ ] BOM table updates immediately
+- [ ] Previously unmatched row now shows:
+  - Green "Încredere Mare" badge
+  - Selected product name
+  - Match reason: "Mapare manuală: [Product Title]"
+- [ ] Row becomes selectable
+- [ ] Toast notification: "Mapare confirmată - Rândul #X a fost mapat la [Product]"
+
+---
+
+### Test Scenario 5.18: Manual Mapping - Cancel
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: Manual mapping dialog is open with a product selected
+
+**When**: User clicks "Anulează" button
+
+**Then**:
+- [ ] Dialog closes
+- [ ] No changes are made to the BOM table
+- [ ] Row remains unmatched
+- [ ] No toast notification appears
+
+**When**: User clicks outside the dialog (overlay)
+
+**Then**:
+- [ ] Dialog closes without changes
+
+---
+
+### Test Scenario 5.19: Row Selection - Select Individual Rows
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: BOM table contains rows with high/medium confidence
+
+**When**: User clicks checkbox on a high-confidence row
+
+**Then**:
+- [ ] Checkbox is checked
+- [ ] Row background changes to light blue
+- [ ] "Adaugă în Coș (1)" button updates count
+- [ ] Button remains enabled
+
+**When**: User clicks checkbox on another row
+
+**Then**:
+- [ ] Both rows are selected
+- [ ] Button shows "Adaugă în Coș (2)"
+
+**When**: User unchecks a row
+
+**Then**:
+- [ ] Row is deselected
+- [ ] Row background returns to normal
+- [ ] Button count decreases
+
+---
+
+### Test Scenario 5.20: Row Selection - Select All
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: BOM table contains 5 high-confidence and 3 medium-confidence rows
+
+**When**: User clicks the header "Select All" checkbox
+
+**Then**:
+- [ ] All high-confidence rows are selected (5)
+- [ ] All medium-confidence rows are selected (3)
+- [ ] Low and unmatched rows remain unselected
+- [ ] Total 8 rows selected
+- [ ] Button shows "Adaugă în Coș (8)"
+
+**When**: User clicks "Select All" checkbox again
+
+**Then**:
+- [ ] All rows are deselected
+- [ ] Button shows "Adaugă în Coș (0)"
+- [ ] Button is disabled
+
+---
+
+### Test Scenario 5.21: Delete Row
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: BOM table contains multiple rows
+
+**When**: User clicks the trash icon on a row
+
+**Then**:
+- [ ] Row is immediately removed from table
+- [ ] Total row count decreases
+- [ ] Statistics update accordingly
+- [ ] Match rate recalculates
+- [ ] Toast notification: "Rând șters - Rândul #X a fost șters din lista BOM"
+
+---
+
+### Test Scenario 5.22: Add to Cart - Bulk Addition
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User has selected 3 matched BOM rows
+
+**When**: User clicks "Adaugă în Coș (3)" button
+
+**Then**:
+- [ ] Processing happens briefly
+- [ ] Toast notification: "Produse adăugate în coș - 3 produse au fost adăugate în coș"
+- [ ] After 1 second, browser navigates to /cart
+- [ ] Cart page shows the 3 added products
+- [ ] Each product has correct:
+  - Quantity from BOM
+  - Unit from BOM
+  - Length (if specified)
+  - Finish (if specified)
+  - Notes (if specified)
+- [ ] Cart header badge shows updated count
+- [ ] BOM upload page clears (if user goes back)
+
+---
+
+### Test Scenario 5.23: Parse Errors Display
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a malformed CSV file
+
+**Test Data**: CSV with missing required columns or corrupted data
+
+**When**: File is processed
+
+**Then**:
+- [ ] Red error alert appears below file name
+- [ ] Alert title: "Erori de Parsare"
+- [ ] Alert lists specific errors with row numbers
+- [ ] Examples: "Rând 5: Cantitate invalidă", "Rând 8: Lipsă coloană obligatorie"
+- [ ] Valid rows (if any) are still shown in table
+- [ ] Invalid rows are skipped
+
+---
+
+### Test Scenario 5.24: Empty Rows Handling
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User uploads a CSV with empty rows
+
+**Test Data**:
+```csv
+Familie,Cantitate,Unitate
+profiles,10,buc
+
+profiles,5,buc
+
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Empty rows are skipped
+- [ ] Only 2 rows appear in table
+- [ ] No parse errors for empty rows
+- [ ] Total row count shows 2
+
+---
+
+### Test Scenario 5.25: Large File Upload Performance
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**Given**: User uploads a CSV with 100 rows
+
+**When**: File is processed
+
+**Then**:
+- [ ] Processing completes within 5 seconds
+- [ ] All 100 rows are displayed in table
+- [ ] Table is scrollable
+- [ ] Statistics calculate correctly
+- [ ] Page remains responsive
+- [ ] No browser freezing
+
+---
+
+### Test Scenario 5.26: Upload New File (Reset)
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has successfully processed a BOM file and results are displayed
+
+**When**: User clicks "Încarcă Alt Fișier" button
+
+**Then**:
+- [ ] Results section disappears
+- [ ] Upload dropzone reappears
+- [ ] Template download section reappears
+- [ ] Previous file data is cleared
+- [ ] User can upload a new file
+
+---
+
+### Test Scenario 5.27: BOM Upload Page - Responsive Design
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**Given**: User is on /bom-upload page
+
+**When**: User resizes browser to mobile width (375px)
+
+**Then**:
+- [ ] Upload dropzone adapts to single column
+- [ ] Template download button remains visible
+- [ ] Statistics boxes stack vertically
+- [ ] BOM table is horizontally scrollable
+- [ ] Edit/Delete buttons remain accessible
+- [ ] Manual mapping dialog is fullscreen on mobile
+
+---
+
+### Test Scenario 5.28: BOM Upload - Back Navigation
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User is on /bom-upload page
+
+**When**: User clicks "Înapoi la Catalog" button
+
+**Then**:
+- [ ] Browser navigates to /catalog
+- [ ] If user has unsaved work, consider warning (future enhancement)
+
+---
+
+### Test Scenario 5.29: Header "Încarcă BOM" Button Visibility
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User is on any page
+
+**When**: User looks at the header navigation
+
+**Then**:
+- [ ] "Încarcă BOM" button is visible on the right side of navigation
+- [ ] Button has Upload icon
+- [ ] Button has outline style (not filled)
+- [ ] Button is accessible from all pages
+
+**When**: User clicks the button from catalog page
+
+**Then**:
+- [ ] Browser navigates to /bom-upload
+
+---
+
+### Test Scenario 5.30: BOM with Special Characters
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: User uploads a CSV with Romanian diacritics and special characters
+
+**Test Data**:
+```csv
+Familie,Grad,Dimensiune,Cantitate,Unitate,Note
+profiles,S235JR,HEA 100,10,buc,Pentru construcție
+```
+
+**When**: File is processed
+
+**Then**:
+- [ ] Romanian characters (ă, â, î, ș, ț) display correctly
+- [ ] Notes field preserves special characters
+- [ ] No encoding errors
+- [ ] Data is correctly matched and displayed
+
+---
+
+### Quick Reference Checklist - Phase 5 (BOM Upload)
+
+#### BOM Upload Navigation & UI
+- [ ] 5.1: Navigate to BOM upload page
+- [ ] 5.2: Download BOM template
+- [ ] 5.29: Header "Încarcă BOM" button visibility
+
+#### File Upload
+- [ ] 5.3: Drag and drop file upload
+- [ ] 5.4: Click to select file upload
+- [ ] 5.5: Invalid file type validation
+- [ ] 5.6: File too large validation
+- [ ] 5.26: Upload new file (reset)
+
+#### BOM Parsing & Auto-Matching
+- [ ] 5.7: Auto-detect headers (Romanian & English)
+- [ ] 5.8: High confidence match
+- [ ] 5.9: Medium confidence match
+- [ ] 5.10: Low confidence match
+- [ ] 5.11: No match (unmatched rows)
+- [ ] 5.12: Statistics dashboard display
+- [ ] 5.23: Parse errors display
+- [ ] 5.24: Empty rows handling
+- [ ] 5.30: Special characters support
+
+#### Manual Mapping
+- [ ] 5.13: Open manual mapping dialog
+- [ ] 5.14: Filter by category
+- [ ] 5.15: Search products
+- [ ] 5.16: Select product
+- [ ] 5.17: Confirm mapping
+- [ ] 5.18: Cancel mapping
+
+#### Row Operations
+- [ ] 5.19: Select individual rows
+- [ ] 5.20: Select all rows
+- [ ] 5.21: Delete row
+- [ ] 5.22: Add to cart - bulk addition
+
+#### Performance & Responsiveness
+- [ ] 5.25: Large file performance (100 rows)
+- [ ] 5.27: Responsive design (mobile/tablet)
+
+#### Navigation
+- [ ] 5.28: Back navigation to catalog
+
+---
+
+## Phase 6: Optional User Accounts & B2B Benefits
+
+> **IMPORTANT**: Authentication is 100% OPTIONAL. All core features (catalog, cart, RFQ, BOM) must work without requiring an account. This phase tests both guest flows and authenticated user flows.
+
+### Test Scenario 6.1: Guest User Can Access All Core Features
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+**Given**: User is not logged in (guest user)
+
+**When**: User navigates the application
+
+**Then**:
+- [ ] Home page loads without prompts to login
+- [ ] User can browse catalog without authentication
+- [ ] User can add products to cart without authentication
+- [ ] User can submit RFQ without authentication (manual data entry)
+- [ ] User can upload BOM files without authentication
+- [ ] Header shows "Cont" button (not user avatar)
+- [ ] No blocking modals or popups forcing registration
+- [ ] All navigation works normally
+
+---
+
+### Test Scenario 6.2: Login Page - Guest Skip Option
+
+**Priority**: Critical
+
+**Estimated Time**: 3 minutes
+
+**Given**: Guest user navigates to /login
+
+**When**: Page loads
+
+**Then**:
+- [ ] Login form is displayed with email and password fields
+- [ ] "Continuă fără cont" button is prominently displayed
+- [ ] Benefits card shows value proposition:
+  - ✓ Salvează proiecte BOM pentru reutilizare
+  - ✓ Vezi istoricul comenzilor
+  - ✓ Pre-completare automată cu datele companiei
+- [ ] "Nu ai cont? Creează unul" link is visible
+- [ ] "Ai uitat parola?" link is present
+
+**When**: User clicks "Continuă fără cont"
+
+**Then**:
+- [ ] User is redirected to home page (/)
+- [ ] No account is created
+- [ ] User remains in guest state
+- [ ] Header still shows "Cont" button
+
+---
+
+### Test Scenario 6.3: Successful Login - Business Account
+
+**Priority**: Critical
+
+**Estimated Time**: 3 minutes
+
+**Given**: User is on /login page with valid business account credentials
+
+**When**: User enters:
+- Email: `test@metalpro.ro`
+- Password: `password123`
+- Clicks "Autentifică-te"
+
+**Then**:
+- [ ] Toast notification shows "Autentificare reușită"
+- [ ] User is redirected to /account page
+- [ ] Header shows user avatar dropdown (company initial or name initial)
+- [ ] Avatar dropdown shows:
+  - User name
+  - User email (smaller text)
+  - "Contul Meu" menu item
+  - "Proiecte Salvate" menu item
+  - "Istoric Comenzi" menu item
+  - "Deconectare" in red text
+- [ ] "Cont" button is replaced with avatar
+
+---
+
+### Test Scenario 6.4: Login - Validation Errors
+
+**Priority**: High
+
+**Estimated Time**: 4 minutes
+
+**Given**: User is on /login page
+
+**When**: User enters invalid email format (e.g., "notanemail")
+
+**Then**:
+- [ ] Form shows validation error: "Email invalid"
+- [ ] Submit button remains enabled
+- [ ] Error message is displayed in red
+
+**When**: User enters valid email but wrong password
+
+**Then**:
+- [ ] Toast notification shows "Email sau parolă greșită"
+- [ ] User remains on login page
+- [ ] Password field is cleared (security best practice)
+- [ ] Email field retains value
+
+**When**: User leaves fields empty and clicks submit
+
+**Then**:
+- [ ] Form validation prevents submission
+- [ ] Inline errors appear for empty fields
+
+---
+
+### Test Scenario 6.5: Signup Page - Business Account Creation
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+**Given**: Guest user navigates to /signup
+
+**When**: Page loads
+
+**Then**:
+- [ ] Account type toggle is visible (Business / Individual)
+- [ ] "Business" is selected by default
+- [ ] Personal info fields are visible (Name, Email, Phone, Password, Confirm Password)
+- [ ] Company info fields are visible (Company Name, CUI, Address, City, County, Postal Code)
+- [ ] "Sari peste (continuă fără cont)" button is prominently displayed
+- [ ] Benefits card explains account advantages
+
+**When**: User fills form with valid business data:
+- Name: "Ion Popescu"
+- Email: "new@company.ro"
+- Phone: "+40712345678"
+- Password: "SecurePass123"
+- Confirm Password: "SecurePass123"
+- Company Name: "SC Test SRL"
+- CUI: "RO12345678"
+- Address: "Strada Test nr. 1"
+- City: "București"
+- County: "București"
+- Clicks "Creează Cont"
+
+**Then**:
+- [ ] Account is created successfully
+- [ ] Toast shows "Cont creat cu succes"
+- [ ] User is logged in automatically
+- [ ] User is redirected to /account page
+- [ ] Header shows user avatar
+- [ ] Account page shows all company data filled
+
+---
+
+### Test Scenario 6.6: Signup Page - Individual Account
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+**Given**: User is on /signup page
+
+**When**: User toggles to "Individual" account type
+
+**Then**:
+- [ ] Company info fields are hidden or disabled
+- [ ] Only personal info fields are required
+- [ ] CUI field is not visible
+
+**When**: User fills personal info and clicks "Creează Cont"
+
+**Then**:
+- [ ] Individual account is created
+- [ ] User is logged in
+- [ ] Account page does NOT show "Company" tab
+- [ ] Tabs show: Profile, Addresses, Projects, Orders (no Company tab)
+
+---
+
+### Test Scenario 6.7: Signup - Validation & Skip
+
+**Priority**: High
+
+**Estimated Time**: 4 minutes
+
+**Given**: User is on /signup page
+
+**When**: User enters mismatched passwords
+
+**Then**:
+- [ ] Error shown: "Parolele nu coincid"
+- [ ] Submit is prevented
+
+**When**: User enters password less than 8 characters
+
+**Then**:
+- [ ] Validation error appears
+- [ ] Inline message shows minimum length requirement
+
+**When**: User clicks "Sari peste (continuă fără cont)"
+
+**Then**:
+- [ ] User redirected to home page (/)
+- [ ] No account created
+- [ ] User remains guest
+- [ ] Can still use all core features
+
+---
+
+### Test Scenario 6.8: Forgot Password Flow
+
+**Priority**: Medium
+
+**Estimated Time**: 3 minutes
+
+**Given**: User is on /login page
+
+**When**: User clicks "Ai uitat parola?"
+
+**Then**:
+- [ ] User navigated to /forgot-password
+- [ ] Page shows email input field
+- [ ] "Trimite link de resetare" button is visible
+- [ ] "Înapoi la autentificare" link is present
+
+**When**: User enters valid email and submits
+
+**Then**:
+- [ ] Success screen shows: "Email trimis!"
+- [ ] Message explains to check inbox
+- [ ] "Înapoi la autentificare" button appears
+- [ ] "Nu ai primit email? Trimite din nou" link visible
+
+---
+
+### Test Scenario 6.9: Protected Routes - Redirect to Login
+
+**Priority**: Critical
+
+**Estimated Time**: 2 minutes
+
+**Given**: Guest user (not logged in)
+
+**When**: User tries to access /account directly via URL
+
+**Then**:
+- [ ] User is redirected to /login
+- [ ] URL shows /login (with state preserving /account as return destination)
+- [ ] After successful login, user is redirected to /account (not home)
+
+---
+
+### Test Scenario 6.10: Logout Functionality
+
+**Priority**: High
+
+**Estimated Time**: 2 minutes
+
+**Given**: User is logged in
+
+**When**: User clicks avatar dropdown → "Deconectare"
+
+**Then**:
+- [ ] Toast shows "Deconectat cu succes"
+- [ ] User is redirected to home page (/)
+- [ ] Header shows "Cont" button again (guest state)
+- [ ] Avatar dropdown is removed
+- [ ] Session is cleared (verify by refreshing page - user stays logged out)
+
+---
+
+### Test Scenario 6.11: Account Page - Profile Tab
+
+**Priority**: High
+
+**Estimated Time**: 4 minutes
+
+**Given**: User is logged in and on /account page
+
+**When**: "Profile" tab is selected (default)
+
+**Then**:
+- [ ] "Informații Personale" card is visible
+- [ ] Email verification badge shows "Email Verificat" (green) or "Email Neverificat" (gray)
+- [ ] Name field shows current user name
+- [ ] Email field shows current email (disabled - cannot edit)
+- [ ] Phone field shows current phone
+- [ ] Account type shows "Business" or "Individual" (disabled)
+- [ ] "Editează Profil" button is visible
+
+**When**: User clicks "Editează Profil"
+
+**Then**:
+- [ ] Name and phone fields become editable
+- [ ] "Salvează Modificările" and "Anulează" buttons appear
+- [ ] "Editează Profil" button disappears
+
+**When**: User changes name to "Test Updated" and phone to "+40722222222", clicks "Salvează Modificările"
+
+**Then**:
+- [ ] Toast shows "Profil actualizat"
+- [ ] Fields become read-only again
+- [ ] Updated values persist after page refresh
+- [ ] Header avatar dropdown shows updated name
+
+---
+
+### Test Scenario 6.12: Account Page - Change Password
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+**Given**: User is on Profile tab
+
+**When**: User scrolls to "Schimbă Parola" card
+
+**Then**:
+- [ ] "Schimbă Parola" button is visible
+
+**When**: User clicks "Schimbă Parola"
+
+**Then**:
+- [ ] Current password field appears
+- [ ] New password field appears with placeholder "Minim 8 caractere"
+- [ ] Confirm new password field appears
+- [ ] "Schimbă Parola" and "Anulează" buttons visible
+
+**When**: User enters new password less than 8 characters
+
+**Then**:
+- [ ] Error shown: "Parola trebuie să aibă minim 8 caractere"
+
+**When**: User enters valid current password, new password "NewPass123", mismatched confirm
+
+**Then**:
+- [ ] Error shown: "Parolele nu coincid"
+
+**When**: User enters matching passwords correctly and submits
+
+**Then**:
+- [ ] Toast shows "Parolă schimbată"
+- [ ] Form collapses back to "Schimbă Parola" button
+- [ ] Fields are cleared
+
+---
+
+### Test Scenario 6.13: Account Page - Company Info Tab (Business Only)
+
+**Priority**: High
+
+**Estimated Time**: 5 minutes
+
+**Given**: User is logged in with business account
+
+**When**: User clicks "Companie" tab
+
+**Then**:
+- [ ] "Informații Companie" card visible
+- [ ] Company verification badge shows "Companie Verificată" if verified
+- [ ] Company name field shows saved value
+- [ ] CUI field shows saved CUI
+- [ ] Registrul Comerțului field shows regCom (optional)
+- [ ] "Editează Date Companie" button visible
+
+**When**: User clicks "Editează Date Companie"
+
+**Then**:
+- [ ] All company fields become editable
+- [ ] "Salvează Modificările" and "Anulează" buttons appear
+
+**When**: User scrolls to "Adresa Sediului Social" card
+
+**Then**:
+- [ ] Address fields show saved company address
+- [ ] Fields become editable when edit mode active
+
+**When**: User scrolls to "Verificare Business" card
+
+**Then**:
+- [ ] If verified: Shows "Verificat" badge with green checkmark
+- [ ] If not verified: Shows "Solicită Verificare (În curând)" button (disabled)
+- [ ] Explanation text visible about priority processing
+
+**When**: User updates company data and saves
+
+**Then**:
+- [ ] Toast shows "Informații actualizate"
+- [ ] Updated data persists after refresh
+- [ ] RFQ form auto-fills with new company data
+
+---
+
+### Test Scenario 6.14: Account Page - Saved Addresses Tab
+
+**Priority**: High
+
+**Estimated Time**: 6 minutes
+
+**Given**: User is on Addresses tab with no saved addresses
+
+**When**: Tab loads
+
+**Then**:
+- [ ] Empty state shows map pin icon
+- [ ] "Nu ai adrese salvate" message displayed
+- [ ] "Adaugă Prima Adresă" button visible
+
+**When**: User clicks "Adaugă Adresă" button
+
+**Then**:
+- [ ] Dialog opens: "Adaugă Adresă Nouă"
+- [ ] Address type radio buttons: "Adresă de Livrare" and "Adresă de Facturare"
+- [ ] Label field: "Etichetă (ex: Sediu Principal, Depozit Cluj)"
+- [ ] Contact person field
+- [ ] Phone field
+- [ ] Email field (optional)
+- [ ] Address field
+- [ ] City field
+- [ ] County dropdown with all Romanian counties
+- [ ] Postal code field
+- [ ] "Setează ca adresă implicită" checkbox
+- [ ] "Salvează Adresa" and "Anulează" buttons
+
+**When**: User fills form:
+- Type: Delivery
+- Label: "Depozit Cluj"
+- Contact: "Maria Ionescu"
+- Phone: "+40733333333"
+- Address: "Str. Test nr. 10"
+- City: "Cluj-Napoca"
+- County: "Cluj"
+- Postal Code: "400001"
+- Is Default: Checked
+- Clicks "Salvează Adresa"
+
+**Then**:
+- [ ] Dialog closes
+- [ ] Toast shows "Adresă adăugată"
+- [ ] Address card appears in grid
+- [ ] Card shows:
+  - Label "Depozit Cluj"
+  - "Implicită" badge (green)
+  - Type: "Livrare"
+  - Contact person name
+  - Phone number
+  - Full address
+  - Edit button (pencil icon)
+  - Delete button (trash icon)
+- [ ] Card has primary border color (indicating default)
+
+**When**: User adds second address (billing, not default)
+
+**Then**:
+- [ ] Two address cards visible in grid
+- [ ] Only first address has "Implicită" badge
+- [ ] Second address shows "Setează ca implicită" link
+
+**When**: User clicks "Setează ca implicită" on second address
+
+**Then**:
+- [ ] Toast shows "Adresă implicită actualizată"
+- [ ] Second address now shows "Implicită" badge
+- [ ] First address loses "Implicită" badge and shows "Setează ca implicită" link
+- [ ] Only one default address per type (delivery OR billing)
+
+**When**: User clicks Edit button on an address
+
+**Then**:
+- [ ] Dialog opens with "Editează Adresă" title
+- [ ] All fields pre-filled with current values
+- [ ] County dropdown shows correct selected value
+
+**When**: User changes label to "Depozit Principal Cluj" and saves
+
+**Then**:
+- [ ] Dialog closes
+- [ ] Toast shows "Adresă actualizată"
+- [ ] Card reflects new label immediately
+
+**When**: User clicks Delete button
+
+**Then**:
+- [ ] Browser confirmation dialog: "Sigur vrei să ștergi această adresă?"
+
+**When**: User confirms deletion
+
+**Then**:
+- [ ] Toast shows "Adresă ștearsă"
+- [ ] Address card removed from grid
+- [ ] If deleted address was default, no other address becomes default automatically
+
+---
+
+### Test Scenario 6.15: Account Page - Saved Projects Tab
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+**Given**: User is on Projects tab with no saved projects
+
+**When**: Tab loads
+
+**Then**:
+- [ ] Empty state shows package icon
+- [ ] "Nu ai proiecte salvate" message
+- [ ] "Proiectele BOM pe care le salvezi vor apărea aici"
+- [ ] "Încarcă un fișier BOM" button links to /bom-upload
+
+**Given**: User has saved BOM projects
+
+**When**: Tab loads with existing projects
+
+**Then**:
+- [ ] Projects displayed as cards in vertical list
+- [ ] Each card shows:
+  - File icon + project name
+  - Description (if provided)
+  - Badge with row count (e.g., "25 rânduri")
+  - Created date: "Creat: DD.MM.YYYY"
+  - Last used date (if used): "Ultima folosire: DD.MM.YYYY"
+  - Original file name: "Fișier original: filename.csv"
+  - "Încarcă în Coș" button (shopping cart icon)
+  - Delete button (trash icon)
+
+**When**: User clicks "Încarcă în Coș" on a saved project
+
+**Then**:
+- [ ] Toast shows "Proiectul '{name}' a fost încărcat în pagina BOM"
+- [ ] User navigated to /bom-upload
+- [ ] BOM Mapper shows loaded project data
+- [ ] All rows from saved project appear in table
+- [ ] File name shows original uploaded file name
+- [ ] Matched products are preserved
+- [ ] Manual mappings are preserved
+- [ ] Project's "Last used" timestamp updates
+
+**When**: User clicks Delete button on project
+
+**Then**:
+- [ ] Confirmation dialog: "Sigur vrei să ștergi acest proiect?"
+
+**When**: User confirms deletion
+
+**Then**:
+- [ ] Toast shows "Proiect șters"
+- [ ] Project card removed from list
+
+---
+
+### Test Scenario 6.16: Account Page - Order History Tab
+
+**Priority**: High
+
+**Estimated Time**: 5 minutes
+
+**Given**: User is on Orders tab with no order history
+
+**When**: Tab loads
+
+**Then**:
+- [ ] Empty state shows package icon
+- [ ] "Nu ai comenzi trimise" message
+- [ ] "Cererile de ofertă (RFQ) pe care le trimiți vor apărea aici"
+
+**Given**: User has submitted RFQs
+
+**When**: Tab loads with order history
+
+**Then**:
+- [ ] Orders displayed as expandable cards
+- [ ] Each card shows:
+  - Order number (e.g., "Cerere Ofertă #12345")
+  - Company name from RFQ
+  - Status badge (Trimis, Confirmat, În Procesare, Ofertă Primită, Finalizat, Anulat)
+  - Submitted date and time
+  - Product count (e.g., "5 produse")
+  - Quote value if quoted (e.g., "Valoare ofertă: 15,000 RON")
+  - "Vezi Detalii" / "Ascunde Detalii" button
+
+**When**: User clicks "Vezi Detalii" on an order
+
+**Then**:
+- [ ] Card expands to show:
+  - **Informații Companie**: Name, CUI, Contact, Email, Phone
+  - **Adresă Livrare**: Full delivery address, desired delivery date
+  - **Produse**: List of all cart items with specs
+  - **Cerințe Speciale**: Special requirements text (if provided)
+  - **Detalii Ofertă** (if quoted): Total price, currency, valid until date, notes
+
+**When**: User clicks "Ascunde Detalii"
+
+**Then**:
+- [ ] Card collapses back to summary view
+
+**When**: Status badge colors are verified
+
+**Then**:
+- [ ] "Trimis" = gray/secondary
+- [ ] "Confirmat" = outline
+- [ ] "În Procesare" = blue/default
+- [ ] "Ofertă Primită" = blue/default
+- [ ] "Finalizat" = green/default
+- [ ] "Anulat" = red/destructive
+
+---
+
+### Test Scenario 6.17: RFQ Form Auto-Prefill (Logged In User)
+
+**Priority**: Critical
+
+**Estimated Time**: 4 minutes
+
+**Given**: User is logged in with business account containing:
+- Company name: "SC MetalPro SRL"
+- CUI: "RO12345678"
+- Address: "Str. Industriei nr. 5"
+- City: "București"
+- County: "București"
+- Postal Code: "012345"
+- Name: "Ion Popescu"
+- Phone: "+40712345678"
+- Email: "ion@metalpro.ro"
+
+**When**: User navigates to /rfq (RFQ form)
+
+**Then**:
+- [ ] Company Info step shows blue info alert:
+  - "Datele au fost pre-completate din contul tău. Poți edita orice câmp înainte de a continua."
+- [ ] All fields auto-filled:
+  - Legal Name: "SC MetalPro SRL"
+  - CUI/VAT: "RO12345678"
+  - Street: "Str. Industriei nr. 5"
+  - City: "București"
+  - County: "București" (selected in dropdown)
+  - Postal Code: "012345"
+  - Contact Person: "Ion Popescu"
+  - Phone: "+40712345678"
+  - Email: "ion@metalpro.ro"
+- [ ] All fields remain editable
+- [ ] If company is verified, CUI validation shows "CUI verificat din contul tău" (green success)
+
+**When**: User edits a pre-filled field (e.g., changes phone number)
+
+**Then**:
+- [ ] Field value updates
+- [ ] Change does NOT update account data (only for this RFQ)
+- [ ] User can proceed with modified data
+
+**When**: Guest user (not logged in) navigates to /rfq
+
+**Then**:
+- [ ] NO blue info alert shown
+- [ ] ALL fields are empty
+- [ ] User must manually enter all company data
+- [ ] No auto-fill occurs
+
+---
+
+### Test Scenario 6.18: BOM Upload - Save Project (Logged In)
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+**Given**: User is logged in and has uploaded BOM file with processed rows
+
+**When**: BOM Mapper displays with matched rows
+
+**Then**:
+- [ ] "Salvează Proiect" button visible in card header (outline variant)
+- [ ] Button shows save icon + "Salvează Proiect" text
+- [ ] Button positioned next to "Adaugă în Coș" button
+
+**When**: User clicks "Salvează Proiect"
+
+**Then**:
+- [ ] Browser prompt appears: "Introdu un nume pentru acest proiect BOM:"
+
+**When**: User enters project name: "Comandă Hală Industrială"
+
+**Then**:
+- [ ] Second prompt appears: "Descriere opțională (poți lăsa gol):"
+
+**When**: User enters description: "Structură metalică pentru hala de producție"
+
+**Then**:
+- [ ] Project saved to user's account
+- [ ] Toast shows "Proiect salvat" with project name
+- [ ] BOM data remains in mapper (not cleared)
+- [ ] User can continue editing or add to cart
+
+**When**: User cancels project name prompt (clicks Cancel)
+
+**Then**:
+- [ ] Save operation cancelled
+- [ ] No project created
+- [ ] No toast shown
+- [ ] BOM Mapper remains unchanged
+
+**When**: User navigates to Account → Projects tab
+
+**Then**:
+- [ ] Saved project appears in list
+- [ ] Shows: name, description, row count, created date, file name
+
+---
+
+### Test Scenario 6.19: BOM Upload - Save Project Prompt (Guest User)
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+**Given**: Guest user (not logged in) has uploaded BOM file
+
+**When**: BOM Mapper displays
+
+**Then**:
+- [ ] "Salvează Proiect" button is still visible (not hidden)
+
+**When**: Guest user clicks "Salvează Proiect"
+
+**Then**:
+- [ ] Toast shows "Autentificare necesară" (destructive/red)
+- [ ] Description: "Trebuie să fii autentificat pentru a salva proiecte BOM."
+- [ ] User redirected to /login page
+- [ ] After successful login, user NOT automatically returned to BOM page (standard login flow)
+
+---
+
+### Test Scenario 6.20: Account Navigation - Header Dropdown
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged in
+
+**When**: User clicks avatar in header
+
+**Then**:
+- [ ] Dropdown menu opens
+- [ ] Shows user name (bold)
+- [ ] Shows email (smaller, muted text)
+- [ ] Separator line
+- [ ] "Contul Meu" menu item (user icon)
+- [ ] "Proiecte Salvate" menu item (package icon, disabled)
+- [ ] "Istoric Comenzi" menu item (history icon, disabled)
+- [ ] Separator line
+- [ ] "Deconectare" menu item (red text, logout icon)
+
+**When**: User clicks "Contul Meu"
+
+**Then**:
+- [ ] User navigated to /account
+- [ ] Dropdown closes
+
+**When**: User clicks outside dropdown
+
+**Then**:
+- [ ] Dropdown closes
+
+---
+
+### Test Scenario 6.21: Responsive Design - Account Tabs (Mobile)
+
+**Priority**: High
+
+**Estimated Time**: 4 minutes
+
+**Given**: User logged in on mobile device (viewport < 640px)
+
+**When**: User navigates to /account
+
+**Then**:
+- [ ] Tabs render in 2-column grid (not 5 columns)
+- [ ] Tab labels hide text, show only icons
+- [ ] "Deconectare" button shows only logout icon (no text)
+- [ ] Email verification badge hidden on mobile
+
+**When**: User clicks a tab
+
+**Then**:
+- [ ] Tab content displays correctly
+- [ ] Address cards stack vertically (not 2-column grid)
+- [ ] All forms remain usable
+- [ ] Dialogs use full screen on mobile
+
+---
+
+### Test Scenario 6.22: Session Persistence - Page Refresh
+
+**Priority**: High
+
+**Estimated Time**: 2 minutes
+
+**Given**: User is logged in
+
+**When**: User refreshes the page (F5 or Cmd+R)
+
+**Then**:
+- [ ] User remains logged in
+- [ ] Header still shows avatar dropdown
+- [ ] Account data persists
+- [ ] No re-login required
+
+**When**: User closes browser tab and reopens application
+
+**Then**:
+- [ ] User remains logged in (localStorage session)
+- [ ] All account data accessible
+
+---
+
+### Test Scenario 6.23: Account Tab Visibility - Business vs Individual
+
+**Priority**: Medium
+
+**Estimated Time**: 2 minutes
+
+**Given**: User logged in with Individual account
+
+**When**: User navigates to /account
+
+**Then**:
+- [ ] Tabs show: Profile, Addresses, Projects, Orders (4 tabs)
+- [ ] "Company" tab is NOT visible
+- [ ] Tab grid adjusts to 4 columns (or 2x2 on mobile)
+
+**Given**: User logged in with Business account
+
+**When**: User navigates to /account
+
+**Then**:
+- [ ] Tabs show: Profile, Company, Addresses, Projects, Orders (5 tabs)
+- [ ] "Company" tab visible between Profile and Addresses
+- [ ] Clicking "Company" tab shows company info form
+
+---
+
+### Test Scenario 6.24: End-to-End - Guest to Registered User Journey
+
+**Priority**: Critical
+
+**Estimated Time**: 10 minutes
+
+**Given**: New guest user
+
+**When**: User workflow:
+1. Browse catalog → add products to cart
+2. Navigate to /rfq → manually enter company data
+3. Submit RFQ
+4. Upload BOM file → try to save project → redirected to login
+5. Create account on /signup
+6. Login successful → redirected to /account
+
+**Then**:
+- [ ] User successfully created account
+- [ ] Account page shows profile data
+- [ ] Cart items from guest session preserved after login
+- [ ] User can now save BOM projects
+- [ ] RFQ form pre-fills on next visit
+- [ ] Previous RFQ NOT in order history (submitted as guest)
+
+---
+
+### Test Scenario 6.25: Data Persistence - LocalStorage
+
+**Priority**: Medium
+
+**Estimated Time**: 3 minutes
+
+**Given**: User has:
+- Created account
+- Saved 2 addresses
+- Saved 1 BOM project
+- Submitted 1 RFQ (as logged-in user)
+
+**When**: Developer opens browser DevTools → Application → Local Storage
+
+**Then**:
+- [ ] `metalpro_users` key contains user account data
+- [ ] `metalpro_addresses` key contains saved addresses
+- [ ] `metalpro_projects` key contains saved projects
+- [ ] `metalpro_order_history` key contains RFQ submission
+- [ ] `metalpro_auth_session` key contains current session token
+
+**When**: User logs out
+
+**Then**:
+- [ ] `metalpro_auth_session` is removed
+- [ ] User data remains in localStorage (but session cleared)
+
+---
+
+## Phase 6 Summary - Quick Checklist
+
+### Phase 6A: Optional Authentication (11 scenarios)
+- [ ] 6.1: Guest access to core features
+- [ ] 6.2: Login page with skip option
+- [ ] 6.3: Successful login (business)
+- [ ] 6.4: Login validation errors
+- [ ] 6.5: Signup - business account
+- [ ] 6.6: Signup - individual account
+- [ ] 6.7: Signup validation & skip
+- [ ] 6.8: Forgot password flow
+- [ ] 6.9: Protected routes redirect
+- [ ] 6.10: Logout functionality
+- [ ] 6.20: Header dropdown navigation
+
+### Phase 6B: Account Benefits (14 scenarios)
+- [ ] 6.11: Profile tab - edit profile
+- [ ] 6.12: Profile tab - change password
+- [ ] 6.13: Company info tab (business only)
+- [ ] 6.14: Saved addresses CRUD
+- [ ] 6.15: Saved projects tab
+- [ ] 6.16: Order history tab
+- [ ] 6.17: RFQ form auto-prefill
+- [ ] 6.18: BOM save project (logged in)
+- [ ] 6.19: BOM save project prompt (guest)
+- [ ] 6.21: Responsive design - mobile
+- [ ] 6.22: Session persistence
+- [ ] 6.23: Tab visibility (business vs individual)
+- [ ] 6.24: End-to-end guest to user journey
+- [ ] 6.25: Data persistence (localStorage)
+
+---
+
 ## Test Execution Tracking
 
 **Tester Name**: _______________
@@ -3285,6 +4957,31 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 | 3.26 - PDP Keyboard Nav | ⬜ Pass ⬜ Fail | |
 | 3.27 - PDP Edge Cases | ⬜ Pass ⬜ Fail | |
 | 3.28 - PDP Cross-Browser | ⬜ Pass ⬜ Fail | |
+| 6.1 - Guest Access All Features | ⬜ Pass ⬜ Fail | |
+| 6.2 - Login Guest Skip Option | ⬜ Pass ⬜ Fail | |
+| 6.3 - Successful Login Business | ⬜ Pass ⬜ Fail | |
+| 6.4 - Login Validation Errors | ⬜ Pass ⬜ Fail | |
+| 6.5 - Signup Business Account | ⬜ Pass ⬜ Fail | |
+| 6.6 - Signup Individual Account | ⬜ Pass ⬜ Fail | |
+| 6.7 - Signup Validation & Skip | ⬜ Pass ⬜ Fail | |
+| 6.8 - Forgot Password Flow | ⬜ Pass ⬜ Fail | |
+| 6.9 - Protected Routes Redirect | ⬜ Pass ⬜ Fail | |
+| 6.10 - Logout Functionality | ⬜ Pass ⬜ Fail | |
+| 6.11 - Profile Tab Edit | ⬜ Pass ⬜ Fail | |
+| 6.12 - Change Password | ⬜ Pass ⬜ Fail | |
+| 6.13 - Company Info Tab | ⬜ Pass ⬜ Fail | |
+| 6.14 - Saved Addresses CRUD | ⬜ Pass ⬜ Fail | |
+| 6.15 - Saved Projects Tab | ⬜ Pass ⬜ Fail | |
+| 6.16 - Order History Tab | ⬜ Pass ⬜ Fail | |
+| 6.17 - RFQ Form Auto-Prefill | ⬜ Pass ⬜ Fail | |
+| 6.18 - BOM Save Project Logged In | ⬜ Pass ⬜ Fail | |
+| 6.19 - BOM Save Project Guest | ⬜ Pass ⬜ Fail | |
+| 6.20 - Header Dropdown Nav | ⬜ Pass ⬜ Fail | |
+| 6.21 - Responsive Account Tabs | ⬜ Pass ⬜ Fail | |
+| 6.22 - Session Persistence | ⬜ Pass ⬜ Fail | |
+| 6.23 - Tab Visibility Business vs Individual | ⬜ Pass ⬜ Fail | |
+| 6.24 - Guest to User Journey | ⬜ Pass ⬜ Fail | |
+| 6.25 - Data Persistence localStorage | ⬜ Pass ⬜ Fail | |
 
 ### Critical Bugs Found
 1. _______________
@@ -3303,8 +5000,8 @@ And: Adds cuts: 2.8m × 30, 2.5m × 6
 
 ---
 
-**Last Updated**: 2025-10-18
-**Version**: 1.1.0
-**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page)
-**Total Test Scenarios**: 79 scenarios
-**Next Review**: After Phase 4 implementation
+**Last Updated**: 2025-11-09
+**Version**: 1.3.0
+**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits)
+**Total Test Scenarios**: 134 scenarios (109 previous + 25 Phase 6)
+**Next Review**: Before production release

@@ -12,6 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, ArrowLeft, FileText } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { submitRFQ } from '@/lib/api/rfq';
 import { useToast } from '@/hooks/use-toast';
 import type { RFQFormData, RFQFormStep } from '@/types/rfq';
@@ -52,6 +53,7 @@ const RFQForm = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { cart, itemCount } = useCart();
+  const { user } = useAuth();
 
   // Load initial state from sessionStorage
   const loadStoredStep = (): RFQFormStep => {
@@ -235,8 +237,8 @@ const RFQForm = () => {
         disclaimerAccepted: true,
       };
 
-      // Submit RFQ
-      const response = await submitRFQ(rfqData);
+      // Submit RFQ (pass userId if user is logged in)
+      const response = await submitRFQ(rfqData, user?.id);
 
       if (response.success && response.referenceNumber) {
         // Clear form storage on successful submission
