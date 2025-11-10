@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import type { ProductConfiguration, SellingUnit, LengthOption, FinishOption } from "@/hooks/useProductConfig";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ConfigurationPanelProps {
   config: ProductConfiguration;
@@ -31,15 +32,17 @@ export default function ConfigurationPanel({
   onFinishChange,
   onCutToLengthToggle,
 }: ConfigurationPanelProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Configurație Produs</CardTitle>
+        <CardTitle className="text-lg">{t('product.product_configuration')}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Selling Unit Selector */}
         <div className="space-y-3">
-          <Label>Unitate de vânzare</Label>
+          <Label>{t('product.selling_unit')}</Label>
           <RadioGroup
             value={config.sellingUnit}
             onValueChange={(value) => onSellingUnitChange(value as SellingUnit)}
@@ -47,25 +50,25 @@ export default function ConfigurationPanel({
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="m" id="unit-m" />
               <Label htmlFor="unit-m" className="font-normal cursor-pointer">
-                Metri (m)
+                {t('product.unit_meters')}
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="kg" id="unit-kg" />
               <Label htmlFor="unit-kg" className="font-normal cursor-pointer">
-                Kilograme (kg)
+                {t('product.unit_kilograms')}
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pcs" id="unit-pcs" />
               <Label htmlFor="unit-pcs" className="font-normal cursor-pointer">
-                Bucăți (buc)
+                {t('product.unit_pieces')}
               </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="bundle" id="unit-bundle" />
               <Label htmlFor="unit-bundle" className="font-normal cursor-pointer">
-                Pachet
+                {t('product.unit_bundle')}
               </Label>
             </div>
           </RadioGroup>
@@ -74,7 +77,7 @@ export default function ConfigurationPanel({
         {/* Length Options */}
         {config.sellingUnit !== "kg" && (
           <div className="space-y-3">
-            <Label htmlFor="length-select">Lungime</Label>
+            <Label htmlFor="length-select">{t('product.length')}</Label>
             <Select
               value={config.lengthOption}
               onValueChange={(value) => onLengthOptionChange(value as LengthOption)}
@@ -83,9 +86,9 @@ export default function ConfigurationPanel({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="6m">6 metri (standard)</SelectItem>
-                <SelectItem value="12m">12 metri</SelectItem>
-                <SelectItem value="custom">Lungime personalizată</SelectItem>
+                <SelectItem value="6m">{t('product.length_6m')}</SelectItem>
+                <SelectItem value="12m">{t('product.length_12m')}</SelectItem>
+                <SelectItem value="custom">{t('product.length_custom')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -96,12 +99,12 @@ export default function ConfigurationPanel({
                   step="0.1"
                   min="0.1"
                   max="12"
-                  placeholder="Introduceți lungimea (m)"
+                  placeholder={t('product.enter_length')}
                   value={config.customLength || ""}
                   onChange={(e) => onCustomLengthChange(parseFloat(e.target.value) || 0)}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Lungime maximă: 12 metri
+                  {t('product.max_length')}
                 </p>
               </div>
             )}
@@ -110,7 +113,7 @@ export default function ConfigurationPanel({
 
         {/* Quantity Input */}
         <div className="space-y-3">
-          <Label htmlFor="quantity">Cantitate</Label>
+          <Label htmlFor="quantity">{t('product.quantity')}</Label>
           <div className="flex items-center gap-2">
             <Input
               id="quantity"
@@ -128,7 +131,7 @@ export default function ConfigurationPanel({
 
         {/* Finish Selector */}
         <div className="space-y-3">
-          <Label htmlFor="finish-select">Finisaj suprafață</Label>
+          <Label htmlFor="finish-select">{t('product.surface_finish')}</Label>
           <Select
             value={config.finish}
             onValueChange={(value) => onFinishChange(value as FinishOption)}
@@ -137,10 +140,10 @@ export default function ConfigurationPanel({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="standard">Standard (laminat la cald)</SelectItem>
-              <SelectItem value="galvanized">Zincat (+15%)</SelectItem>
-              <SelectItem value="painted">Vopsit (+20%)</SelectItem>
-              <SelectItem value="polished">Lustruit (+30%)</SelectItem>
+              <SelectItem value="standard">{t('product.standard_hot_rolled')}</SelectItem>
+              <SelectItem value="galvanized">{t('product.galvanized')}</SelectItem>
+              <SelectItem value="painted">{t('product.painted')}</SelectItem>
+              <SelectItem value="polished">{t('product.polished')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -150,9 +153,9 @@ export default function ConfigurationPanel({
           <div className="space-y-3 pt-4 border-t">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
-                <Label htmlFor="cut-to-length">Debitare la dimensiune</Label>
+                <Label htmlFor="cut-to-length">{t('product.custom_cutting')}</Label>
                 <p className="text-xs text-muted-foreground">
-                  Specificați lungimi personalizate pentru debitare
+                  {t('product.specify_custom_lengths')}
                 </p>
               </div>
               <Switch

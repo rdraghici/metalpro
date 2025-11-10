@@ -1,8 +1,11 @@
 import { ArrowRight, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const HeroSection = () => {
+  const { t } = useTranslation();
+
   return (
     <section className="relative py-20 gradient-hero text-white overflow-hidden">
       {/* Background Pattern */}
@@ -16,30 +19,29 @@ const HeroSection = () => {
         <div className="max-w-4xl mx-auto text-center">
           {/* Main Headline */}
           <h1 className="text-display mb-6 animate-fade-in">
-            Materiale Metalice pentru
+            {t('home.hero_title')}
             <br />
-            <span className="gradient-accent bg-clip-text text-transparent">Proiecte B2B</span>
+            <span className="gradient-accent bg-clip-text text-transparent">{t('home.hero_title_highlight')}</span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-body-large mb-8 text-white/90 max-w-2xl mx-auto animate-fade-in">
-            Obține estimări rapide pentru profile, table, țevi și elemente de asamblare. 
-            Configurează specificațiile și primește o ofertă personalizată de la echipa noastră de specialiști.
+            {t('home.hero_subtitle')}
           </p>
 
           {/* Trust Indicators */}
           <div className="flex items-center justify-center gap-8 mb-8 text-sm animate-slide-in">
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span>Estimare în timp real</span>
+              <span>{t('home.trust_realtime_estimate')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span>Support specialist</span>
+              <span>{t('home.trust_specialist_support')}</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-accent" />
-              <span>Livrare rapidă</span>
+              <span>{t('home.trust_fast_delivery')}</span>
             </div>
           </div>
 
@@ -47,13 +49,13 @@ const HeroSection = () => {
           <div className="flex items-center justify-center gap-4 animate-scale-in">
             <Button variant="accent" size="xl" className="group" asChild>
               <Link to="/catalog">
-                Vezi Catalogul
+                {t('home.cta_view_catalog')}
                 <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </Button>
             <Button variant="outline" size="xl" className="bg-white/10 border-white/20 text-white hover:bg-white/20" asChild>
               <Link to="/bom-upload">
-                Încarcă Lista BOM
+                {t('home.cta_upload_bom')}
               </Link>
             </Button>
           </div>
@@ -62,15 +64,15 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 pt-16 border-t border-white/20">
             <div className="text-center">
               <div className="text-3xl font-bold text-accent mb-2">500+</div>
-              <div className="text-white/80">Produse disponibile</div>
+              <div className="text-white/80">{t('home.stat_products')}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-accent mb-2">24h</div>
-              <div className="text-white/80">Timp răspuns ofertă</div>
+              <div className="text-white/80">{t('home.stat_response_time')}</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-accent mb-2">1000+</div>
-              <div className="text-white/80">Proiecte realizate</div>
+              <div className="text-white/80">{t('home.stat_projects')}</div>
             </div>
           </div>
         </div>

@@ -12,6 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { CutListItem } from "@/hooks/useProductConfig";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface CutListEditorProps {
   cutList: CutListItem[];
@@ -30,6 +31,7 @@ export default function CutListEditor({
   onClearList,
   wastePercentage,
 }: CutListEditorProps) {
+  const { t } = useTranslation();
   const [newLength, setNewLength] = useState<string>("");
   const [newQuantity, setNewQuantity] = useState<string>("");
 
@@ -50,7 +52,7 @@ export default function CutListEditor({
     if (cutList.length === 0) return;
 
     const csvContent = [
-      ["Lungime (m)", "Cantitate (buc)"],
+      [t('product.length_m'), t('product.quantity_pcs')],
       ...cutList.map(item => [item.length.toString(), item.quantity.toString()]),
     ]
       .map(row => row.join(","))
@@ -98,7 +100,7 @@ export default function CutListEditor({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg">Listă Debitări</CardTitle>
+          <CardTitle className="text-lg">{t('product.cut_list')}</CardTitle>
           <div className="flex gap-2">
             <Button
               variant="outline"
@@ -108,13 +110,13 @@ export default function CutListEditor({
               className="gap-2"
             >
               <Download className="h-4 w-4" />
-              Export CSV
+              {t('product.export_csv')}
             </Button>
             <label>
               <Button variant="outline" size="sm" className="gap-2" asChild>
                 <span>
                   <Upload className="h-4 w-4" />
-                  Import CSV
+                  {t('product.import_csv')}
                 </span>
               </Button>
               <input
@@ -131,7 +133,7 @@ export default function CutListEditor({
                 onClick={onClearList}
                 className="text-destructive hover:text-destructive"
               >
-                Șterge tot
+                {t('product.clear_all')}
               </Button>
             )}
           </div>
@@ -146,7 +148,7 @@ export default function CutListEditor({
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="Lungime (m)"
+                placeholder={t('product.length_m')}
                 value={newLength}
                 onChange={(e) => setNewLength(e.target.value)}
                 onKeyDown={(e) => {
@@ -161,7 +163,7 @@ export default function CutListEditor({
               <Input
                 type="number"
                 min="1"
-                placeholder="Cantitate (buc)"
+                placeholder={t('product.quantity_pcs')}
                 value={newQuantity}
                 onChange={(e) => setNewQuantity(e.target.value)}
                 onKeyDown={(e) => {
@@ -174,7 +176,7 @@ export default function CutListEditor({
             </div>
             <Button onClick={handleAddItem} className="gap-2">
               <Plus className="h-4 w-4" />
-              Adaugă
+              {t('product.add')}
             </Button>
           </div>
 
@@ -184,9 +186,9 @@ export default function CutListEditor({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Lungime (m)</TableHead>
-                    <TableHead>Cantitate (buc)</TableHead>
-                    <TableHead className="text-right">Total (m)</TableHead>
+                    <TableHead>{t('product.length_m')}</TableHead>
+                    <TableHead>{t('product.quantity_pcs')}</TableHead>
+                    <TableHead className="text-right">{t('product.total_m')}</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -237,31 +239,30 @@ export default function CutListEditor({
               {/* Summary */}
               <div className="p-4 border-t bg-muted/50 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium">Total bucăți:</span>
+                  <span className="font-medium">{t('product.total_pieces')}</span>
                   <span>{totalPieces} buc</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium">Total lungime:</span>
+                  <span className="font-medium">{t('product.total_length')}</span>
                   <span>{totalLength.toFixed(2)} m</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="font-medium">Deșeuri estimate:</span>
+                  <span className="font-medium">{t('product.estimated_waste')}</span>
                   <span className={wastePercentage > 15 ? "text-orange-600" : ""}>
                     {wastePercentage.toFixed(1)}%
                   </span>
                 </div>
                 {wastePercentage > 15 && (
                   <div className="text-xs text-orange-600 pt-2">
-                    Atenție: Procentul de deșeuri este ridicat. Considerați optimizarea listei
-                    de debitări.
+                    {t('product.waste_warning')}
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground border rounded-lg border-dashed">
-              <p className="text-sm">Nu există elemente în lista de debitări</p>
-              <p className="text-xs mt-1">Adăugați lungimi și cantități mai sus</p>
+              <p className="text-sm">{t('product.no_cut_list_items')}</p>
+              <p className="text-xs mt-1">{t('product.add_items_above')}</p>
             </div>
           )}
         </div>

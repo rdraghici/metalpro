@@ -7,18 +7,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { WeightEstimate } from "@/hooks/useProductConfig";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface WeightEstimatorProps {
   weightEstimate: WeightEstimate;
 }
 
 export default function WeightEstimator({ weightEstimate }: WeightEstimatorProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">Greutate estimată</span>
+            <span className="text-sm text-muted-foreground">{t('product.estimated_weight')}</span>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -39,12 +42,12 @@ export default function WeightEstimator({ weightEstimate }: WeightEstimatorProps
           </div>
 
           <div className="text-xs text-muted-foreground pt-2 border-t">
-            Formula: {weightEstimate.formula}
+            {t('product.weight_formula')} {weightEstimate.formula}
           </div>
 
           {weightEstimate.unitWeight > 0 && (
             <div className="text-xs text-muted-foreground">
-              Greutate specifică: {weightEstimate.unitWeight.toFixed(2)} kg/m
+              {t('product.specific_weight')}: {weightEstimate.unitWeight.toFixed(2)} kg/m
             </div>
           )}
         </div>

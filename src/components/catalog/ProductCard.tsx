@@ -4,35 +4,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { Product } from "@/types";
 import { Link } from "react-router-dom";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ProductCardProps {
   product: Product;
 }
 
-const availabilityConfig = {
-  in_stock: {
-    label: "În Stoc",
-    variant: "default" as const,
-    color: "bg-green-500/10 text-green-700 border-green-500/20",
-  },
-  on_order: {
-    label: "La Comandă",
-    variant: "secondary" as const,
-    color: "bg-blue-500/10 text-blue-700 border-blue-500/20",
-  },
-  backorder: {
-    label: "Indisponibil",
-    variant: "outline" as const,
-    color: "bg-gray-500/10 text-gray-700 border-gray-500/20",
-  },
-};
-
 export default function ProductCard({ product }: ProductCardProps) {
+  const { t } = useTranslation();
+
+  const availabilityConfig = {
+    in_stock: {
+      label: t('catalog.availability_in_stock'),
+      variant: "default" as const,
+      color: "bg-green-500/10 text-green-700 border-green-500/20",
+    },
+    on_order: {
+      label: t('catalog.availability_on_order'),
+      variant: "secondary" as const,
+      color: "bg-blue-500/10 text-blue-700 border-blue-500/20",
+    },
+    backorder: {
+      label: t('catalog.availability_backorder'),
+      variant: "outline" as const,
+      color: "bg-gray-500/10 text-gray-700 border-gray-500/20",
+    },
+  };
+
   const availabilityInfo = availabilityConfig[product.availability];
 
   const formatPrice = (min?: number, max?: number, currency?: string, unit?: string) => {
     if (min === undefined && max === undefined) {
-      return "Cere Ofertă";
+      return t('product.on_request');
     }
 
     const curr = currency || "RON";
@@ -40,12 +43,12 @@ export default function ProductCard({ product }: ProductCardProps) {
       return `${min}-${max} ${curr}/${unit}`;
     }
     if (min !== undefined) {
-      return `De la ${min} ${curr}/${unit}`;
+      return `${t('product.from')} ${min} ${curr}/${unit}`;
     }
     if (max !== undefined) {
-      return `Până la ${max} ${curr}/${unit}`;
+      return `${t('product.up_to')} ${max} ${curr}/${unit}`;
     }
-    return "Cere Ofertă";
+    return t('product.on_request');
   };
 
   const getDimensionSummary = () => {
@@ -133,7 +136,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               )}
             </div>
             <div className="text-xs text-muted-foreground">
-              Preț indicativ / {product.indicativePrice.unit}
+              {t('product.indicative_price')} / {product.indicativePrice.unit}
             </div>
           </div>
 
@@ -142,8 +145,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
               <Clock className="w-4 h-4" />
               <span>
-                Livrare în {product.deliveryEstimate.windowDays[0]}-
-                {product.deliveryEstimate.windowDays[1]} zile
+                {t('product.delivery_in')} {product.deliveryEstimate.windowDays[0]}-
+                {product.deliveryEstimate.windowDays[1]} {t('product.days')}
               </span>
             </div>
           )}
@@ -155,7 +158,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             asChild
           >
             <span>
-              Vezi Detalii
+              {t('product.view_details')}
               <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </span>
           </Button>

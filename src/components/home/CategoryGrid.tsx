@@ -1,72 +1,75 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
-const categories = [
-  {
-    id: "profiles",
-    title: "Profile Metalice",
-    subtitle: "UNP, HEA, IPE, UPN",
-    description: "Profile laminat la cald pentru structuri",
-    specs: ["S235JR - S355JR", "6m - 12m lungime", "EN 10025"],
-    image: "🏗️",
-    color: "from-blue-500 to-blue-600"
-  },
-  {
-    id: "plates",
-    title: "Table de Oțel",
-    subtitle: "DC01, S235JR, S355JR",
-    description: "Table pentru construcții și industrie",
-    specs: ["1-100mm grosime", "Format standard", "Debitare disponibilă"],
-    image: "📐",
-    color: "from-gray-500 to-gray-600"
-  },
-  {
-    id: "pipes",
-    title: "Țevi și Tuburi",
-    subtitle: "Rectangulare, rotunde",
-    description: "Țevi sudate și fără sudură",
-    specs: ["EN 10219", "20x20 - 400x300", "Debitare la dimensiune"],
-    image: "🔧",
-    color: "from-orange-500 to-orange-600"
-  },
-  {
-    id: "fasteners",
-    title: "Elemente Asamblare",
-    subtitle: "Șuruburi, piulițe, rondele",
-    description: "DIN, ISO, organe de asamblare",
-    specs: ["M6 - M48", "Clasa 8.8 - 12.9", "Zincate, inox"],
-    image: "🔩",
-    color: "from-green-500 to-green-600"
-  },
-  {
-    id: "stainless",
-    title: "Oțel Inoxidabil",
-    subtitle: "304, 316L, 321",
-    description: "Table, profile, țevi inox",
-    specs: ["AISI 304/316L", "Finisaje diverse", "Certificare EN 10204"],
-    image: "✨",
-    color: "from-purple-500 to-purple-600"
-  },
-  {
-    id: "nonferrous",
-    title: "Metale Neferoase",
-    subtitle: "Aluminiu, cupru, bronz",
-    description: "Aliaje neferoase pentru aplicații speciale",
-    specs: ["Al 6060, 6082", "Cupru electrolitic", "Bronz fosforoasă"],
-    image: "🔸",
-    color: "from-yellow-500 to-yellow-600"
-  }
-];
+import { useTranslation } from "@/hooks/useTranslation";
 
 const CategoryGrid = () => {
+  const { t } = useTranslation();
+
+  const categories = [
+    {
+      id: "profiles",
+      titleKey: "home.category_profiles_title",
+      subtitleKey: "home.category_profiles_subtitle",
+      descriptionKey: "home.category_profiles_description",
+      specs: ["S235JR - S355JR", "6m - 12m", "EN 10025"],
+      image: "🏗️",
+      color: "from-blue-500 to-blue-600"
+    },
+    {
+      id: "plates",
+      titleKey: "home.category_plates_title",
+      subtitleKey: "home.category_plates_subtitle",
+      descriptionKey: "home.category_plates_description",
+      specs: ["1-100mm", "Standard format", "Cutting available"],
+      image: "📐",
+      color: "from-gray-500 to-gray-600"
+    },
+    {
+      id: "pipes",
+      titleKey: "home.category_pipes_title",
+      subtitleKey: "home.category_pipes_subtitle",
+      descriptionKey: "home.category_pipes_description",
+      specs: ["EN 10219", "20x20 - 400x300", "Cut to size"],
+      image: "🔧",
+      color: "from-orange-500 to-orange-600"
+    },
+    {
+      id: "fasteners",
+      titleKey: "home.category_fasteners_title",
+      subtitleKey: "home.category_fasteners_subtitle",
+      descriptionKey: "home.category_fasteners_description",
+      specs: ["M6 - M48", "Class 8.8 - 12.9", "Zinc plated, stainless"],
+      image: "🔩",
+      color: "from-green-500 to-green-600"
+    },
+    {
+      id: "stainless",
+      titleKey: "home.category_stainless_title",
+      subtitleKey: "home.category_stainless_subtitle",
+      descriptionKey: "home.category_stainless_description",
+      specs: ["AISI 304/316L", "Various finishes", "EN 10204 certified"],
+      image: "✨",
+      color: "from-purple-500 to-purple-600"
+    },
+    {
+      id: "nonferrous",
+      titleKey: "home.category_nonferrous_title",
+      subtitleKey: "home.category_nonferrous_subtitle",
+      descriptionKey: "home.category_nonferrous_description",
+      specs: ["Al 6060, 6082", "Electrolytic copper", "Phosphor bronze"],
+      image: "🔸",
+      color: "from-yellow-500 to-yellow-600"
+    }
+  ];
+
   return (
     <section className="py-16 bg-muted">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-headline mb-4">Explorează Categoriile</h2>
+          <h2 className="text-headline mb-4">{t('home.categories_title')}</h2>
           <p className="text-body-large text-muted-foreground max-w-2xl mx-auto">
-            Găsește rapid materialele de care ai nevoie prin categoriile noastre organizate
+            {t('home.categories_subtitle')}
           </p>
         </div>
 
@@ -83,13 +86,13 @@ const CategoryGrid = () => {
                 {/* Category Info */}
                 <div className="mb-4">
                   <h3 className="text-title mb-1 group-hover:text-primary transition-colors">
-                    {category.title}
+                    {t(category.titleKey)}
                   </h3>
                   <p className="text-subtitle text-muted-foreground mb-2">
-                    {category.subtitle}
+                    {t(category.subtitleKey)}
                   </p>
                   <p className="text-sm text-muted-foreground mb-3">
-                    {category.description}
+                    {t(category.descriptionKey)}
                   </p>
                 </div>
 
@@ -105,7 +108,7 @@ const CategoryGrid = () => {
 
                 {/* CTA */}
                 <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                  Vezi Produsele
+                  {t('home.cta_view_products')}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
@@ -116,7 +119,7 @@ const CategoryGrid = () => {
         {/* View All */}
         <div className="text-center mt-12">
           <Button variant="outline" size="lg">
-            Vezi Toate Categoriile
+            {t('home.cta_view_all_categories')}
             <ArrowRight className="h-5 w-5" />
           </Button>
         </div>

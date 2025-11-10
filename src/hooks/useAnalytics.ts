@@ -5,7 +5,7 @@
  * Provides a clean interface to GTM tracking functions.
  */
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import * as gtm from '@/lib/analytics/gtm';
 
@@ -119,7 +119,8 @@ export function useAnalytics() {
     []
   );
 
-  return {
+  // Memoize the returned object to prevent unnecessary re-renders
+  return useMemo(() => ({
     // Catalog
     trackCatalogView,
     trackFilterApply,
@@ -146,7 +147,24 @@ export function useAnalytics() {
     trackProjectSave,
     // Error
     trackError,
-  };
+  }), [
+    trackCatalogView,
+    trackFilterApply,
+    trackPDPView,
+    trackAddToEstimate,
+    trackEstimateUpdate,
+    trackBOMUpload,
+    trackRFQStart,
+    trackRFQStep,
+    trackRFQSubmit,
+    trackRFQSuccess,
+    trackSearch,
+    trackContactClick,
+    trackSignup,
+    trackLogin,
+    trackProjectSave,
+    trackError,
+  ]);
 }
 
 /**

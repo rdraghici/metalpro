@@ -132,7 +132,8 @@ export interface FilterOptions {
  */
 export function buildFilterOptionsWithCounts(
   allProducts: Product[],
-  currentFilters: ProductFilters
+  currentFilters: ProductFilters,
+  t: (key: string) => string
 ): FilterOptions {
   // Helper function to count products for a specific filter option
   const countWithFilter = (filterKey: keyof ProductFilters, filterValue: string): number => {
@@ -226,7 +227,7 @@ export function buildFilterOptionsWithCounts(
   const families: FilterOption[] = Array.from(familySet)
     .map(value => ({
       value,
-      label: getFamilyLabel(value),
+      label: getFamilyLabel(value, t),
       count: countForOption('family', value)
     }))
     .filter(option => option.count > 0) // Hide options with no products
@@ -253,7 +254,7 @@ export function buildFilterOptionsWithCounts(
   const availabilities: FilterOption[] = Array.from(availabilitySet)
     .map(value => ({
       value,
-      label: getAvailabilityLabel(value),
+      label: getAvailabilityLabel(value, t),
       count: countForOption('availability', value)
     }))
     .filter(option => option.count > 0) // Hide options with no products
@@ -291,28 +292,28 @@ export function buildFilterOptionsWithCounts(
 /**
  * Get human-readable label for product family
  */
-function getFamilyLabel(family: ProductFamily): string {
-  const labels: Record<ProductFamily, string> = {
-    profiles: 'Profile Metalice',
-    plates: 'Table de Oțel',
-    pipes: 'Țevi și Tuburi',
-    fasteners: 'Elemente de Asamblare',
-    stainless: 'Oțel Inoxidabil',
-    nonferrous: 'Metale Neferoase'
+function getFamilyLabel(family: ProductFamily, t: (key: string) => string): string {
+  const labelKeys: Record<ProductFamily, string> = {
+    profiles: 'catalog.family_profiles',
+    plates: 'catalog.family_plates',
+    pipes: 'catalog.family_pipes',
+    fasteners: 'catalog.family_fasteners',
+    stainless: 'catalog.family_stainless',
+    nonferrous: 'catalog.family_nonferrous'
   };
-  return labels[family] || family;
+  return t(labelKeys[family]) || family;
 }
 
 /**
  * Get human-readable label for availability
  */
-function getAvailabilityLabel(availability: Availability): string {
-  const labels: Record<Availability, string> = {
-    in_stock: 'În Stoc',
-    on_order: 'La Comandă',
-    backorder: 'Comandă Viitoare'
+function getAvailabilityLabel(availability: Availability, t: (key: string) => string): string {
+  const labelKeys: Record<Availability, string> = {
+    in_stock: 'catalog.availability_in_stock',
+    on_order: 'catalog.availability_on_order',
+    backorder: 'catalog.availability_backorder'
   };
-  return labels[availability] || availability;
+  return t(labelKeys[availability]) || availability;
 }
 
 // =====================================================

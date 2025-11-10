@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import type { ProductFilters, ProductFamily, Availability } from '@/types/product';
 import type { FilterOptions } from '@/lib/utils/filterUtils';
 import { getActiveFilterCount } from '@/lib/utils/filterUtils';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FacetedFiltersProps {
   filters: ProductFilters;
@@ -48,6 +49,8 @@ export default function FacetedFilters({
   onFiltersChange,
   resultCount
 }: FacetedFiltersProps) {
+  const { t } = useTranslation();
+
   // Track which filter sections are open
   const [openSections, setOpenSections] = useState<Set<string>>(
     new Set(['family', 'grade', 'availability'])
@@ -92,9 +95,9 @@ export default function FacetedFilters({
       {/* Header with results count and clear button */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h3 className="text-lg font-semibold">Filtrează</h3>
+          <h3 className="text-lg font-semibold">{t('catalog.filters')}</h3>
           <p className="text-sm text-muted-foreground">
-            {resultCount} {resultCount === 1 ? 'produs găsit' : 'produse găsite'}
+            {t(resultCount === 1 ? 'catalog.results_count' : 'catalog.results_count_plural', { count: resultCount })}
           </p>
         </div>
         {activeFilterCount > 0 && (
@@ -105,7 +108,7 @@ export default function FacetedFilters({
             className="gap-2"
           >
             <X className="h-4 w-4" />
-            Șterge Tot ({activeFilterCount})
+            {t('catalog.clear_filters')} ({activeFilterCount})
           </Button>
         )}
       </div>
@@ -117,7 +120,7 @@ export default function FacetedFilters({
         {/* Product Family */}
         {filterOptions.families.length > 0 && (
           <FilterSection
-            title="Categorie Produse"
+            title={t('catalog.category')}
             isOpen={openSections.has('family')}
             onToggle={() => toggleSection('family')}
           >
@@ -149,7 +152,7 @@ export default function FacetedFilters({
         {/* Grade */}
         {filterOptions.grades.length > 0 && (
           <FilterSection
-            title="Grad Material"
+            title={t('catalog.material_grade')}
             isOpen={openSections.has('grade')}
             onToggle={() => toggleSection('grade')}
           >
@@ -181,7 +184,7 @@ export default function FacetedFilters({
         {/* Standards */}
         {filterOptions.standards.length > 0 && (
           <FilterSection
-            title="Standard"
+            title={t('catalog.standard')}
             isOpen={openSections.has('standard')}
             onToggle={() => toggleSection('standard')}
           >
@@ -213,7 +216,7 @@ export default function FacetedFilters({
         {/* Availability */}
         {filterOptions.availabilities.length > 0 && (
           <FilterSection
-            title="Disponibilitate"
+            title={t('catalog.availability')}
             isOpen={openSections.has('availability')}
             onToggle={() => toggleSection('availability')}
           >
@@ -245,7 +248,7 @@ export default function FacetedFilters({
         {/* Producer */}
         {filterOptions.producers.length > 0 && (
           <FilterSection
-            title="Producător"
+            title={t('catalog.producer')}
             isOpen={openSections.has('producer')}
             onToggle={() => toggleSection('producer')}
           >

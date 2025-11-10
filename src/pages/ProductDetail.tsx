@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Package, ShoppingCart, CheckCircle } from "lucide-react";
 import Header from "@/components/layout/Header";
@@ -17,10 +17,12 @@ import { getProductBySlug } from "@/lib/api/products";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Product } from "@/types";
 import type { AddToCartPayload } from "@/types/cart";
 
 export default function ProductDetail() {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -110,7 +112,7 @@ export default function ProductDetail() {
 
       // Show success toast
       toast({
-        title: "Produs adăugat în coș",
+        title: t('notifications.product_added'),
         description: (
           <div className="flex items-start gap-2">
             <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />
@@ -126,30 +128,31 @@ export default function ProductDetail() {
     } catch (error) {
       console.error("Error adding to cart:", error);
       toast({
-        title: "Eroare",
-        description: "Nu s-a putut adăuga produsul în coș. Vă rugăm încercați din nou.",
+        title: t('common.error'),
+        description: t('notifications.cart_empty_description'),
         variant: "destructive",
       });
     }
   };
 
-  const getAvailabilityBadge = () => {
+  // Memoize availability badge to prevent re-renders
+  const availabilityBadge = useMemo(() => {
     if (!product) return null;
 
     const variants = {
-      in_stock: { label: "În Stoc", className: "bg-green-500" },
-      on_order: { label: "La Comandă", className: "bg-orange-500" },
-      backorder: { label: "Indisponibil", className: "bg-gray-500" },
+      in_stock: { labelKey: "product.in_stock", className: "bg-green-500" },
+      on_order: { labelKey: "product.on_request", className: "bg-orange-500" },
+      backorder: { labelKey: "product.out_of_stock", className: "bg-gray-500" },
     };
 
     const variant = variants[product.availability];
 
     return (
       <Badge className={`${variant.className} text-white`}>
-        {variant.label}
+        {t(variant.labelKey)}
       </Badge>
     );
-  };
+  }, [product?.availability, t]);
 
   if (isLoading) {
     return (
@@ -158,7 +161,7 @@ export default function ProductDetail() {
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-pulse" />
-            <p className="text-muted-foreground">Se încarcă produsul...</p>
+            <p className="text-muted-foreground">{t('common.loading')}</p>
           </div>
         </main>
         <Footer />
@@ -172,14 +175,14 @@ export default function ProductDetail() {
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-2">Produs negăsit</h1>
+            <h1 className="text-2xl font-bold mb-2">{t('errors.not_found')}</h1>
             <p className="text-muted-foreground mb-6">
-              Produsul pe care îl căutați nu există sau a fost șters.
+              {t('errors.generic')}
             </p>
             <Button asChild>
               <Link to="/catalog">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Înapoi la catalog
+                {t('product.back_to_catalog')}
               </Link>
             </Button>
           </div>
@@ -215,20 +218,20 @@ export default function ProductDetail() {
                   <div>
                     <h1 className="text-3xl font-bold mb-2">{product.title}</h1>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                      <span>SKU: <span className="font-mono">{product.sku}</span></span>
+                      <span>{t('product.sku')}: <span className="font-mono">{product.sku}</span></span>
                       {product.producer && (
                         <>
                           <span>•</span>
-                          <span>Producător: {product.producer}</span>
+                          <span>{t('catalog.producer')}: {product.producer}</span>
                         </>
                       )}
                     </div>
                   </div>
-                  {getAvailabilityBadge()}
+                  {availabilityBadge}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="outline">Grad: {product.grade}</Badge>
+                  <Badge variant="outline">{t('product.grade')}: {product.grade}</Badge>
                   {product.standards.slice(0, 2).map((standard, index) => (
                     <Badge key={index} variant="outline">
                       {standard}
@@ -237,11 +240,11 @@ export default function ProductDetail() {
                 </div>
 
                 <div className="pt-4">
-                  <div className="text-sm text-muted-foreground mb-1">Preț indicativ</div>
+                  <div className="text-sm text-muted-foreground mb-1">{t('product.indicative_price')}</div>
                   <div className="flex items-baseline gap-2">
                     {product.indicativePrice.min && (
                       <span className="text-3xl font-bold">
-                        de la {product.indicativePrice.min.toFixed(2)}
+                        {t('product.from')} {product.indicativePrice.min.toFixed(2)}
                       </span>
                     )}
                     <span className="text-lg text-muted-foreground">
@@ -302,7 +305,7 @@ export default function ProductDetail() {
                   disabled={!isValid}
                 >
                   <ShoppingCart className="h-5 w-5" />
-                  Adaugă la Estimare
+                  {t('product.add_to_estimate')}
                 </Button>
 
                 <Button
@@ -313,7 +316,7 @@ export default function ProductDetail() {
                 >
                   <Link to="/catalog">
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Înapoi la catalog
+                    {t('product.back_to_catalog')}
                   </Link>
                 </Button>
               </div>
@@ -324,9 +327,9 @@ export default function ProductDetail() {
         {/* Related Products (Placeholder) */}
         <section className="py-12 bg-muted/30 border-t">
           <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-6">Produse similare</h2>
+            <h2 className="text-2xl font-bold mb-6">{t('product.similar_products')}</h2>
             <div className="text-center py-12 text-muted-foreground">
-              <p>Secțiunea pentru produse similare va fi implementată în curând</p>
+              <p>{t('product.similar_products_coming_soon')}</p>
             </div>
           </div>
         </section>

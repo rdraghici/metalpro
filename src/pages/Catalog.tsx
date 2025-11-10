@@ -22,8 +22,10 @@ import {
 import type { Product, ProductFilters, ProductSort } from "@/types";
 import { getAllProducts } from "@/lib/api/products";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export default function Catalog() {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const analytics = useAnalytics();
@@ -121,7 +123,7 @@ export default function Catalog() {
 
         // Build dynamic filter options from ALL products with accurate counts
         if (allProducts.length > 0) {
-          const filterOpts = buildFilterOptionsWithCounts(allProducts, currentFilters);
+          const filterOpts = buildFilterOptionsWithCounts(allProducts, currentFilters, t);
           setDynamicFilterOptions(filterOpts);
         }
       } catch (error) {
@@ -132,7 +134,7 @@ export default function Catalog() {
     };
 
     fetchProducts();
-  }, [searchParams, allProducts]);
+  }, [searchParams, allProducts, t]);
 
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -143,10 +145,9 @@ export default function Catalog() {
         {/* Hero Section */}
         <section className="gradient-hero text-white py-12">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-4">Catalog Produse</h1>
+            <h1 className="text-4xl font-bold mb-4">{t('catalog.title')}</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              Explorează gama completă de materiale metalice disponibile.
-              Filtrează după categorie, grad, dimensiuni și disponibilitate.
+              {t('catalog.description')}
             </p>
           </div>
         </section>
@@ -181,7 +182,7 @@ export default function Catalog() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <div className="flex items-center gap-3">
                     <div className="text-lg">
-                      <span className="font-semibold">{total}</span> produse găsite
+                      {t(total === 1 ? 'catalog.results_count' : 'catalog.results_count_plural', { count: total })}
                     </div>
                     <Button
                       variant="outline"
@@ -190,28 +191,28 @@ export default function Catalog() {
                       className="gap-2"
                     >
                       <SlidersHorizontal className="h-4 w-4" />
-                      Căutare Avansată
+                      {t('catalog.advanced_search')}
                     </Button>
                   </div>
 
                   {/* Sort dropdown */}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">Sortează după:</span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">{t('catalog.sort_by')}:</span>
                     <Select
                       value={searchParams.get("sort") || "default"}
                       onValueChange={handleSortChange}
                     >
                       <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Implicit" />
+                        <SelectValue placeholder={t('catalog.sort_default')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Implicit</SelectItem>
-                        <SelectItem value="title-asc">Nume (A-Z)</SelectItem>
-                        <SelectItem value="title-desc">Nume (Z-A)</SelectItem>
-                        <SelectItem value="price-asc">Preț (Crescător)</SelectItem>
-                        <SelectItem value="price-desc">Preț (Descrescător)</SelectItem>
-                        <SelectItem value="availability-asc">Disponibilitate</SelectItem>
-                        <SelectItem value="createdAt-desc">Cele mai noi</SelectItem>
+                        <SelectItem value="default">{t('catalog.sort_default')}</SelectItem>
+                        <SelectItem value="title-asc">{t('catalog.sort_name_asc')}</SelectItem>
+                        <SelectItem value="title-desc">{t('catalog.sort_name_desc')}</SelectItem>
+                        <SelectItem value="price-asc">{t('catalog.sort_price_asc')}</SelectItem>
+                        <SelectItem value="price-desc">{t('catalog.sort_price_desc')}</SelectItem>
+                        <SelectItem value="availability-asc">{t('catalog.sort_availability')}</SelectItem>
+                        <SelectItem value="createdAt-desc">{t('catalog.sort_newest')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

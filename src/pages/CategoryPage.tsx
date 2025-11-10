@@ -11,35 +11,38 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { getProductsWithFilters, getAvailableGrades, getAvailableStandards } from "@/lib/api/products";
 import type { Product, ProductFilters, ProductSort, ProductFamily } from "@/types";
 import type { FilterOptions } from "@/components/catalog/FilterPanel";
+import { useTranslation } from "@/hooks/useTranslation";
 
-const familyInfo: Record<ProductFamily, { name: string; description: string }> = {
+// Translation key mappings for categories
+const familyTranslationKeys: Record<ProductFamily, { titleKey: string; descriptionKey: string }> = {
   profiles: {
-    name: "Profile Metalice",
-    description: "Profile metalice de înaltă calitate: HEA, UNP, IPE, UPN. Ideale pentru construcții industriale și civile.",
+    titleKey: "home.category_profiles_title",
+    descriptionKey: "catalog.category_profiles_description",
   },
   plates: {
-    name: "Table de Oțel",
-    description: "Table de oțel în diverse grade: DC01, S235JR, S355JR. Pentru aplicații industriale exigente.",
+    titleKey: "home.category_plates_title",
+    descriptionKey: "catalog.category_plates_description",
   },
   pipes: {
-    name: "Țevi și Tuburi",
-    description: "Țevi și tuburi rectangulare și rotunde. Potrivite pentru construcții și instalații.",
+    titleKey: "home.category_pipes_title",
+    descriptionKey: "catalog.category_pipes_description",
   },
   fasteners: {
-    name: "Elemente de Asamblare",
-    description: "Șuruburi, piulițe și alte elemente de fixare conform standardelor DIN și ISO.",
+    titleKey: "home.category_fasteners_title",
+    descriptionKey: "catalog.category_fasteners_description",
   },
   stainless: {
-    name: "Oțel Inoxidabil",
-    description: "Materiale din oțel inoxidabil 304, 316L, 321. Rezistente la coroziune pentru aplicații speciale.",
+    titleKey: "home.category_stainless_title",
+    descriptionKey: "catalog.category_stainless_description",
   },
   nonferrous: {
-    name: "Metale Neferoase",
-    description: "Aluminiu, cupru, bronz și alte metale neferoase pentru diverse aplicații industriale.",
+    titleKey: "home.category_nonferrous_title",
+    descriptionKey: "catalog.category_nonferrous_description",
   },
 };
 
 export default function CategoryPage() {
+  const { t } = useTranslation();
   const { family } = useParams<{ family: ProductFamily }>();
   const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,13 +55,13 @@ export default function CategoryPage() {
     grades: [],
     standards: [],
     availabilities: [
-      { value: "in_stock", label: "În Stoc" },
-      { value: "on_order", label: "La Comandă" },
-      { value: "backorder", label: "Indisponibil" },
+      { value: "in_stock", label: t('catalog.in_stock') },
+      { value: "on_order", label: t('catalog.on_request') },
+      { value: "backorder", label: t('catalog.out_of_stock') },
     ],
   });
 
-  const categoryInfo = family ? familyInfo[family] : null;
+  const categoryTranslationKeys = family ? familyTranslationKeys[family] : null;
 
   // Fetch filter options for this category
   useEffect(() => {
@@ -76,9 +79,9 @@ export default function CategoryPage() {
           grades,
           standards,
           availabilities: [
-            { value: "in_stock", label: "În Stoc" },
-            { value: "on_order", label: "La Comandă" },
-            { value: "backorder", label: "Indisponibil" },
+            { value: "in_stock", label: t('catalog.in_stock') },
+            { value: "on_order", label: t('catalog.on_request') },
+            { value: "backorder", label: t('catalog.out_of_stock') },
           ],
         });
       } catch (error) {
@@ -175,14 +178,14 @@ export default function CategoryPage() {
 
   const totalPages = Math.ceil(total / itemsPerPage);
 
-  if (!family || !categoryInfo) {
+  if (!family || !categoryTranslationKeys) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <Header />
         <main className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-2">Categorie invalidă</h1>
-            <p className="text-muted-foreground">Categoria selectată nu există.</p>
+            <h1 className="text-2xl font-bold mb-2">{t('errors.invalid_category')}</h1>
+            <p className="text-muted-foreground">{t('errors.invalid_category_description')}</p>
           </div>
         </main>
         <Footer />
@@ -197,9 +200,9 @@ export default function CategoryPage() {
         {/* Hero Section */}
         <section className="gradient-hero text-white py-12">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl font-bold mb-4">{categoryInfo.name}</h1>
+            <h1 className="text-4xl font-bold mb-4">{t(categoryTranslationKeys.titleKey)}</h1>
             <p className="text-lg text-white/90 max-w-2xl">
-              {categoryInfo.description}
+              {t(categoryTranslationKeys.descriptionKey)}
             </p>
           </div>
         </section>
@@ -228,27 +231,27 @@ export default function CategoryPage() {
                 {/* Results header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                   <div className="text-lg">
-                    <span className="font-semibold">{total}</span> produse găsite
+                    {t(total === 1 ? 'catalog.results_count' : 'catalog.results_count_plural', { count: total })}
                   </div>
 
                   {/* Sort dropdown */}
                   <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground whitespace-nowrap">Sortează după:</span>
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">{t('catalog.sort_by')}:</span>
                     <Select
                       value={searchParams.get("sort") || "default"}
                       onValueChange={handleSortChange}
                     >
                       <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Implicit" />
+                        <SelectValue placeholder={t('catalog.sort_default')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Implicit</SelectItem>
-                        <SelectItem value="title-asc">Nume (A-Z)</SelectItem>
-                        <SelectItem value="title-desc">Nume (Z-A)</SelectItem>
-                        <SelectItem value="price-asc">Preț (Crescător)</SelectItem>
-                        <SelectItem value="price-desc">Preț (Descrescător)</SelectItem>
-                        <SelectItem value="availability-asc">Disponibilitate</SelectItem>
-                        <SelectItem value="createdAt-desc">Cele mai noi</SelectItem>
+                        <SelectItem value="default">{t('catalog.sort_default')}</SelectItem>
+                        <SelectItem value="title-asc">{t('catalog.sort_name_asc')}</SelectItem>
+                        <SelectItem value="title-desc">{t('catalog.sort_name_desc')}</SelectItem>
+                        <SelectItem value="price-asc">{t('catalog.sort_price_asc')}</SelectItem>
+                        <SelectItem value="price-desc">{t('catalog.sort_price_desc')}</SelectItem>
+                        <SelectItem value="availability-asc">{t('catalog.sort_availability')}</SelectItem>
+                        <SelectItem value="createdAt-desc">{t('catalog.sort_newest')}</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

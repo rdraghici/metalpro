@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { initializeGTM } from "@/lib/analytics/gtm";
+import I18nProvider from "@/components/I18nProvider"; // I18n provider wrapper
 import EstimateCartDrawer from "@/components/cart/EstimateCartDrawer";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
@@ -33,47 +34,49 @@ const App = () => {
 
   return (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AuthProvider>
-        <CartProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes - accessible by everyone */}
-              <Route path="/" element={<Index />} />
-              <Route path="/catalog" element={<Catalog />} />
-              <Route path="/catalog/:family" element={<CategoryPage />} />
-              <Route path="/product/:slug" element={<ProductDetail />} />
-              <Route path="/cart" element={<EstimateCart />} />
-              <Route path="/rfq" element={<RFQForm />} />
-              <Route path="/rfq/confirmation" element={<RFQConfirmation />} />
-              <Route path="/bom-upload" element={<BOMUpload />} />
+    <I18nProvider>
+      <TooltipProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes - accessible by everyone */}
+                <Route path="/" element={<Index />} />
+                <Route path="/catalog" element={<Catalog />} />
+                <Route path="/catalog/:family" element={<CategoryPage />} />
+                <Route path="/product/:slug" element={<ProductDetail />} />
+                <Route path="/cart" element={<EstimateCart />} />
+                <Route path="/rfq" element={<RFQForm />} />
+                <Route path="/rfq/confirmation" element={<RFQConfirmation />} />
+                <Route path="/bom-upload" element={<BOMUpload />} />
 
-              {/* Auth Routes - public */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+                {/* Auth Routes - public */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* Protected Routes - require authentication */}
-              <Route
-                path="/account"
-                element={
-                  <ProtectedRoute>
-                    <Account />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Protected Routes - require authentication */}
+                <Route
+                  path="/account"
+                  element={
+                    <ProtectedRoute>
+                      <Account />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            {/* Global Cart Drawer - accessible from all pages */}
-            <EstimateCartDrawer />
-          </BrowserRouter>
-        </CartProvider>
-      </AuthProvider>
-    </TooltipProvider>
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+              {/* Global Cart Drawer - accessible from all pages */}
+              <EstimateCartDrawer />
+            </BrowserRouter>
+          </CartProvider>
+        </AuthProvider>
+      </TooltipProvider>
+    </I18nProvider>
   </QueryClientProvider>
   );
 };

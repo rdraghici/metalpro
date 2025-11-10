@@ -7150,8 +7150,1071 @@ throw new Error("Test error");
 
 ---
 
+## Phase 9: Internationalization (i18n) & Localization
+
+### Test Scenario 9.1: Language Switcher - Display and Functionality
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is on any page of the application
+
+**When**: User looks at the header navigation
+
+**Then**:
+- [ ] Language switcher is visible in the header (top right area)
+- [ ] Current language is displayed with flag icon (🇷🇴 for Romanian, 🇬🇧 for English)
+- [ ] Clicking the language switcher opens a dropdown/menu
+- [ ] Both Romanian and English options are shown
+- [ ] Each language option shows the flag icon and language name
+
+**When**: User clicks to switch from Romanian to English
+
+**Then**:
+- [ ] UI immediately updates to English
+- [ ] Flag icon changes to 🇬🇧
+- [ ] Selected language is stored in localStorage (key: `metalpro_language`)
+- [ ] Page does not reload (SPA behavior maintained)
+- [ ] All visible text updates to English
+
+---
+
+### Test Scenario 9.2: Language Persistence Across Sessions
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User has previously selected English language
+
+**When**: User refreshes the page (Ctrl+R or F5)
+
+**Then**:
+- [ ] Page loads in English (selected language persists)
+- [ ] Flag icon shows 🇬🇧
+- [ ] All content is in English
+
+**When**: User opens a new tab and navigates to the application
+
+**Then**:
+- [ ] New tab loads in English (same as previous selection)
+- [ ] Language preference is maintained across tabs
+
+**When**: User closes browser and reopens application
+
+**Then**:
+- [ ] Application loads in English (localStorage persists)
+
+---
+
+### Test Scenario 9.3: Homepage Translation - Complete Coverage
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User is on the homepage (/)
+
+**When**: Language is set to Romanian
+
+**Then verify all Romanian text**:
+- [ ] Hero section title: "Materiale Metalice pentru Proiecte B2B"
+- [ ] Hero subtitle is in Romanian
+- [ ] Trust badges: "Estimare în timp real", "Suport specialist", "Livrare rapidă"
+- [ ] CTA buttons: "Vezi Catalogul", "Încarcă Listă BOM"
+- [ ] Statistics labels are in Romanian
+- [ ] Category section heading: "Explorează Categoriile"
+- [ ] All category cards show Romanian titles and descriptions
+- [ ] Footer sections are in Romanian
+
+**When**: User switches to English
+
+**Then verify all English text**:
+- [ ] Hero section title: "Metal Materials for B2B Projects"
+- [ ] Hero subtitle is in English
+- [ ] Trust badges: "Real-time estimation", "Specialist support", "Fast delivery"
+- [ ] CTA buttons: "View Catalog", "Upload BOM List"
+- [ ] Statistics labels are in English
+- [ ] Category section heading: "Explore Categories"
+- [ ] All category cards show English titles and descriptions
+- [ ] Footer sections are in English
+
+---
+
+### Test Scenario 9.4: Catalog Page Translation - Header and Controls
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User is on the catalog page (/catalog)
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Page title: "Catalog Produse"
+- [ ] Page description is in Romanian
+- [ ] Result count: "X produse găsite" or "1 produs găsit"
+- [ ] Advanced Search button: "Căutare Avansată"
+- [ ] Sort dropdown label: "Sortează după:"
+- [ ] Sort options:
+  - [ ] "Implicit"
+  - [ ] "Nume (A-Z)"
+  - [ ] "Nume (Z-A)"
+  - [ ] "Preț (crescător)"
+  - [ ] "Preț (descrescător)"
+  - [ ] "Disponibilitate"
+  - [ ] "Cele mai noi"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Page title: "Product Catalog"
+- [ ] Page description is in English
+- [ ] Result count: "X products found" or "1 product found"
+- [ ] Advanced Search button: "Advanced Search"
+- [ ] Sort dropdown label: "Sort by:"
+- [ ] Sort options:
+  - [ ] "Default"
+  - [ ] "Name (A-Z)"
+  - [ ] "Name (Z-A)"
+  - [ ] "Price (Low to High)"
+  - [ ] "Price (High to Low)"
+  - [ ] "Availability"
+  - [ ] "Newest"
+
+---
+
+### Test Scenario 9.5: Catalog Page Translation - Filter Labels
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User is on the catalog page with filters visible
+
+**When**: Language is set to Romanian
+
+**Then verify filter section labels**:
+- [ ] Main heading: "Filtrează"
+- [ ] Category section: "Categorie Produse"
+- [ ] Family options:
+  - [ ] "Profile Metalice"
+  - [ ] "Table de Oțel"
+  - [ ] "Țevi și Tuburi"
+  - [ ] "Elemente de Asamblare"
+  - [ ] "Oțel Inoxidabil"
+  - [ ] "Metale Neferoase"
+- [ ] Grade section: "Grad Material"
+- [ ] Standard section: "Standard"
+- [ ] Availability section: "Disponibilitate"
+- [ ] Availability options:
+  - [ ] "În Stoc"
+  - [ ] "La Comandă"
+  - [ ] "Comandă Viitoare"
+
+**When**: User switches to English
+
+**Then verify filter section labels**:
+- [ ] Main heading: "Filter"
+- [ ] Category section: "Product Category"
+- [ ] Family options:
+  - [ ] "Metal Profiles"
+  - [ ] "Steel Plates"
+  - [ ] "Pipes & Tubes"
+  - [ ] "Fasteners"
+  - [ ] "Stainless Steel"
+  - [ ] "Non-Ferrous Metals"
+- [ ] Grade section: "Material Grade"
+- [ ] Standard section: "Standard"
+- [ ] Availability section: "Availability"
+- [ ] Availability options:
+  - [ ] "In Stock"
+  - [ ] "On Order"
+  - [ ] "Backorder"
+
+---
+
+### Test Scenario 9.6: Product Card Translation - All Elements
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User is viewing product cards in the catalog
+
+**When**: Language is set to Romanian and user views a product card
+
+**Then**:
+- [ ] Availability badge shows Romanian text:
+  - [ ] "În Stoc" (green badge)
+  - [ ] "La Comandă" (blue badge)
+  - [ ] "Comandă Viitoare" (gray badge)
+- [ ] Price section shows:
+  - [ ] "De la X RON" (if minimum price)
+  - [ ] "Până la X RON" (if maximum price)
+  - [ ] "Cere Ofertă" (if no price)
+  - [ ] "Preț indicativ / kg" or similar unit
+- [ ] Delivery estimate: "Livrare în 3-5 zile"
+- [ ] View details button: "Vezi Detalii"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Availability badge shows English text:
+  - [ ] "In Stock" (green badge)
+  - [ ] "On Order" (blue badge)
+  - [ ] "Backorder" (gray badge)
+- [ ] Price section shows:
+  - [ ] "from X RON" (if minimum price)
+  - [ ] "up to X RON" (if maximum price)
+  - [ ] "On Request" (if no price)
+  - [ ] "Indicative price / kg" or similar unit
+- [ ] Delivery estimate: "Delivery in 3-5 days"
+- [ ] View details button: "View details"
+
+---
+
+### Test Scenario 9.7: Advanced Search Modal Translation
+
+**Priority**: Critical
+**Estimated Time**: 6 minutes
+
+**Given**: User clicks "Căutare Avansată" / "Advanced Search" button
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Modal title: "Căutare Avansată"
+- [ ] Modal description is in Romanian
+- [ ] Search input label: "Caută în titlu, SKU, descriere"
+- [ ] Search input placeholder includes Romanian example
+- [ ] Section labels:
+  - [ ] "Categorie Produse"
+  - [ ] "Grad Material"
+  - [ ] "Standard"
+  - [ ] "Disponibilitate"
+- [ ] Saved searches section: "Căutări Salvate"
+- [ ] Recent searches section: "Căutări Recente"
+- [ ] Current filters label: "Filtre Curente"
+- [ ] Buttons:
+  - [ ] "Șterge Tot" (Clear All)
+  - [ ] "Salvează" (Save)
+  - [ ] "Anulează" (Cancel)
+  - [ ] "Aplică Căutarea" (Apply Search)
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Modal title: "Advanced Search"
+- [ ] Modal description is in English
+- [ ] Search input label: "Search in title, SKU, description"
+- [ ] Search input placeholder includes English example
+- [ ] Section labels:
+  - [ ] "Product Category"
+  - [ ] "Material Grade"
+  - [ ] "Standard"
+  - [ ] "Availability"
+- [ ] Saved searches section: "Saved Searches"
+- [ ] Recent searches section: "Recent Searches"
+- [ ] Current filters label: "Current Filters"
+- [ ] Buttons:
+  - [ ] "Clear All"
+  - [ ] "Save"
+  - [ ] "Cancel"
+  - [ ] "Apply Search"
+
+---
+
+### Test Scenario 9.8: Advanced Search Toast Messages Translation
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is in the Advanced Search modal
+
+**When**: User applies filters (language set to Romanian)
+
+**Then**:
+- [ ] Toast title: "Filtre aplicate"
+- [ ] Toast description shows filter summary in Romanian
+
+**When**: User tries to save search without a name (Romanian)
+
+**Then**:
+- [ ] Error toast title: "Nume lipsă"
+- [ ] Error toast description is in Romanian
+
+**When**: User successfully saves a search (Romanian)
+
+**Then**:
+- [ ] Success toast title: "Căutare salvată"
+- [ ] Success toast description includes search name in Romanian
+
+**When**: User switches to English and applies filters
+
+**Then**:
+- [ ] Toast title: "Filters applied"
+- [ ] Toast description shows filter summary in English
+
+**When**: User deletes a saved search (English)
+
+**Then**:
+- [ ] Success toast title: "Search deleted"
+- [ ] Toast description in English
+
+---
+
+### Test Scenario 9.9: Product Detail Page (PDP) Translation
+
+**Priority**: Critical
+**Estimated Time**: 7 minutes
+
+**Given**: User navigates to a product detail page
+
+**When**: Language is set to Romanian
+
+**Then verify all sections**:
+- [ ] Breadcrumbs show Romanian labels
+- [ ] Availability badge: "În Stoc" / "La Comandă" / "Comandă Viitoare"
+- [ ] Price section: "Preț indicativ", "De la X RON"
+- [ ] Tabs:
+  - [ ] "Specificații"
+  - [ ] "Descriere"
+  - [ ] "Produse Similare"
+- [ ] Specifications labels in Romanian (Dimensiuni, Grad, Standard, etc.)
+- [ ] Delivery section: "Livrare în X-Y zile lucrătoare"
+- [ ] Add to estimate button: "Adaugă la Estimare"
+- [ ] "Cere Ofertă" button
+
+**When**: User switches to English
+
+**Then verify all sections**:
+- [ ] Breadcrumbs show English labels
+- [ ] Availability badge: "In Stock" / "On Order" / "Backorder"
+- [ ] Price section: "Indicative price", "from X RON"
+- [ ] Tabs:
+  - [ ] "Specifications"
+  - [ ] "Description"
+  - [ ] "Similar Products"
+- [ ] Specifications labels in English (Dimensions, Grade, Standard, etc.)
+- [ ] Delivery section: "Delivery in X-Y working days"
+- [ ] Add to estimate button: "Add to Estimate"
+- [ ] "Request Quote" button
+
+---
+
+### Test Scenario 9.10: Cart/Estimate Page Translation
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User has items in cart and navigates to /cart
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Page title: "Estimare Comandă"
+- [ ] Table headers:
+  - [ ] "Produs"
+  - [ ] "Cantitate"
+  - [ ] "Preț/unitate"
+  - [ ] "Total"
+- [ ] Summary section:
+  - [ ] "Subtotal"
+  - [ ] "TVA (19%)"
+  - [ ] "Transport estimat"
+  - [ ] "Total Estimat"
+- [ ] Empty cart message: "Estimarea ta este goală"
+- [ ] Continue shopping button: "Continuă Cumpărăturile"
+- [ ] Request quote button: "Trimite Cerere Ofertă"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Page title: "Order Estimate"
+- [ ] Table headers:
+  - [ ] "Product"
+  - [ ] "Quantity"
+  - [ ] "Price/unit"
+  - [ ] "Total"
+- [ ] Summary section:
+  - [ ] "Subtotal"
+  - [ ] "VAT (19%)"
+  - [ ] "Estimated shipping"
+  - [ ] "Estimated Total"
+- [ ] Empty cart message: "Your estimate is empty"
+- [ ] Continue shopping button: "Continue Shopping"
+- [ ] Request quote button: "Request Quote"
+
+---
+
+### Test Scenario 9.11: RFQ Form Translation and Validation
+
+**Priority**: Critical
+**Estimated Time**: 6 minutes
+
+**Given**: User is on the RFQ form page
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Form title: "Solicită Ofertă"
+- [ ] Field labels:
+  - [ ] "Nume complet"
+  - [ ] "Email"
+  - [ ] "Telefon"
+  - [ ] "Companie"
+  - [ ] "Cod fiscal (CUI)"
+  - [ ] "Adresa de livrare"
+  - [ ] "Mesaj adițional"
+- [ ] Field placeholders are in Romanian
+- [ ] Submit button: "Trimite Cerere"
+
+**When**: User submits form with empty required fields (Romanian)
+
+**Then**:
+- [ ] Validation errors appear in Romanian:
+  - [ ] "Acest câmp este obligatoriu"
+  - [ ] "Email invalid"
+  - [ ] "Telefon invalid"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Form title: "Request Quote"
+- [ ] Field labels:
+  - [ ] "Full name"
+  - [ ] "Email"
+  - [ ] "Phone"
+  - [ ] "Company"
+  - [ ] "Tax ID (CUI)"
+  - [ ] "Delivery address"
+  - [ ] "Additional message"
+- [ ] Field placeholders are in English
+- [ ] Submit button: "Send Request"
+
+**When**: User submits form with empty required fields (English)
+
+**Then**:
+- [ ] Validation errors appear in English:
+  - [ ] "This field is required"
+  - [ ] "Invalid email"
+  - [ ] "Invalid phone number"
+
+---
+
+### Test Scenario 9.12: BOM Upload Page Translation
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is on the BOM upload page (/bom-upload)
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Page title: "Încarcă Listă BOM"
+- [ ] Instructions text is in Romanian
+- [ ] Upload area text: "Trage fișierul aici sau click pentru a selecta"
+- [ ] Accepted formats: "Formate acceptate: Excel, CSV"
+- [ ] Template download link: "Descarcă șablon Excel"
+- [ ] Parse button: "Procesează BOM"
+- [ ] Results table headers are in Romanian
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Page title: "Upload BOM List"
+- [ ] Instructions text is in English
+- [ ] Upload area text: "Drag file here or click to select"
+- [ ] Accepted formats: "Accepted formats: Excel, CSV"
+- [ ] Template download link: "Download Excel template"
+- [ ] Parse button: "Process BOM"
+- [ ] Results table headers are in English
+
+---
+
+### Test Scenario 9.13: User Account Pages Translation (if implemented)
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User account features are implemented
+
+**When**: Language is set to Romanian and user is on login page
+
+**Then**:
+- [ ] Page title: "Autentificare"
+- [ ] Email label: "Email"
+- [ ] Password label: "Parolă"
+- [ ] Login button: "Autentifică-te"
+- [ ] Forgot password link: "Ai uitat parola?"
+- [ ] Create account link: "Creează cont"
+
+**When**: User is on registration page (Romanian)
+
+**Then**:
+- [ ] Page title: "Înregistrare"
+- [ ] All form labels are in Romanian
+- [ ] Submit button: "Înregistrează-te"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Login page title: "Login"
+- [ ] Email label: "Email"
+- [ ] Password label: "Password"
+- [ ] Login button: "Sign In"
+- [ ] Forgot password link: "Forgot password?"
+- [ ] Create account link: "Create account"
+- [ ] Registration page title: "Sign Up"
+- [ ] Submit button: "Sign Up"
+
+---
+
+### Test Scenario 9.14: Number and Currency Formatting
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is viewing products with prices
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Prices display with Romanian number format
+- [ ] Thousand separators use dots: "1.500 RON"
+- [ ] Decimal separators use commas: "1.500,50 RON"
+- [ ] Currency is "RON" (Romanian Leu)
+
+**When**: Language is set to English
+
+**Then**:
+- [ ] Prices display with English number format
+- [ ] Thousand separators use commas: "1,500 RON"
+- [ ] Decimal separators use dots: "1,500.50 RON"
+- [ ] Currency is "RON" (consistent)
+
+**Note**: Verify this on:
+- [ ] Product cards in catalog
+- [ ] Product detail page
+- [ ] Cart summary
+- [ ] RFQ summary
+
+---
+
+### Test Scenario 9.15: Date Formatting per Locale
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: Application displays dates (order history, RFQ timestamps, etc.)
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Dates display in Romanian format: "10 noiembrie 2025"
+- [ ] Or DD.MM.YYYY: "10.11.2025"
+- [ ] Relative dates: "azi", "ieri", "acum 2 zile"
+
+**When**: Language is set to English
+
+**Then**:
+- [ ] Dates display in English format: "November 10, 2025"
+- [ ] Or MM/DD/YYYY: "11/10/2025"
+- [ ] Relative dates: "today", "yesterday", "2 days ago"
+
+---
+
+### Test Scenario 9.16: Units Translation (Measurement Units)
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Products have measurement units (kg, m, pcs)
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Weight unit: "kg" (kilograms)
+- [ ] Length unit: "m" (metri)
+- [ ] Pieces unit: "buc" (bucăți) or "pcs"
+- [ ] Unit labels in forms: "Metri (m)", "Kilograme (kg)", "Bucăți (buc)"
+
+**When**: Language is set to English
+
+**Then**:
+- [ ] Weight unit: "kg" (kilograms)
+- [ ] Length unit: "m" (meters)
+- [ ] Pieces unit: "pcs" (pieces)
+- [ ] Unit labels in forms: "Meters (m)", "Kilograms (kg)", "Pieces (pcs)"
+
+---
+
+### Test Scenario 9.17: Error Pages Translation (404, 500, etc.)
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User encounters an error page
+
+**When**: User navigates to non-existent page (/nonexistent) with Romanian language
+
+**Then**:
+- [ ] 404 page title: "Pagina nu a fost găsită"
+- [ ] Error message is in Romanian
+- [ ] "Înapoi la pagina principală" button
+
+**When**: User switches to English
+
+**Then**:
+- [ ] 404 page title: "Page not found"
+- [ ] Error message is in English
+- [ ] "Back to homepage" button
+
+**When**: Application error occurs (simulate with broken component)
+
+**Then in Romanian**:
+- [ ] Error boundary shows Romanian message
+- [ ] "Reîncarcă pagina" button
+
+**Then in English**:
+- [ ] Error boundary shows English message
+- [ ] "Reload page" button
+
+---
+
+### Test Scenario 9.18: Toast/Notification Messages Translation
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User performs actions that trigger toast notifications
+
+**When**: User adds product to cart (Romanian)
+
+**Then**:
+- [ ] Toast title: "Adăugat în estimare"
+- [ ] Toast description includes product name
+
+**When**: User removes item from cart (Romanian)
+
+**Then**:
+- [ ] Toast title: "Eliminat din estimare"
+
+**When**: User submits RFQ successfully (Romanian)
+
+**Then**:
+- [ ] Success toast: "Cerere trimisă cu succes"
+- [ ] Description is in Romanian
+
+**When**: User switches to English and performs same actions
+
+**Then**:
+- [ ] Add to cart toast: "Added to estimate"
+- [ ] Remove from cart toast: "Removed from estimate"
+- [ ] RFQ success toast: "Request submitted successfully"
+- [ ] All descriptions are in English
+
+---
+
+### Test Scenario 9.19: Breadcrumbs Translation
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: User navigates through different pages
+
+**When**: Language is set to Romanian
+
+**Then on catalog page**:
+- [ ] Breadcrumbs: "Acasă > Catalog"
+
+**Then on product detail page**:
+- [ ] Breadcrumbs: "Acasă > Catalog > [Category] > [Product]"
+- [ ] Category names are in Romanian
+
+**Then on cart page**:
+- [ ] Breadcrumbs: "Acasă > Estimare"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Catalog: "Home > Catalog"
+- [ ] Product: "Home > Catalog > [Category] > [Product]"
+- [ ] Category names are in English
+- [ ] Cart: "Home > Estimate"
+
+---
+
+### Test Scenario 9.20: Footer Translation
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: User views the footer on any page
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Section headings are in Romanian:
+  - [ ] "Despre Noi"
+  - [ ] "Servicii"
+  - [ ] "Contact"
+- [ ] Footer links are in Romanian
+- [ ] Copyright text is in Romanian
+- [ ] Social media labels are in Romanian
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Section headings are in English:
+  - [ ] "About Us"
+  - [ ] "Services"
+  - [ ] "Contact"
+- [ ] Footer links are in English
+- [ ] Copyright text is in English
+- [ ] Social media labels are in English
+
+---
+
+### Test Scenario 9.21: Search Functionality Translation
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is using the search feature
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Search input placeholder: "Caută profile, table, țevi..."
+- [ ] Search button label: "Caută"
+- [ ] No results message: "Nu s-au găsit rezultate pentru '[query]'"
+- [ ] Search results count: "X rezultate găsite"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Search input placeholder: "Search profiles, plates, pipes..."
+- [ ] Search button label: "Search"
+- [ ] No results message: "No results found for '[query]'"
+- [ ] Search results count: "X results found"
+
+---
+
+### Test Scenario 9.22: Loading States and Skeletons Translation
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: User navigates to catalog page with slow network (throttle to Slow 3G)
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Loading text (if any): "Se încarcă..."
+- [ ] Skeleton loaders display
+
+**When**: Language is set to English
+
+**Then**:
+- [ ] Loading text (if any): "Loading..."
+- [ ] Skeleton loaders display
+
+---
+
+### Test Scenario 9.23: Pagination Translation
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User is on catalog page with multiple pages of results
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Pagination shows: "Pagina X din Y"
+- [ ] Previous button: "Anterior"
+- [ ] Next button: "Următorul"
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Pagination shows: "Page X of Y"
+- [ ] Previous button: "Previous"
+- [ ] Next button: "Next"
+
+---
+
+### Test Scenario 9.24: Language Switching During Form Fill
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is filling out RFQ form
+
+**When**: User fills in name and email fields (language: Romanian)
+
+**Then**:
+- [ ] Fields have Romanian labels and placeholders
+- [ ] User input remains in the fields
+
+**When**: User switches language to English mid-form
+
+**Then**:
+- [ ] Labels change to English
+- [ ] Placeholders change to English
+- [ ] **User input remains intact** (data not lost)
+- [ ] Form validation messages will be in English on next submit
+
+---
+
+### Test Scenario 9.25: Browser Language Detection
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: New user visits application for first time (clear localStorage first)
+
+**When**: Browser language is set to Romanian (ro-RO)
+
+**Then**:
+- [ ] Application loads in Romanian by default
+- [ ] Language is stored in localStorage
+
+**When**: Browser language is set to English (en-US or en-GB)
+
+**Then**:
+- [ ] Application loads in English by default
+- [ ] Language is stored in localStorage
+
+**When**: Browser language is set to unsupported language (e.g., French)
+
+**Then**:
+- [ ] Application loads in Romanian (fallback language)
+- [ ] Language switcher still works
+
+---
+
+### Test Scenario 9.26: Filter Chips Translation
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has applied filters on catalog page
+
+**When**: Language is set to Romanian
+
+**Then**:
+- [ ] Filter chips show Romanian labels:
+  - [ ] "Categorie: Profile Metalice"
+  - [ ] "Grad: S235JR"
+  - [ ] "Disponibilitate: În Stoc"
+- [ ] Remove filter icon (X) works
+
+**When**: User switches to English
+
+**Then**:
+- [ ] Filter chips update to English labels:
+  - [ ] "Category: Metal Profiles"
+  - [ ] "Grade: S235JR"
+  - [ ] "Availability: In Stock"
+- [ ] Chips remain functionally clickable
+
+---
+
+### Test Scenario 9.27: URL Parameters Preservation During Language Switch
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is on catalog page with filters applied
+**URL**: `/catalog?family=profiles&grade=S235JR&page=2`
+
+**When**: User switches from Romanian to English
+
+**Then**:
+- [ ] URL parameters remain unchanged: `?family=profiles&grade=S235JR&page=2`
+- [ ] Filters remain applied
+- [ ] Current page (page 2) is maintained
+- [ ] Only UI language changes
+
+**When**: User is on product detail page: `/product/unp-100-6m-s235jr`
+
+**Then**:
+- [ ] URL remains the same after language switch
+- [ ] Product slug is language-agnostic
+
+---
+
+### Test Scenario 9.28: Console Errors Check for Missing Translations
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: Developer has i18n debug mode enabled
+
+**When**: User navigates through all major pages in Romanian:
+- [ ] Homepage
+- [ ] Catalog
+- [ ] Product detail page
+- [ ] Cart
+- [ ] RFQ form
+- [ ] Advanced search modal
+
+**Then**:
+- [ ] Open browser console
+- [ ] No i18next warnings about missing keys
+- [ ] No "translation key not found" errors
+
+**When**: User switches to English and navigates through all pages
+
+**Then**:
+- [ ] Open browser console
+- [ ] No i18next warnings about missing keys
+- [ ] No "translation key not found" errors
+
+---
+
+### Test Scenario 9.29: RTL Language Support (Future-Proofing)
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: Application currently supports LTR languages only
+
+**When**: Developer inspects HTML
+
+**Then**:
+- [ ] HTML tag has `dir="ltr"` attribute
+- [ ] CSS does not use hard-coded left/right (uses logical properties where possible)
+- [ ] Layout is ready for future RTL support (Arabic, Hebrew)
+
+**Note**: This is a preparation check for future internationalization.
+
+---
+
+### Test Scenario 9.30: Translation File Integrity
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: Developer has access to translation files
+
+**When**: Developer validates translation files
+
+**Then**:
+- [ ] `src/locales/ro.json` is valid JSON (no syntax errors)
+- [ ] `src/locales/en.json` is valid JSON (no syntax errors)
+- [ ] Both files have matching keys (same structure)
+- [ ] No duplicate keys in either file
+- [ ] All keys use consistent naming convention (snake_case or camelCase)
+- [ ] Interpolation variables are consistent: `{{variable}}` format
+
+**When**: Developer runs command: `python3 -m json.tool src/locales/en.json`
+
+**Then**:
+- [ ] Command succeeds without errors
+
+**When**: Developer compares key counts
+
+**Then**:
+- [ ] Romanian file has same number of keys as English file
+- [ ] No missing translations in either language
+
+---
+
+## Phase 9 Summary - Quick Checklist
+
+### Phase 9: Internationalization (i18n) & Localization (30 scenarios)
+
+| Test Scenario | Result | Notes |
+|--------------|--------|-------|
+| 9.1 - Language Switcher Display | ⬜ Pass ⬜ Fail | |
+| 9.2 - Language Persistence | ⬜ Pass ⬜ Fail | |
+| 9.3 - Homepage Translation | ⬜ Pass ⬜ Fail | |
+| 9.4 - Catalog Header Translation | ⬜ Pass ⬜ Fail | |
+| 9.5 - Filter Labels Translation | ⬜ Pass ⬜ Fail | |
+| 9.6 - Product Card Translation | ⬜ Pass ⬜ Fail | |
+| 9.7 - Advanced Search Modal | ⬜ Pass ⬜ Fail | |
+| 9.8 - Toast Messages Translation | ⬜ Pass ⬜ Fail | |
+| 9.9 - Product Detail Page | ⬜ Pass ⬜ Fail | |
+| 9.10 - Cart/Estimate Page | ⬜ Pass ⬜ Fail | |
+| 9.11 - RFQ Form Translation | ⬜ Pass ⬜ Fail | |
+| 9.12 - BOM Upload Page | ⬜ Pass ⬜ Fail | |
+| 9.13 - User Account Pages | ⬜ Pass ⬜ Fail | |
+| 9.14 - Number/Currency Formatting | ⬜ Pass ⬜ Fail | |
+| 9.15 - Date Formatting | ⬜ Pass ⬜ Fail | |
+| 9.16 - Units Translation | ⬜ Pass ⬜ Fail | |
+| 9.17 - Error Pages Translation | ⬜ Pass ⬜ Fail | |
+| 9.18 - Toast Notifications | ⬜ Pass ⬜ Fail | |
+| 9.19 - Breadcrumbs Translation | ⬜ Pass ⬜ Fail | |
+| 9.20 - Footer Translation | ⬜ Pass ⬜ Fail | |
+| 9.21 - Search Functionality | ⬜ Pass ⬜ Fail | |
+| 9.22 - Loading States | ⬜ Pass ⬜ Fail | |
+| 9.23 - Pagination Translation | ⬜ Pass ⬜ Fail | |
+| 9.24 - Language Switch During Form | ⬜ Pass ⬜ Fail | |
+| 9.25 - Browser Language Detection | ⬜ Pass ⬜ Fail | |
+| 9.26 - Filter Chips Translation | ⬜ Pass ⬜ Fail | |
+| 9.27 - URL Parameters Preservation | ⬜ Pass ⬜ Fail | |
+| 9.28 - Console Errors Check | ⬜ Pass ⬜ Fail | |
+| 9.29 - RTL Support Preparation | ⬜ Pass ⬜ Fail | |
+| 9.30 - Translation File Integrity | ⬜ Pass ⬜ Fail | |
+
+### Phase 9 Key Metrics
+
+**Translation Completeness**:
+- [ ] All UI strings extracted to locale files
+- [ ] Both Romanian and English translations complete
+- [ ] No missing translation keys in console
+- [ ] No hardcoded text remaining in components
+
+**Language Switcher**:
+- [ ] Language switcher visible and functional
+- [ ] Selected language persists across sessions
+- [ ] Language changes apply immediately (no reload)
+- [ ] All pages update when language changes
+
+**Formatting**:
+- [ ] Numbers formatted correctly per locale
+- [ ] Currency displays with correct separators
+- [ ] Dates formatted according to locale
+- [ ] Units translated appropriately
+
+**User Experience**:
+- [ ] Language switch does not lose form data
+- [ ] URL parameters preserved during switch
+- [ ] No flicker or layout shift on language change
+- [ ] Browser language detection works
+
+### Critical Bugs Found
+1. _______________
+2. _______________
+3. _______________
+
+### Minor Issues Found
+1. _______________
+2. _______________
+3. _______________
+
+### Overall Test Result
+- ⬜ All tests passed
+- ⬜ Tests passed with minor issues
+- ⬜ Critical bugs found - DO NOT RELEASE
+
+---
+
 **Last Updated**: 2025-11-10
-**Version**: 1.5.0
-**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits), Phase 7 (Search Optimization & Advanced Filtering), Phase 8 (Analytics, SEO & Performance Optimization)
-**Total Test Scenarios**: 198 scenarios (168 previous + 30 Phase 8)
+
+**Version**: 1.6.0
+**Phase Coverage**:
+- Phase 1 (Infrastructure)
+- Phase 2 (Catalog)
+- Phase 3 (Product Detail Page)
+- Phase 4 (Cart & RFQ)
+- Phase 5 (BOM Upload)
+- Phase 6 (Optional User Accounts & B2B Benefits)
+- Phase 7 (Search Optimization & Advanced Filtering)
+- Phase 8 (Analytics, SEO & Performance Optimization)
+- Phase 9 (Internationalization & Localization)
+
+**Total Test Scenarios**: 228 scenarios
+
 **Next Review**: Before production release

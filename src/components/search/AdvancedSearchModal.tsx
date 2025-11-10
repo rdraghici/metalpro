@@ -16,6 +16,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { useAdvancedSearch } from '@/hooks/useAdvancedSearch';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { ProductFilters, ProductFamily, Availability } from '@/types/product';
 
 interface AdvancedSearchModalProps {
@@ -37,6 +38,7 @@ export default function AdvancedSearchModal({
   gradeOptions = [],
   standardOptions = [],
 }: AdvancedSearchModalProps) {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { toast } = useToast();
   const {
@@ -60,19 +62,19 @@ export default function AdvancedSearchModal({
 
   // Available product families
   const availableFamilies: { value: ProductFamily; label: string }[] = [
-    { value: 'profiles', label: 'Profile' },
-    { value: 'plates', label: 'Table' },
-    { value: 'pipes', label: 'Țevi' },
-    { value: 'fasteners', label: 'Elemente de Fixare' },
-    { value: 'stainless', label: 'Inox' },
-    { value: 'nonferrous', label: 'Neferoase' },
+    { value: 'profiles', label: t('catalog.family_profiles') },
+    { value: 'plates', label: t('catalog.family_plates') },
+    { value: 'pipes', label: t('catalog.family_pipes') },
+    { value: 'fasteners', label: t('catalog.family_fasteners') },
+    { value: 'stainless', label: t('catalog.family_stainless') },
+    { value: 'nonferrous', label: t('catalog.family_nonferrous') },
   ];
 
   // Available availability statuses
   const availableStatuses: { value: Availability; label: string }[] = [
-    { value: 'in_stock', label: 'În Stoc' },
-    { value: 'on_order', label: 'La Comandă' },
-    { value: 'backorder', label: 'Comandă Viitoare' },
+    { value: 'in_stock', label: t('catalog.availability_in_stock') },
+    { value: 'on_order', label: t('catalog.availability_on_order') },
+    { value: 'backorder', label: t('catalog.availability_backorder') },
   ];
 
   const toggleArrayFilter = (key: keyof ProductFilters, value: string) => {
@@ -98,7 +100,7 @@ export default function AdvancedSearchModal({
     onApplyFilters(filters);
     onOpenChange(false);
     toast({
-      title: 'Filtre aplicate',
+      title: t('advanced_search.filters_applied'),
       description: getFilterDescription(filters),
     });
   };
@@ -106,8 +108,8 @@ export default function AdvancedSearchModal({
   const handleSaveSearch = () => {
     if (!user) {
       toast({
-        title: 'Autentificare necesară',
-        description: 'Trebuie să fii autentificat pentru a salva căutări.',
+        title: t('advanced_search.authentication_required'),
+        description: t('advanced_search.authentication_required_description'),
         variant: 'destructive',
       });
       return;
@@ -115,8 +117,8 @@ export default function AdvancedSearchModal({
 
     if (!searchName.trim()) {
       toast({
-        title: 'Nume lipsă',
-        description: 'Te rugăm să introduci un nume pentru căutare.',
+        title: t('advanced_search.name_missing'),
+        description: t('advanced_search.name_missing_description'),
         variant: 'destructive',
       });
       return;
@@ -126,8 +128,8 @@ export default function AdvancedSearchModal({
     const existing = findSimilarSavedSearch(filters);
     if (existing) {
       toast({
-        title: 'Căutare existentă',
-        description: `O căutare similară există deja: "${existing.name}"`,
+        title: t('advanced_search.search_exists'),
+        description: t('advanced_search.search_exists_description', { name: existing.name }),
         variant: 'destructive',
       });
       return;
@@ -137,8 +139,8 @@ export default function AdvancedSearchModal({
     setSearchName('');
     setShowSaveForm(false);
     toast({
-      title: 'Căutare salvată',
-      description: `Căutarea "${searchName}" a fost salvată cu succes.`,
+      title: t('advanced_search.search_saved'),
+      description: t('advanced_search.search_saved_description', { name: searchName }),
     });
   };
 
@@ -148,8 +150,8 @@ export default function AdvancedSearchModal({
       setFilters(search.filters);
       markSearchAsUsed(searchId);
       toast({
-        title: 'Căutare încărcată',
-        description: `Căutarea "${search.name}" a fost încărcată.`,
+        title: t('advanced_search.search_loaded'),
+        description: t('advanced_search.search_loaded_description', { name: search.name }),
       });
     }
   };
@@ -157,16 +159,16 @@ export default function AdvancedSearchModal({
   const handleLoadRecentSearch = (recentFilters: ProductFilters) => {
     setFilters(recentFilters);
     toast({
-      title: 'Căutare încărcată',
-      description: 'Căutarea recentă a fost încărcată.',
+      title: t('advanced_search.search_loaded'),
+      description: t('advanced_search.recent_search_loaded_description'),
     });
   };
 
   const handleDeleteSavedSearch = (searchId: string, searchName: string) => {
     deleteSavedSearch(searchId);
     toast({
-      title: 'Căutare ștearsă',
-      description: `Căutarea "${searchName}" a fost ștearsă.`,
+      title: t('advanced_search.search_deleted'),
+      description: t('advanced_search.search_deleted_description', { name: searchName }),
     });
   };
 
@@ -182,20 +184,20 @@ export default function AdvancedSearchModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Search className="h-5 w-5" />
-            Căutare Avansată
+            {t('advanced_search.title')}
           </DialogTitle>
           <DialogDescription>
-            Construiește o căutare complexă folosind multiple criterii
+            {t('advanced_search.description')}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6 py-4">
           {/* Search Text Input */}
           <div className="space-y-2">
-            <Label htmlFor="search-text">Caută în titlu, SKU, descriere</Label>
+            <Label htmlFor="search-text">{t('advanced_search.search_in_fields')}</Label>
             <Input
               id="search-text"
-              placeholder="Ex: Profile UNP, S235JR, etc."
+              placeholder={t('advanced_search.search_placeholder_example')}
               value={filters.search || ''}
               onChange={(e) => handleSearchTextChange(e.target.value)}
             />
@@ -205,7 +207,7 @@ export default function AdvancedSearchModal({
 
           {/* Product Family */}
           <div className="space-y-3">
-            <Label>Categorie Produse</Label>
+            <Label>{t('advanced_search.product_category')}</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {availableFamilies.map(({ value, label }) => (
                 <div key={value} className="flex items-center space-x-2">
@@ -228,7 +230,7 @@ export default function AdvancedSearchModal({
           {gradeOptions.length > 0 && (
             <>
               <div className="space-y-3">
-                <Label>Grad Material</Label>
+                <Label>{t('advanced_search.material_grade')}</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-h-40 overflow-y-auto">
                   {gradeOptions.map((grade) => (
                     <div key={grade} className="flex items-center space-x-2">
@@ -252,7 +254,7 @@ export default function AdvancedSearchModal({
           {standardOptions.length > 0 && (
             <>
               <div className="space-y-3">
-                <Label>Standard</Label>
+                <Label>{t('advanced_search.standard')}</Label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-40 overflow-y-auto">
                   {standardOptions.map((standard) => (
                     <div key={standard} className="flex items-center space-x-2">
@@ -274,7 +276,7 @@ export default function AdvancedSearchModal({
 
           {/* Availability */}
           <div className="space-y-3">
-            <Label>Disponibilitate</Label>
+            <Label>{t('advanced_search.availability')}</Label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {availableStatuses.map(({ value, label }) => (
                 <div key={value} className="flex items-center space-x-2">
@@ -298,7 +300,7 @@ export default function AdvancedSearchModal({
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-primary" />
-                  <Label>Căutări Salvate</Label>
+                  <Label>{t('advanced_search.saved_searches')}</Label>
                 </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {savedSearches.map((search) => (
@@ -338,7 +340,7 @@ export default function AdvancedSearchModal({
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <Label>Căutări Recente</Label>
+                  <Label>{t('advanced_search.recent_searches')}</Label>
                 </div>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {recentSearches.slice(0, 5).map((recentFilters, index) => (
@@ -362,7 +364,7 @@ export default function AdvancedSearchModal({
             <>
               <Separator />
               <div className="space-y-2">
-                <Label>Filtre Curente</Label>
+                <Label>{t('advanced_search.current_filters')}</Label>
                 <div className="p-3 bg-muted rounded-md text-sm">
                   {getFilterDescription(filters)}
                 </div>
@@ -377,25 +379,25 @@ export default function AdvancedSearchModal({
             {hasFilters && (
               <Button variant="outline" onClick={handleClearFilters} className="gap-2">
                 <X className="h-4 w-4" />
-                Șterge Tot
+                {t('advanced_search.clear_all')}
               </Button>
             )}
 
             {user && hasFilters && !showSaveForm && (
               <Button variant="outline" onClick={() => setShowSaveForm(true)} className="gap-2">
                 <Save className="h-4 w-4" />
-                Salvează
+                {t('advanced_search.save')}
               </Button>
             )}
           </div>
 
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Anulează
+              {t('advanced_search.cancel')}
             </Button>
             <Button onClick={handleApplySearch} disabled={!hasFilters}>
               <Search className="h-4 w-4 mr-2" />
-              Aplică Căutarea
+              {t('advanced_search.apply_search')}
             </Button>
           </div>
         </div>
@@ -403,11 +405,11 @@ export default function AdvancedSearchModal({
         {/* Save Search Form */}
         {showSaveForm && (
           <div className="pt-4 border-t space-y-3">
-            <Label htmlFor="search-name">Nume Căutare</Label>
+            <Label htmlFor="search-name">{t('advanced_search.search_name')}</Label>
             <div className="flex gap-2">
               <Input
                 id="search-name"
-                placeholder="Ex: Profile S235JR în stoc"
+                placeholder={t('advanced_search.search_name_placeholder')}
                 value={searchName}
                 onChange={(e) => setSearchName(e.target.value)}
                 onKeyDown={(e) => {
@@ -416,12 +418,12 @@ export default function AdvancedSearchModal({
                   }
                 }}
               />
-              <Button onClick={handleSaveSearch}>Salvează</Button>
+              <Button onClick={handleSaveSearch}>{t('advanced_search.save')}</Button>
               <Button variant="outline" onClick={() => {
                 setShowSaveForm(false);
                 setSearchName('');
               }}>
-                Anulează
+                {t('advanced_search.cancel')}
               </Button>
             </div>
           </div>
