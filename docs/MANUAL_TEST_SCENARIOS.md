@@ -6327,8 +6327,831 @@ profiles,S235JR,HEA 100,10,buc,Pentru construcție
 
 ---
 
+# Phase 8: Analytics, SEO & Performance Optimization
+
+**Phase Status**: ✅ Implementation Complete
+**Test Status**: ⏳ Awaiting Testing
+**Total Scenarios**: 30 scenarios
+
+## Overview
+Phase 8 focuses on analytics tracking with Google Tag Manager, SEO optimization with meta tags and structured data, and performance improvements including lazy loading, virtual scrolling, and build optimizations.
+
+---
+
+## Section 8.1: Google Tag Manager (GTM) Integration
+
+### Test Scenario 8.1: GTM Script Loading
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Pre-requisites**:
+- `.env` file configured with `VITE_GTM_ID=GTM-PDWD2W39`
+- Dev server restarted after adding `.env`
+
+**When**: User opens the application
+
+**Then**:
+- [ ] Open browser DevTools (F12) → Console
+- [ ] Type `window.dataLayer` and press Enter
+- [ ] dataLayer array exists and contains events
+- [ ] No GTM-related errors in console
+
+**When**: User checks Network tab
+
+**Then**:
+- [ ] Request to `googletagmanager.com` is present
+- [ ] GTM container script loaded successfully (200 status)
+- [ ] GTM ID `GTM-PDWD2W39` is visible in request
+
+---
+
+### Test Scenario 8.2: GTM Preview Mode Connection
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Pre-requisites**:
+- GTM account access
+- Application running at http://localhost:8080
+
+**When**: User opens GTM Preview Mode
+1. Go to https://tagmanager.google.com/
+2. Select container GTM-PDWD2W39
+3. Click "Preview" button
+4. Enter URL: `http://localhost:8080`
+5. Click "Connect"
+
+**Then**:
+- [ ] Debug window opens successfully
+- [ ] Connection to local app established
+- [ ] "Tag Assistant Connected" message appears
+- [ ] Events appear in debug timeline
+
+---
+
+### Test Scenario 8.3: Page View Event Tracking
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User navigates to different pages
+- Homepage (/)
+- Catalog (/catalog)
+- Product Detail (/product/hea-200-s235jr)
+- Cart (/cart)
+- RFQ Form (/rfq)
+
+**Then**: For each page navigation
+- [ ] `page_view` event fires in GTM Preview
+- [ ] Event contains `page_path` parameter
+- [ ] Event contains `page_title` parameter
+- [ ] Event fires immediately on page load
+- [ ] No duplicate `page_view` events
+
+---
+
+## Section 8.2: Analytics Event Tracking
+
+### Test Scenario 8.4: Catalog View Tracking
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User visits catalog page at `/catalog`
+
+**Then**:
+- [ ] `catalog_view` event fires
+- [ ] Event contains `category` parameter (if filtered)
+- [ ] Event fires once per page visit
+- [ ] In dataLayer: `window.dataLayer` shows event with correct data
+
+**When**: User filters by family (e.g., "profiles")
+
+**Then**:
+- [ ] New `catalog_view` event fires
+- [ ] `category` parameter shows selected family
+- [ ] Event data is accurate
+
+---
+
+### Test Scenario 8.5: Filter Apply Tracking
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is on catalog page with GTM Preview active
+
+**When**: User applies filters:
+1. Select family: "profiles"
+2. Select grade: "S235JR"
+3. Select standard: "EN 10025"
+4. Adjust price range slider
+5. Click "Apply" or filters auto-apply
+
+**Then**:
+- [ ] `filter_apply` event fires
+- [ ] Event contains `family` parameter
+- [ ] Event contains `grade` parameter
+- [ ] Event contains `standard` parameter
+- [ ] Event contains `priceRange` with min/max values
+- [ ] All filter data is accurate in dataLayer
+
+---
+
+### Test Scenario 8.6: Product Detail Page (PDP) View Tracking
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User clicks on a product from catalog
+
+**Then**:
+- [ ] `pdp_view` event fires
+- [ ] Event contains product data:
+  - [ ] `product_id`
+  - [ ] `product_sku`
+  - [ ] `product_title`
+  - [ ] `product_family`
+  - [ ] `product_grade`
+  - [ ] `base_price`
+- [ ] Event fires once per product view
+- [ ] Data matches the actual product
+
+---
+
+### Test Scenario 8.7: Add to Estimate Tracking
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is on Product Detail Page with GTM Preview active
+
+**When**: User configures product and clicks "Adaugă la Estimare":
+1. Select quantity: 10
+2. Select unit: kg
+3. Select finish: Zincat
+4. Click "Adaugă la Estimare"
+
+**Then**:
+- [ ] `add_to_estimate` event fires
+- [ ] Event contains:
+  - [ ] `product_id`
+  - [ ] `product_sku`
+  - [ ] `product_title`
+  - [ ] `quantity` (10)
+  - [ ] `unit` (kg)
+  - [ ] `total_price`
+- [ ] Toast notification appears
+- [ ] Cart drawer opens
+- [ ] Event fires only once per add action
+
+---
+
+### Test Scenario 8.8: Cart Update Tracking
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: Cart has items and GTM Preview is active
+
+**When**: User updates cart:
+1. Add new item to cart
+2. Update quantity of existing item
+3. Remove an item from cart
+4. Clear entire cart
+
+**Then**: For each action
+- [ ] `estimate_update` event fires
+- [ ] Event contains:
+  - [ ] `item_count` (current number of cart items)
+  - [ ] `total_weight` (in kg)
+  - [ ] `total_price` (subtotal)
+- [ ] Values are accurate after each change
+- [ ] Event fires after state update completes
+
+---
+
+### Test Scenario 8.9: Search Tracking
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User performs search:
+1. Click search bar in header
+2. Type "HEA 200"
+3. Press Enter or select result
+
+**Then**:
+- [ ] `search` event fires
+- [ ] Event contains:
+  - [ ] `search_query` ("HEA 200")
+  - [ ] `result_count` (number of results found)
+- [ ] Event fires when search is submitted
+- [ ] Search results are displayed
+- [ ] Navigation to catalog with search query works
+
+---
+
+### Test Scenario 8.10: BOM Upload Tracking
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is on BOM Upload page with GTM Preview active
+
+**When**: User uploads BOM file:
+1. Navigate to `/bom-upload`
+2. Upload a valid BOM CSV file
+3. File processes successfully
+
+**Then**:
+- [ ] `bom_upload` event fires after processing
+- [ ] Event contains:
+  - [ ] `file_name`
+  - [ ] `total_rows`
+  - [ ] `matched_rows` (auto-matched products)
+  - [ ] `unmatched_rows` (require manual mapping)
+  - [ ] `parse_errors` (count)
+- [ ] Event data matches BOM results
+- [ ] Event fires once per upload
+
+---
+
+### Test Scenario 8.11: RFQ Flow Tracking
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: Cart has items and GTM Preview is active
+
+**When**: User starts RFQ flow:
+1. Click "Cere Ofertă" button
+2. Navigate to RFQ form
+
+**Then**:
+- [ ] `rfq_start` event fires
+- [ ] Event contains `source` parameter ("rfq_form")
+
+**When**: User completes each step:
+- Step 1: Company Info
+- Step 2: Delivery Address
+- Step 3: Preferences
+- Step 4: Attachments
+- Step 5: Review
+
+**Then**: For each step completion
+- [ ] `rfq_step` event fires
+- [ ] Event contains:
+  - [ ] `step_number` (1-5)
+  - [ ] `step_name` (e.g., "company_info")
+- [ ] Event fires after clicking "Next" on each step
+
+**When**: User submits RFQ on final step
+
+**Then**:
+- [ ] `rfq_submit` event fires
+- [ ] Event contains:
+  - [ ] `reference_number`
+  - [ ] `item_count`
+  - [ ] `total_value`
+  - [ ] `company`
+  - [ ] `incoterm`
+- [ ] User redirected to confirmation page
+- [ ] Event data is complete and accurate
+
+---
+
+### Test Scenario 8.12: Login Tracking
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User logs in:
+1. Navigate to `/login`
+2. Enter credentials
+3. Click "Autentifică-te"
+4. Login succeeds
+
+**Then**:
+- [ ] `login` event fires
+- [ ] Event contains `account_type` ("business")
+- [ ] User redirected to account page
+- [ ] Success toast appears
+- [ ] Event fires once per login
+
+---
+
+### Test Scenario 8.13: Signup Tracking
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User creates account:
+1. Navigate to `/signup`
+2. Select account type: "Business" or "Individual"
+3. Fill in required fields
+4. Submit form
+5. Signup succeeds
+
+**Then**:
+- [ ] `signup` event fires
+- [ ] Event contains `account_type` (matches selection)
+- [ ] User redirected to account page
+- [ ] Success toast appears
+- [ ] Event fires once per signup
+
+---
+
+### Test Scenario 8.14: Contact Click Tracking
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: User clicks phone number in header:
+- Click phone number: "+40 xxx xxx xxx"
+
+**Then**:
+- [ ] `contact_click` event fires
+- [ ] Event contains `contact_type` ("phone")
+- [ ] Phone dialer opens (mobile) or tel: link activates
+
+**When**: User clicks email in footer:
+- Click email: "vanzari@metalpro.ro"
+
+**Then**:
+- [ ] `contact_click` event fires
+- [ ] Event contains `contact_type` ("email")
+- [ ] Email client opens with pre-filled address
+
+---
+
+## Section 8.3: SEO Optimization
+
+### Test Scenario 8.15: Meta Tags - Homepage
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**When**: User visits homepage (/)
+
+**Then**: View page source (right-click → View Page Source)
+- [ ] `<title>` tag exists and contains "MetalPro"
+- [ ] `<meta name="description">` exists with relevant description
+- [ ] `<meta name="keywords">` exists with relevant keywords
+- [ ] Open Graph tags present:
+  - [ ] `<meta property="og:title">`
+  - [ ] `<meta property="og:description">`
+  - [ ] `<meta property="og:type">` = "website"
+  - [ ] `<meta property="og:url">`
+- [ ] Twitter Card tags present:
+  - [ ] `<meta name="twitter:card">`
+  - [ ] `<meta name="twitter:title">`
+  - [ ] `<meta name="twitter:description">`
+
+---
+
+### Test Scenario 8.16: Meta Tags - Product Detail Page
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**When**: User visits product page (e.g., /product/hea-200-s235jr)
+
+**Then**: View page source
+- [ ] `<title>` contains product name and grade
+- [ ] `<meta name="description">` contains product details
+- [ ] `<meta property="og:type">` = "product"
+- [ ] Product-specific OG tags present:
+  - [ ] `<meta property="product:price:amount">`
+  - [ ] `<meta property="product:price:currency">` = "RON"
+  - [ ] `<meta property="product:availability">`
+- [ ] Canonical URL points to correct product page
+- [ ] No duplicate meta tags
+
+---
+
+### Test Scenario 8.17: Schema.org Structured Data - Product
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**When**: User visits product page
+
+**Then**: Test with Google Rich Results Test
+1. Open https://search.google.com/test/rich-results
+2. Enter product page URL or paste HTML
+3. Run test
+
+**Expected Results**:
+- [ ] Product schema detected
+- [ ] Schema type: "Product"
+- [ ] Required properties present:
+  - [ ] `name`
+  - [ ] `sku`
+  - [ ] `description`
+  - [ ] `offers` (with price and availability)
+- [ ] No schema errors
+- [ ] Rich results preview shows product info
+
+---
+
+### Test Scenario 8.18: Schema.org Breadcrumb Markup
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**When**: User visits any page with breadcrumbs (catalog or product page)
+
+**Then**: View page source and check for JSON-LD script
+- [ ] `<script type="application/ld+json">` exists
+- [ ] Contains `@type: "BreadcrumbList"`
+- [ ] Contains `itemListElement` array
+- [ ] Each breadcrumb has:
+  - [ ] `@type: "ListItem"`
+  - [ ] `position` (number)
+  - [ ] `name` (text)
+  - [ ] `item` (URL)
+- [ ] Breadcrumb path matches visual breadcrumbs
+
+---
+
+### Test Scenario 8.19: Robots.txt and Sitemap
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**When**: User accesses `/robots.txt`
+
+**Then**:
+- [ ] File loads successfully
+- [ ] Contains `User-agent: *`
+- [ ] Contains `Allow: /`
+- [ ] Contains `Disallow: /account`
+- [ ] Contains `Sitemap:` directive pointing to sitemap.xml
+- [ ] Syntax is valid
+
+**When**: User accesses `/sitemap.xml`
+
+**Then**:
+- [ ] XML file loads successfully
+- [ ] Contains `<urlset>` root element
+- [ ] Contains `<url>` entries for main pages
+- [ ] Each URL has `<loc>`, `<lastmod>`, `<changefreq>`, `<priority>`
+- [ ] XML syntax is valid
+
+---
+
+## Section 8.4: Performance Optimization
+
+### Test Scenario 8.20: Lazy Loading Images
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Pre-requisites**:
+- Open DevTools → Network tab
+- Throttle network to "Slow 3G"
+
+**When**: User loads catalog page with many products
+
+**Then**:
+- [ ] Initial page load is fast
+- [ ] Placeholder/skeleton shown for images
+- [ ] Images load as user scrolls down
+- [ ] Images above fold load immediately
+- [ ] Images below fold load on scroll (lazy)
+
+**Verify**:
+- [ ] Check Network tab: images request only when scrolled into view
+- [ ] No layout shift when images load
+- [ ] Fallback image shows if image fails to load
+
+---
+
+### Test Scenario 8.21: Skeleton Loaders - Catalog
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Pre-requisites**: Throttle network to "Slow 3G"
+
+**When**: User navigates to catalog page
+
+**Then**: During loading
+- [ ] Product grid skeleton appears
+- [ ] Skeleton matches final product card layout
+- [ ] Skeleton shows correct number of cards (12)
+- [ ] Animation is smooth (pulsing effect)
+
+**When**: Products load
+
+**Then**:
+- [ ] Smooth transition from skeleton to actual content
+- [ ] No layout shift
+- [ ] All product cards appear correctly
+
+---
+
+### Test Scenario 8.22: Skeleton Loaders - Product Detail Page
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Pre-requisites**: Throttle network to "Slow 3G"
+
+**When**: User clicks on a product
+
+**Then**: During loading
+- [ ] Product detail skeleton appears
+- [ ] Shows skeleton for image area
+- [ ] Shows skeleton for product info
+- [ ] Shows skeleton for specs table
+- [ ] Shows skeleton for configuration panel
+
+**When**: Product loads
+
+**Then**:
+- [ ] Content replaces skeleton smoothly
+- [ ] All sections appear correctly
+- [ ] No visual glitches
+
+---
+
+### Test Scenario 8.23: Virtual Scrolling Performance
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Note**: Virtual scrolling will be implemented if needed for large lists (1000+ items)
+
+**Given**: Catalog or search results with 1000+ products
+
+**When**: User scrolls through product grid
+
+**Then**:
+- [ ] Scrolling is smooth without lag
+- [ ] Only visible items are rendered in DOM
+- [ ] Items render/unrender as user scrolls
+- [ ] No memory leaks (check Performance monitor)
+- [ ] Scroll position maintained when filtering
+
+**Verify in DevTools**:
+- [ ] Open Elements panel
+- [ ] Check number of rendered product cards
+- [ ] Should be ~20-30 cards maximum (not 1000)
+- [ ] DOM nodes increase/decrease as you scroll
+
+---
+
+### Test Scenario 8.24: Build Size Optimization
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**Pre-requisites**: Production build created
+
+**When**: Developer runs production build:
+```bash
+npm run build
+```
+
+**Then**: Check `dist/` folder
+- [ ] Build completes without errors
+- [ ] Chunk sizes are reasonable:
+  - [ ] Main chunk < 500KB
+  - [ ] Vendor chunks split appropriately
+  - [ ] React vendor chunk separated
+  - [ ] UI vendor chunk separated
+  - [ ] Form vendor chunk separated
+- [ ] Source maps generated (if enabled)
+- [ ] Assets folder contains optimized files
+
+**Verify**: Check build output logs
+- [ ] No chunk size warnings
+- [ ] Tree shaking applied
+- [ ] Code minification applied
+- [ ] Console logs removed in production
+
+---
+
+### Test Scenario 8.25: Code Splitting Verification
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**When**: User loads application in production mode
+
+**Then**: Check Network tab → JS filter
+- [ ] Multiple JavaScript chunk files loaded
+- [ ] `react-vendor.[hash].js` exists
+- [ ] `ui-vendor.[hash].js` exists
+- [ ] `form-vendor.[hash].js` exists
+- [ ] Route-based chunks loaded on demand
+- [ ] Initial bundle size is optimized
+
+**When**: User navigates to different routes
+
+**Then**:
+- [ ] New chunks loaded only when needed
+- [ ] No duplicate code across chunks
+- [ ] Chunks cached by browser
+
+---
+
+## Section 8.5: Error Tracking
+
+### Test Scenario 8.26: Error Event Tracking
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: GTM Preview Mode is active
+
+**When**: JavaScript error occurs (simulate with DevTools):
+```javascript
+throw new Error("Test error");
+```
+
+**Then**:
+- [ ] `error` event fires in GTM
+- [ ] Event contains:
+  - [ ] `error_message`
+  - [ ] `error_stack`
+  - [ ] `page_path`
+- [ ] Error is logged to dataLayer
+- [ ] Application continues to function
+
+---
+
+## Section 8.6: Cross-Browser Testing
+
+### Test Scenario 8.27: Analytics Cross-Browser - Chrome
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**When**: User tests analytics in Chrome
+
+**Then**: All analytics events work:
+- [ ] GTM script loads
+- [ ] dataLayer is accessible
+- [ ] All 14 event types fire correctly
+- [ ] GTM Preview Mode works
+- [ ] No console errors
+
+---
+
+### Test Scenario 8.28: Analytics Cross-Browser - Firefox
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**When**: User tests analytics in Firefox
+
+**Then**:
+- [ ] GTM script loads correctly
+- [ ] dataLayer works same as Chrome
+- [ ] All events fire without issues
+- [ ] GTM Preview Mode works
+- [ ] Performance is comparable to Chrome
+
+---
+
+### Test Scenario 8.29: Analytics Cross-Browser - Safari
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**When**: User tests analytics in Safari (macOS/iOS)
+
+**Then**:
+- [ ] GTM script loads despite ITP restrictions
+- [ ] dataLayer functions correctly
+- [ ] Events track as expected
+- [ ] No tracking prevention issues
+- [ ] Touch events work on iOS
+
+---
+
+### Test Scenario 8.30: SEO Validation Tools
+
+**Priority**: High
+**Estimated Time**: 10 minutes
+
+**When**: Developer tests with SEO tools:
+
+1. **Google Rich Results Test**: https://search.google.com/test/rich-results
+   - [ ] Product schema valid
+   - [ ] Breadcrumb schema valid
+   - [ ] No errors reported
+
+2. **Google Mobile-Friendly Test**: https://search.google.com/test/mobile-friendly
+   - [ ] Page is mobile-friendly
+   - [ ] No usability issues
+
+3. **Meta Tags Checker**: https://metatags.io/
+   - [ ] All meta tags display correctly
+   - [ ] Open Graph preview looks good
+   - [ ] Twitter Card preview looks good
+
+4. **PageSpeed Insights**: https://pagespeed.web.dev/
+   - [ ] Performance score ≥ 85
+   - [ ] SEO score ≥ 90
+   - [ ] Accessibility score ≥ 85
+
+---
+
+## Phase 8 Summary - Quick Checklist
+
+### Phase 8: Analytics, SEO & Performance Optimization (30 scenarios)
+
+| Test Scenario | Result | Notes |
+|--------------|--------|-------|
+| 8.1 - GTM Script Loading | ⬜ Pass ⬜ Fail | |
+| 8.2 - GTM Preview Mode | ⬜ Pass ⬜ Fail | |
+| 8.3 - Page View Tracking | ⬜ Pass ⬜ Fail | |
+| 8.4 - Catalog View Tracking | ⬜ Pass ⬜ Fail | |
+| 8.5 - Filter Apply Tracking | ⬜ Pass ⬜ Fail | |
+| 8.6 - PDP View Tracking | ⬜ Pass ⬜ Fail | |
+| 8.7 - Add to Estimate Tracking | ⬜ Pass ⬜ Fail | |
+| 8.8 - Cart Update Tracking | ⬜ Pass ⬜ Fail | |
+| 8.9 - Search Tracking | ⬜ Pass ⬜ Fail | |
+| 8.10 - BOM Upload Tracking | ⬜ Pass ⬜ Fail | |
+| 8.11 - RFQ Flow Tracking | ⬜ Pass ⬜ Fail | |
+| 8.12 - Login Tracking | ⬜ Pass ⬜ Fail | |
+| 8.13 - Signup Tracking | ⬜ Pass ⬜ Fail | |
+| 8.14 - Contact Click Tracking | ⬜ Pass ⬜ Fail | |
+| 8.15 - Meta Tags Homepage | ⬜ Pass ⬜ Fail | |
+| 8.16 - Meta Tags Product Page | ⬜ Pass ⬜ Fail | |
+| 8.17 - Schema.org Product | ⬜ Pass ⬜ Fail | |
+| 8.18 - Schema.org Breadcrumb | ⬜ Pass ⬜ Fail | |
+| 8.19 - Robots.txt & Sitemap | ⬜ Pass ⬜ Fail | |
+| 8.20 - Lazy Loading Images | ⬜ Pass ⬜ Fail | |
+| 8.21 - Skeleton Loaders Catalog | ⬜ Pass ⬜ Fail | |
+| 8.22 - Skeleton Loaders PDP | ⬜ Pass ⬜ Fail | |
+| 8.23 - Virtual Scrolling Performance | ⬜ Pass ⬜ Fail | |
+| 8.24 - Build Size Optimization | ⬜ Pass ⬜ Fail | |
+| 8.25 - Code Splitting | ⬜ Pass ⬜ Fail | |
+| 8.26 - Error Event Tracking | ⬜ Pass ⬜ Fail | |
+| 8.27 - Cross-Browser Chrome | ⬜ Pass ⬜ Fail | |
+| 8.28 - Cross-Browser Firefox | ⬜ Pass ⬜ Fail | |
+| 8.29 - Cross-Browser Safari | ⬜ Pass ⬜ Fail | |
+| 8.30 - SEO Validation Tools | ⬜ Pass ⬜ Fail | |
+
+### Phase 8 Key Metrics
+
+**Analytics**:
+- [ ] All 14 event types tracking correctly
+- [ ] GTM dataLayer populated with accurate data
+- [ ] No tracking errors in console
+- [ ] Events fire at correct times
+
+**SEO**:
+- [ ] Meta tags complete and accurate
+- [ ] Schema.org markup valid
+- [ ] Robots.txt and sitemap.xml accessible
+- [ ] Rich results preview working
+
+**Performance**:
+- [ ] Images lazy load correctly
+- [ ] Skeleton loaders smooth
+- [ ] Build size optimized
+- [ ] Page load time < 3s
+
+### Critical Bugs Found
+1. _______________
+2. _______________
+3. _______________
+
+### Minor Issues Found
+1. _______________
+2. _______________
+3. _______________
+
+### Overall Test Result
+- ⬜ All tests passed
+- ⬜ Tests passed with minor issues
+- ⬜ Critical bugs found - DO NOT RELEASE
+
+---
+
 **Last Updated**: 2025-11-10
-**Version**: 1.4.0
-**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits), Phase 7 (Search Optimization & Advanced Filtering)
-**Total Test Scenarios**: 168 scenarios (134 previous + 34 Phase 7)
+**Version**: 1.5.0
+**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits), Phase 7 (Search Optimization & Advanced Filtering), Phase 8 (Analytics, SEO & Performance Optimization)
+**Total Test Scenarios**: 198 scenarios (168 previous + 30 Phase 8)
 **Next Review**: Before production release
