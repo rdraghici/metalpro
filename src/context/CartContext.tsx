@@ -8,6 +8,7 @@ import type {
 } from '@/types/cart';
 import type { Product } from '@/types/product';
 import { getProductById } from '@/lib/api/products';
+import { trackEstimateUpdate } from '@/lib/analytics/gtm';
 
 // =====================================================
 // CART CONTEXT INTERFACE
@@ -192,6 +193,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedLines = [...prev.lines, newLine];
       const updatedTotals = calculateTotals(updatedLines);
 
+      // Track cart update
+      trackEstimateUpdate({
+        itemCount: updatedLines.length,
+        totalWeight: updatedTotals.totalWeightKg,
+        totalPrice: updatedTotals.subtotal,
+      });
+
       return {
         ...prev,
         lines: updatedLines,
@@ -242,6 +250,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       const updatedTotals = calculateTotals(updatedLines);
 
+      // Track cart update
+      trackEstimateUpdate({
+        itemCount: updatedLines.length,
+        totalWeight: updatedTotals.totalWeightKg,
+        totalPrice: updatedTotals.subtotal,
+      });
+
       return {
         ...prev,
         lines: updatedLines,
@@ -257,6 +272,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const updatedLines = prev.lines.filter((line) => line.id !== lineId);
       const updatedTotals = calculateTotals(updatedLines);
 
+      // Track cart update
+      trackEstimateUpdate({
+        itemCount: updatedLines.length,
+        totalWeight: updatedTotals.totalWeightKg,
+        totalPrice: updatedTotals.subtotal,
+      });
+
       return {
         ...prev,
         lines: updatedLines,
@@ -270,6 +292,13 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = useCallback(() => {
     setCart(createEmptyCart());
     setIsDrawerOpen(false);
+
+    // Track cart cleared
+    trackEstimateUpdate({
+      itemCount: 0,
+      totalWeight: 0,
+      totalPrice: 0,
+    });
   }, []);
 
   // Accept disclaimer

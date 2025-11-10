@@ -8,6 +8,41 @@ interface FilterChipsProps {
   onClearAll?: () => void;
 }
 
+/**
+ * Get Romanian label for dimension filter (without units)
+ */
+function getDimensionName(dimension: string): string {
+  const labels: Record<string, string> = {
+    height: 'Înălțime',
+    width: 'Lățime',
+    webThickness: 'Grosime inimă',
+    flangeThickness: 'Grosime talpă',
+    weightPerM: 'Greutate pe metru',
+    thickness: 'Grosime',
+    widthMm: 'Lățime',
+    lengthMm: 'Lungime',
+    weightPerM2: 'Greutate pe metru pătrat',
+  };
+
+  // Convert to camelCase for lookup (handle various formats)
+  const key = dimension.toLowerCase();
+  const camelKey = dimension.charAt(0).toLowerCase() + dimension.slice(1);
+
+  return labels[camelKey] || labels[key] || dimension;
+}
+
+/**
+ * Get the unit for dimension filter
+ */
+function getDimensionUnit(dimension: string): string {
+  const key = dimension.toLowerCase();
+  const camelKey = dimension.charAt(0).toLowerCase() + dimension.slice(1);
+
+  if (camelKey === 'weightPerM') return 'kg/m';
+  if (camelKey === 'weightPerM2') return 'kg/m²';
+  return 'mm';
+}
+
 export default function FilterChips({ onRemoveFilter, onClearAll }: FilterChipsProps) {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -67,11 +102,72 @@ export default function FilterChips({ onRemoveFilter, onClearAll }: FilterChipsP
     });
   }
 
+  const producer = searchParams.get("producer");
+  if (producer) {
+    producer.split(",").forEach((value) => {
+      activeFilters.push({
+        type: "producer",
+        value,
+        label: `Producător: ${value}`,
+      });
+    });
+  }
+
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  if (minPrice || maxPrice) {
+    const priceLabel = minPrice && maxPrice
+      ? `Preț: ${minPrice}-${maxPrice} RON`
+      : minPrice
+      ? `Preț: min ${minPrice} RON`
+      : `Preț: max ${maxPrice} RON`;
+    activeFilters.push({
+      type: "price",
+      value: "range",
+      label: priceLabel,
+    });
+  }
+
+  // Dimension filters
+  searchParams.forEach((value, key) => {
+    if (key.startsWith("minDim_") || key.startsWith("maxDim_")) {
+      const dimKey = key.replace("minDim_", "").replace("maxDim_", "");
+      const hasMin = searchParams.has(`minDim_${dimKey}`);
+      const hasMax = searchParams.has(`maxDim_${dimKey}`);
+
+      if (!activeFilters.some(f => f.type === `dimension-${dimKey}`)) {
+        const minVal = searchParams.get(`minDim_${dimKey}`);
+        const maxVal = searchParams.get(`maxDim_${dimKey}`);
+        const dimName = getDimensionName(dimKey);
+        const unit = getDimensionUnit(dimKey);
+
+        const dimLabel = hasMin && hasMax
+          ? `${dimName}: ${minVal}-${maxVal}${unit}`
+          : hasMin
+          ? `${dimName}: min ${minVal}${unit}`
+          : `${dimName}: max ${maxVal}${unit}`;
+
+        activeFilters.push({
+          type: `dimension-${dimKey}`,
+          value: dimKey,
+          label: dimLabel,
+        });
+      }
+    }
+  });
+
   const removeFilter = (filterType: string, filterValue: string) => {
     const params = new URLSearchParams(searchParams);
 
     if (filterType === "search") {
       params.delete("search");
+    } else if (filterType === "price") {
+      params.delete("minPrice");
+      params.delete("maxPrice");
+    } else if (filterType.startsWith("dimension-")) {
+      const dimKey = filterValue;
+      params.delete(`minDim_${dimKey}`);
+      params.delete(`maxDim_${dimKey}`);
     } else {
       const currentValues = params.get(filterType);
       if (currentValues) {
@@ -97,7 +193,18 @@ export default function FilterChips({ onRemoveFilter, onClearAll }: FilterChipsP
     params.delete("grade");
     params.delete("standard");
     params.delete("availability");
+    params.delete("producer");
     params.delete("search");
+    params.delete("minPrice");
+    params.delete("maxPrice");
+
+    // Remove all dimension filters
+    Array.from(searchParams.keys()).forEach((key) => {
+      if (key.startsWith("minDim_") || key.startsWith("maxDim_")) {
+        params.delete(key);
+      }
+    });
+
     params.set("page", "1");
     setSearchParams(params);
     onClearAll?.();

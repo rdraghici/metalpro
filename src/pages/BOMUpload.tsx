@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { downloadBOMTemplate } from '@/lib/utils/csvExport';
 import { parseBOM } from '@/lib/utils/bomParser';
 import * as projectsApi from '@/lib/api/projects';
@@ -27,6 +28,7 @@ const BOMUpload = () => {
   const { toast } = useToast();
   const { addToCart } = useCart();
   const { user, isAuthenticated, promptSignup } = useAuth();
+  const analytics = useAnalytics();
 
   const [uploadResult, setUploadResult] = useState<BOMUploadResult | null>(null);
   const [bomRows, setBomRows] = useState<BOMRow[]>([]);
@@ -73,6 +75,18 @@ const BOMUpload = () => {
 
       setUploadResult(result);
       setBomRows(result.rows);
+
+      // Track BOM upload
+      const matchedRows = result.rows.filter(r => r.matchedProductId).length;
+      const unmatchedRows = result.rows.length - matchedRows;
+
+      analytics.trackBOMUpload({
+        fileName: result.fileName,
+        totalRows: result.totalRows,
+        matchedRows,
+        unmatchedRows,
+        parseErrors: result.parseErrors?.length || 0,
+      });
 
       if (result.parseErrors && result.parseErrors.length > 0) {
         toast({

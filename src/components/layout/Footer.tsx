@@ -1,7 +1,9 @@
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const Footer = () => {
+  const analytics = useAnalytics();
   return (
     <footer className="bg-secondary text-secondary-foreground">
       {/* Main Footer */}
@@ -74,11 +76,23 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-primary" />
-                <span>+40 xxx xxx xxx</span>
+                <a
+                  href="tel:+40xxxxxxxxx"
+                  className="hover:text-primary transition-colors"
+                  onClick={() => analytics.trackContactClick('phone')}
+                >
+                  +40 xxx xxx xxx
+                </a>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 text-primary" />
-                <span>vanzari@metalpro.ro</span>
+                <a
+                  href="mailto:vanzari@metalpro.ro"
+                  className="hover:text-primary transition-colors"
+                  onClick={() => analytics.trackContactClick('email')}
+                >
+                  vanzari@metalpro.ro
+                </a>
               </div>
               <div className="flex items-center gap-3 text-sm">
                 <MapPin className="h-4 w-4 text-primary" />

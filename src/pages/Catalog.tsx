@@ -1,105 +1,71 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { SlidersHorizontal } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ProductGrid from "@/components/catalog/ProductGrid";
-import FilterPanel from "@/components/catalog/FilterPanel";
+import FacetedFilters from "@/components/catalog/FacetedFilters";
+import AdvancedSearchModal from "@/components/search/AdvancedSearchModal";
 import FilterChips from "@/components/catalog/FilterChips";
 import Pagination from "@/components/catalog/Pagination";
 import Breadcrumbs from "@/components/catalog/Breadcrumbs";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getProductsWithFilters, getAvailableFamilies, getAvailableGrades, getAvailableStandards } from "@/lib/api/products";
+import {
+  applyFilters,
+  buildFilterOptionsWithCounts,
+  searchParamsToFilters,
+  filtersToSearchParams,
+  type FilterOptions
+} from "@/lib/utils/filterUtils";
 import type { Product, ProductFilters, ProductSort } from "@/types";
-import type { FilterOptions } from "@/components/catalog/FilterPanel";
+import { getAllProducts } from "@/lib/api/products";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 export default function Catalog() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const analytics = useAnalytics();
   const [products, setProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [dynamicFilterOptions, setDynamicFilterOptions] = useState<FilterOptions>({
     families: [],
     grades: [],
     standards: [],
-    availabilities: [
-      { value: "in_stock", label: "În Stoc" },
-      { value: "on_order", label: "La Comandă" },
-      { value: "backorder", label: "Indisponibil" },
-    ],
+    availabilities: [],
+    producers: [],
+    priceRange: { min: 0, max: 0 },
+    dimensionRanges: {},
   });
 
-  // Fetch filter options on mount
+  // Get current filters from URL
+  const currentFilters = searchParamsToFilters(searchParams);
+
+  // Track catalog view on mount
   useEffect(() => {
-    const fetchFilterOptions = async () => {
-      try {
-        const [families, grades, standards] = await Promise.all([
-          getAvailableFamilies(),
-          getAvailableGrades(),
-          getAvailableStandards(),
-        ]);
+    analytics.trackCatalogView(currentFilters.family);
+  }, []); // Only once on mount
 
-        setFilterOptions({
-          families,
-          grades,
-          standards,
-          availabilities: [
-            { value: "in_stock", label: "În Stoc" },
-            { value: "on_order", label: "La Comandă" },
-            { value: "backorder", label: "Indisponibil" },
-          ],
-        });
-      } catch (error) {
-        console.error("Error fetching filter options:", error);
-      }
-    };
+  // Handle filter changes
+  const handleFiltersChange = (newFilters: ProductFilters) => {
+    const params = filtersToSearchParams(newFilters);
+    params.set("page", "1"); // Reset to first page on filter change
+    setSearchParams(params);
 
-    fetchFilterOptions();
-  }, []);
-
-  // Parse filters from URL
-  const parseFiltersFromURL = (): ProductFilters => {
-    const filters: ProductFilters = {};
-
-    const family = searchParams.get("family");
-    if (family) {
-      filters.family = family.split(",") as any[];
-    }
-
-    const grade = searchParams.get("grade");
-    if (grade) {
-      filters.grade = grade.split(",");
-    }
-
-    const standard = searchParams.get("standard");
-    if (standard) {
-      filters.standard = standard.split(",");
-    }
-
-    const availability = searchParams.get("availability");
-    if (availability) {
-      filters.availability = availability.split(",") as any[];
-    }
-
-    const search = searchParams.get("search");
-    if (search) {
-      filters.search = search;
-    }
-
-    return filters;
-  };
-
-  // Parse sort from URL
-  const parseSortFromURL = (): ProductSort | undefined => {
-    const sort = searchParams.get("sort");
-    if (!sort) return undefined;
-
-    const [field, order] = sort.split("-");
-    return {
-      field: field as ProductSort["field"],
-      order: (order as ProductSort["order"]) || "asc",
-    };
+    // Track filter application
+    analytics.trackFilterApply({
+      family: newFilters.family,
+      grade: newFilters.grade,
+      standard: newFilters.standard,
+      availability: newFilters.availability,
+      priceRange: newFilters.priceRange,
+    });
   };
 
   // Handle sort change
@@ -111,25 +77,53 @@ export default function Catalog() {
       params.set("sort", value);
     }
     params.set("page", "1");
-    window.location.search = params.toString();
+    setSearchParams(params);
   };
 
-  // Fetch products
+  // Fetch ALL products once on mount for filter options
+  useEffect(() => {
+    const fetchAllProducts = async () => {
+      try {
+        const products = await getAllProducts();
+        setAllProducts(products);
+      } catch (error) {
+        console.error("Error fetching all products:", error);
+      }
+    };
+
+    fetchAllProducts();
+  }, []);
+
+  // Fetch filtered products and build filter options
   useEffect(() => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const filters = parseFiltersFromURL();
-        const sort = parseSortFromURL();
         const page = parseInt(searchParams.get("page") || "1");
         const limit = parseInt(searchParams.get("limit") || "12");
+        const sortParam = searchParams.get("sort");
+
+        let sort: ProductSort | undefined = undefined;
+        if (sortParam) {
+          const [field, order] = sortParam.split("-");
+          sort = {
+            field: field as ProductSort["field"],
+            order: (order as ProductSort["order"]) || "asc",
+          };
+        }
 
         setCurrentPage(page);
         setItemsPerPage(limit);
 
-        const response = await getProductsWithFilters(filters, sort, page, limit);
+        const response = await getProductsWithFilters(currentFilters, sort, page, limit);
         setProducts(response.products);
         setTotal(response.total);
+
+        // Build dynamic filter options from ALL products with accurate counts
+        if (allProducts.length > 0) {
+          const filterOpts = buildFilterOptionsWithCounts(allProducts, currentFilters);
+          setDynamicFilterOptions(filterOpts);
+        }
       } catch (error) {
         console.error("Error fetching products:", error);
       } finally {
@@ -138,7 +132,7 @@ export default function Catalog() {
     };
 
     fetchProducts();
-  }, [searchParams]);
+  }, [searchParams, allProducts]);
 
   const totalPages = Math.ceil(total / itemsPerPage);
 
@@ -168,7 +162,12 @@ export default function Catalog() {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
               {/* Sidebar - Filters */}
               <aside className="lg:col-span-1">
-                <FilterPanel options={filterOptions} />
+                <FacetedFilters
+                  filters={currentFilters}
+                  filterOptions={dynamicFilterOptions}
+                  onFiltersChange={handleFiltersChange}
+                  resultCount={total}
+                />
               </aside>
 
               {/* Main Content - Products */}
@@ -180,8 +179,19 @@ export default function Catalog() {
 
                 {/* Results header */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-                  <div className="text-lg">
-                    <span className="font-semibold">{total}</span> produse găsite
+                  <div className="flex items-center gap-3">
+                    <div className="text-lg">
+                      <span className="font-semibold">{total}</span> produse găsite
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAdvancedSearch(true)}
+                      className="gap-2"
+                    >
+                      <SlidersHorizontal className="h-4 w-4" />
+                      Căutare Avansată
+                    </Button>
                   </div>
 
                   {/* Sort dropdown */}
@@ -227,6 +237,17 @@ export default function Catalog() {
         </section>
       </main>
       <Footer />
+
+      {/* Advanced Search Modal */}
+      <AdvancedSearchModal
+        open={showAdvancedSearch}
+        onOpenChange={setShowAdvancedSearch}
+        currentFilters={currentFilters}
+        onApplyFilters={handleFiltersChange}
+        familyOptions={dynamicFilterOptions.families.map(f => f.value)}
+        gradeOptions={dynamicFilterOptions.grades.map(g => g.value)}
+        standardOptions={dynamicFilterOptions.standards.map(s => s.value)}
+      />
     </div>
   );
 }

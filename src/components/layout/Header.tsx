@@ -14,10 +14,12 @@ import SearchBar from "@/components/search/SearchBar";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const analytics = useAnalytics();
   const { itemCount, toggleDrawer } = useCart();
   const { user, isGuest, logout } = useAuth();
 
@@ -56,7 +58,16 @@ const Header = () => {
       <div className="gradient-hero text-white py-2">
         <div className="container mx-auto px-4 flex items-center justify-center gap-4 text-sm">
           <Phone className="h-4 w-4" />
-          <span>Contactează echipa de vânzări: +40 xxx xxx xxx (L-V 08:00-16:30)</span>
+          <span>Contactează echipa de vânzări:{" "}
+            <a
+              href="tel:+40xxxxxxxxx"
+              className="hover:underline font-medium"
+              onClick={() => analytics.trackContactClick('phone')}
+            >
+              +40 xxx xxx xxx
+            </a>
+            {" "}(L-V 08:00-16:30)
+          </span>
         </div>
       </div>
 

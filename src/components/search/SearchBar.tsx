@@ -4,6 +4,7 @@ import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useSearch } from "@/hooks/useSearch";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import SearchResults from "./SearchResults";
 
 interface SearchBarProps {
@@ -18,6 +19,7 @@ export default function SearchBar({
   onClose
 }: SearchBarProps) {
   const navigate = useNavigate();
+  const analytics = useAnalytics();
   const [isOpen, setIsOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -46,6 +48,10 @@ export default function SearchBar({
       inputRef.current?.blur();
       onClose?.();
     } else if (e.key === "Enter" && query.trim()) {
+      // Track search
+      const totalResults = results.products.length + results.categories.length;
+      analytics.trackSearch(query, totalResults);
+
       // Navigate to catalog with search query
       navigate(`/catalog?search=${encodeURIComponent(query)}`);
       setIsOpen(false);

@@ -305,6 +305,256 @@ This document provides detailed manual test scenarios for testing the Steel Craf
 
 ---
 
+### Test Scenario 2.6a: Filter Count Accuracy
+
+**Priority**: Critical
+
+**Estimated Time**: 5 minutes
+
+
+**Given**: User is on the catalog page with no filters applied
+
+**When**: User observes the filter options in "Categorie Produse"
+
+**Then**:
+- [ ] Each category displays a count badge on the right
+- [ ] Count badges show accurate numbers (e.g., "Profile Metalice (5)", "Table de Oțel (3)")
+- [ ] Sum of all category counts equals or exceeds total product count (products can belong to multiple categories)
+
+
+**When**: User checks "Profile Metalice" checkbox
+
+**Then**:
+- [ ] URL updates to ?family=profiles
+- [ ] Product count at top shows filtered total
+- [ ] Other filter categories (Grad, Standard, Disponibilitate, Producător) update their counts
+- [ ] Counts in other categories reflect only products that are profiles
+
+
+**When**: User additionally applies "Grad: S235JR" filter
+
+**Then**:
+- [ ] Product grid shows only profiles with S235JR grade
+- [ ] Standard filter counts update to show only standards available for S235JR profiles
+- [ ] Availability filter counts update to show availability for S235JR profiles
+- [ ] Producer filter counts update to show producers who make S235JR profiles
+- [ ] All displayed counts are accurate when clicked
+
+
+**When**: User clicks on any filter option showing a specific count (e.g., "ArcelorMittal (3)")
+
+**Then**:
+- [ ] Exactly 3 products appear in the product grid (matching the count)
+- [ ] The count does NOT increase or change unexpectedly
+- [ ] Filter count remains consistent with actual results
+
+---
+
+### Test Scenario 2.6b: Dynamic Filter Options (Zero-Count Hiding)
+
+**Priority**: Critical
+
+**Estimated Time**: 4 minutes
+
+
+**Given**: User is on the catalog page with no filters applied
+
+**When**: User expands all filter sections (Familie, Grad, Standard, Disponibilitate, Producător)
+
+**Then**:
+- [ ] All filter sections show their available options
+- [ ] Each option has a count badge greater than 0
+- [ ] No options show "(0)" count
+
+
+**When**: User selects "Profile Metalice" from Categorie Produse
+
+**Then**:
+- [ ] Grad filter updates to show only grades available in profiles
+- [ ] Any grades with 0 profile products are hidden (not shown at all)
+- [ ] Standard filter updates to show only standards available in profiles
+- [ ] Any standards with 0 profile products are hidden
+- [ ] Availability filter updates (only availabilities with >0 products shown)
+- [ ] Producer filter updates (only producers with >0 profile products shown)
+
+
+**When**: User additionally selects "S235JR" from Grad filter
+
+**Then**:
+- [ ] Standard filter shows only standards for S235JR profiles
+- [ ] Standards with 0 matching products are completely hidden (not showing with "0")
+- [ ] Availability options with 0 matching products are hidden
+- [ ] Producer options with 0 matching products are hidden
+- [ ] All visible options have count > 0
+
+
+**When**: User removes all filters
+
+**Then**:
+- [ ] All filter options return to initial state
+- [ ] Previously hidden options become visible again
+- [ ] All counts update to reflect full catalog
+
+---
+
+### Test Scenario 2.6c: Filter Option Persistence
+
+**Priority**: Critical
+
+**Estimated Time**: 3 minutes
+
+
+**Given**: User is on the catalog page with no filters applied
+
+**When**: User clicks on "Categorie Produse" accordion
+
+**Then**:
+- [ ] All 6 product family options are visible:
+  - Profile Metalice
+  - Table de Oțel
+  - Țevi și Tuburi
+  - Elemente de Asamblare
+  - Oțel Inoxidabil
+  - Metale Neferoase
+
+
+**When**: User checks "Profile Metalice"
+
+**Then**:
+- [ ] "Profile Metalice" checkbox is checked
+- [ ] All other 5 family options remain visible in the list
+- [ ] "Table de Oțel" is still visible (not disappeared)
+- [ ] "Țevi și Tuburi" is still visible
+- [ ] "Elemente de Asamblare" is still visible
+- [ ] "Oțel Inoxidabil" is still visible
+- [ ] "Metale Neferoase" is still visible
+- [ ] User can still select additional family options
+
+
+**When**: User checks "Table de Oțel" additionally
+
+**Then**:
+- [ ] Both "Profile Metalice" and "Table de Oțel" are checked
+- [ ] All 6 family options remain visible
+- [ ] Other unchecked options (Țevi, Elemente, Oțel Inoxidabil, Metale Neferoase) are still selectable
+
+
+**When**: User observes "Grad Material" filter section
+
+**Then**:
+- [ ] All grade options remain visible (not disappeared)
+- [ ] Grades show updated counts based on selected families
+- [ ] User can select any grade option
+
+
+**When**: User observes "Standard" filter section
+
+**Then**:
+- [ ] All standard options remain visible
+- [ ] Standards show updated counts based on selected families
+- [ ] No filter categories have completely disappeared
+
+
+**When**: User observes "Disponibilitate" and "Producător" sections
+
+**Then**:
+- [ ] All availability options remain visible
+- [ ] All producer options remain visible
+- [ ] All 5 filter categories (Familie, Grad, Standard, Disponibilitate, Producător) are always present
+
+---
+
+### Test Scenario 2.6d: Producer Filter
+
+**Priority**: High
+
+**Estimated Time**: 3 minutes
+
+
+**Given**: User is on the catalog page
+
+**When**: User clicks on "Producător" accordion in filter panel
+
+**Then**:
+- [ ] Producer filter section expands
+- [ ] List of producers is visible (e.g., ArcelorMittal, Liberty Steel, Voestalpine, etc.)
+- [ ] Each producer option has an accurate count badge
+
+
+**When**: User checks "ArcelorMittal" checkbox
+
+**Then**:
+- [ ] Products are filtered to show only ArcelorMittal products
+- [ ] URL updates to include ?producer=ArcelorMittal
+- [ ] Filter chip displays "Producător: ArcelorMittal"
+- [ ] Product count shows accurate total
+- [ ] Product cards show "ArcelorMittal" as producer
+
+
+**When**: User checks additional producer (e.g., "Liberty Steel")
+
+**Then**:
+- [ ] Products show both ArcelorMittal and Liberty Steel products
+- [ ] URL updates to ?producer=ArcelorMittal,Liberty Steel
+- [ ] Two producer filter chips appear
+- [ ] Product count increases to include both producers
+
+
+**When**: User applies family filter (e.g., "Profile Metalice")
+
+**Then**:
+- [ ] Producer filter updates to show only producers who make profiles
+- [ ] Producers with 0 profile products are hidden
+- [ ] Displayed producer counts are accurate for profiles only
+
+---
+
+### Test Scenario 2.6e: Category Label Correctness
+
+**Priority**: High
+
+**Estimated Time**: 2 minutes
+
+
+**Given**: User is on the catalog page
+
+**When**: User expands "Categorie Produse" filter section
+
+**Then**:
+- [ ] Category labels match EXACTLY with catalog categories:
+  - "Profile Metalice" (not "Profile" or "Profiles")
+  - "Table de Oțel" (not "Table" or "Plăci")
+  - "Țevi și Tuburi" (not "Țevi" or "Pipes")
+  - "Elemente de Asamblare" (not "Elemente de Fixare" or "Fasteners")
+  - "Oțel Inoxidabil" (not "Inox" or "Stainless")
+  - "Metale Neferoase" (not "Neferoase" or "Non-ferrous")
+
+
+**When**: User checks "Profile Metalice" and looks at the filter chip
+
+**Then**:
+- [ ] Filter chip displays "Familie: Profile Metalice" (full name)
+
+
+**When**: User navigates to category page /catalog/profiles
+
+**Then**:
+- [ ] Breadcrumb shows "Profile Metalice" (matching filter label)
+- [ ] Page title uses same label as filter
+
+
+**When**: User compares filter labels with category navigation
+
+**Then**:
+- [ ] All 6 category labels are consistent across:
+  - Filter panel checkboxes
+  - Filter chips
+  - Breadcrumbs
+  - Category page titles
+  - Category navigation links
+
+---
+
 ### Test Scenario 2.7: Sort Products
 
 **Priority**: High
@@ -5000,8 +5250,1085 @@ profiles,S235JR,HEA 100,10,buc,Pentru construcție
 
 ---
 
-**Last Updated**: 2025-11-09
-**Version**: 1.3.0
-**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits)
-**Total Test Scenarios**: 134 scenarios (109 previous + 25 Phase 6)
+## Phase 7: Search Optimization & Advanced Filtering
+
+### Test Scenario 7.1: Faceted Filters - Basic Display
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is on the catalog page (/catalog)
+
+**When**: User views the left sidebar filter panel
+
+**Then**:
+- [ ] "Filtrează" heading is visible
+- [ ] Result count shows "X produse găsite"
+- [ ] Filter sections are displayed:
+  - [ ] Categorie Produse (Product Family)
+  - [ ] Grad Material (Grade)
+  - [ ] Standard
+  - [ ] Disponibilitate (Availability)
+- [ ] Each filter section has a chevron icon (up/down)
+- [ ] Some sections are open by default (family, grade, availability)
+- [ ] Each filter option shows a count badge on the right
+
+---
+
+### Test Scenario 7.2: Faceted Filters - Multi-Select Checkboxes
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User is on the catalog page with products visible
+
+**When**: User clicks checkbox "Profile" in "Categorie Produse"
+
+**Then**:
+- [ ] Checkbox becomes checked
+- [ ] Product grid updates to show only profiles
+- [ ] Result count updates to show filtered count
+- [ ] URL updates with `?family=profiles`
+- [ ] Filter chip appears below filters showing "Categorie: Profile"
+
+**When**: User additionally clicks checkbox "Table" in "Categorie Produse"
+
+**Then**:
+- [ ] Both "Profile" and "Table" checkboxes are checked
+- [ ] Product grid shows both profiles AND plates
+- [ ] URL updates to `?family=profiles,plates`
+- [ ] Two filter chips appear: "Categorie: Profile" and "Categorie: Table"
+
+**When**: User unchecks "Profile"
+
+**Then**:
+- [ ] Only "Table" checkbox remains checked
+- [ ] Product grid shows only plates
+- [ ] URL updates to `?family=plates`
+- [ ] Only one filter chip remains: "Categorie: Table"
+
+---
+
+### Test Scenario 7.3: Faceted Filters - Grade Filter with Scroll
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is on the catalog page
+
+**When**: User clicks to expand "Grad Material" section
+
+**Then**:
+- [ ] Section expands to show grade options
+- [ ] Checkboxes are displayed for each grade (S235JR, S355J2, etc.)
+- [ ] Each option shows a count badge
+- [ ] If more than 10 grades, section has scroll (max-height with overflow)
+
+**When**: User selects "S235JR" and "S355J2"
+
+**Then**:
+- [ ] Both checkboxes are checked
+- [ ] Product grid filters to show only products with those grades
+- [ ] URL updates with `?grade=S235JR,S355J2`
+- [ ] Two filter chips appear for the selected grades
+
+---
+
+### Test Scenario 7.4: Faceted Filters - Range Sliders (Price)
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on the catalog page with products that have prices
+
+**When**: User expands "Interval Preț" (Price Range) section
+
+**Then**:
+- [ ] Dual-handle range slider is visible
+- [ ] Min price displays below left handle
+- [ ] Max price displays below right handle
+- [ ] Initial range shows full price range of available products
+
+**When**: User drags the left handle to increase minimum price to 100 RON
+
+**Then**:
+- [ ] Left handle moves to new position
+- [ ] Display updates to show "100 RON"
+- [ ] Product grid filters to show products >= 100 RON
+- [ ] URL updates with `?minPrice=100`
+- [ ] Filter chip appears: "Preț: min 100 RON"
+
+**When**: User drags the right handle to decrease maximum price to 500 RON
+
+**Then**:
+- [ ] Right handle moves to new position
+- [ ] Display updates to show "500 RON"
+- [ ] Product grid filters to show products >= 100 AND <= 500 RON
+- [ ] URL updates to `?minPrice=100&maxPrice=500`
+- [ ] Filter chip updates to: "Preț: 100-500 RON"
+
+---
+
+### Test Scenario 7.5: Faceted Filters - Dimension Range Sliders
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is on catalog with products that have dimensions (thickness, width, length)
+
+**When**: User expands a dimension filter section (e.g., "Thickness (mm)")
+
+**Then**:
+- [ ] Dual-handle range slider is visible
+- [ ] Min and max values display in mm
+- [ ] Initial range covers all available values for that dimension
+
+**When**: User adjusts thickness slider to 5-20mm range
+
+**Then**:
+- [ ] Slider handles move to specified positions
+- [ ] Display shows "5 mm" and "20 mm"
+- [ ] Product grid filters to products with thickness 5-20mm
+- [ ] URL updates with `?minDim_thickness=5&maxDim_thickness=20`
+- [ ] Filter chip appears: "thickness: 5-20mm"
+
+**When**: User adjusts multiple dimension sliders (thickness + width)
+
+**Then**:
+- [ ] All dimension filters are applied (AND logic)
+- [ ] Multiple dimension chips appear
+- [ ] URL contains all dimension parameters
+
+---
+
+### Test Scenario 7.6: Faceted Filters - Clear All Functionality
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has applied multiple filters:
+- Family: profiles, plates
+- Grade: S235JR
+- Price: 100-500 RON
+- Availability: in_stock
+
+**When**: User views the filter panel header
+
+**Then**:
+- [ ] "Șterge Tot (X)" button is visible (X = active filter count)
+- [ ] Active filter count is accurate
+
+**When**: User clicks "Șterge Tot" button
+
+**Then**:
+- [ ] All checkboxes become unchecked
+- [ ] All range sliders reset to full range
+- [ ] Product grid shows all products
+- [ ] All filter chips disappear
+- [ ] URL clears all filter parameters (only `?page=1` remains)
+- [ ] Result count shows total product count
+
+---
+
+### Test Scenario 7.7: Filter Chips - Display and Removal
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is on catalog page with no filters applied
+
+**When**: User applies filters (family: profiles, grade: S235JR, search: "UNP")
+
+**Then**:
+- [ ] Filter chips section appears above product grid
+- [ ] Label "Filtre active:" is visible
+- [ ] Three filter chips are displayed:
+  - "Categorie: Profile Metalice"
+  - "Grad: S235JR"
+  - "Căutare: \"UNP\""
+- [ ] Each chip has an X close button
+- [ ] "Șterge toate" button appears (if > 1 chip)
+
+**When**: User clicks X button on "Grad: S235JR" chip
+
+**Then**:
+- [ ] That specific chip disappears
+- [ ] Grade filter is removed from sidebar
+- [ ] Product grid updates to remove grade filter
+- [ ] URL updates (removes `grade=S235JR`)
+- [ ] Other filters remain active
+
+**When**: User clicks "Șterge toate" button
+
+**Then**:
+- [ ] All filter chips disappear
+- [ ] All filters are cleared
+- [ ] Product grid shows all products
+- [ ] URL resets to clean state
+
+---
+
+### Test Scenario 7.8: Advanced Search Modal - Open and Close
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: User is on the catalog page
+
+**When**: User looks at the results header area
+
+**Then**:
+- [ ] "Căutare Avansată" button is visible
+- [ ] Button has a sliders icon
+- [ ] Button is positioned near the product count
+
+**When**: User clicks "Căutare Avansată" button
+
+**Then**:
+- [ ] Modal dialog opens
+- [ ] Modal title shows "Căutare Avansată" with search icon
+- [ ] Modal description: "Construiește o căutare complexă folosind multiple criterii"
+- [ ] Modal has scrollable content area
+- [ ] Background is dimmed/blurred
+
+**When**: User clicks outside the modal or presses ESC key
+
+**Then**:
+- [ ] Modal closes
+- [ ] User returns to catalog page
+- [ ] No filters are applied (if not clicked "Aplică Căutarea")
+
+---
+
+### Test Scenario 7.9: Advanced Search Modal - Search Text Input
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has opened the advanced search modal
+
+**When**: User views the search section
+
+**Then**:
+- [ ] Search input field is visible
+- [ ] Label: "Caută în titlu, SKU, descriere"
+- [ ] Placeholder: "Ex: Profile UNP, S235JR, etc."
+
+**When**: User types "UNP 100" in the search field
+
+**Then**:
+- [ ] Text appears in the input field
+- [ ] Input field shows current text value
+
+**When**: User types and then applies search
+
+**Then**:
+- [ ] Search text is included in filters
+- [ ] Products are filtered by search term
+
+---
+
+### Test Scenario 7.10: Advanced Search Modal - Category Selection
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has opened the advanced search modal
+
+**When**: User views "Categorie Produse" section
+
+**Then**:
+- [ ] Six category checkboxes are visible:
+  - Profile
+  - Table
+  - Țevi
+  - Elemente de Fixare
+  - Inox
+  - Neferoase
+- [ ] Checkboxes are arranged in grid (2-3 columns)
+
+**When**: User selects "Profile" and "Table" checkboxes
+
+**Then**:
+- [ ] Both checkboxes show as checked
+- [ ] "Filtre Curente" section updates to show selected categories
+
+**When**: User unchecks "Profile"
+
+**Then**:
+- [ ] "Profile" checkbox becomes unchecked
+- [ ] Only "Table" remains selected
+- [ ] "Filtre Curente" section updates
+
+---
+
+### Test Scenario 7.11: Advanced Search Modal - Grade and Standard Selection
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User has opened the advanced search modal
+
+**When**: User views "Grad Material" section
+
+**Then**:
+- [ ] Grade checkboxes are displayed in grid layout
+- [ ] If many grades available, section has scroll (max-height)
+- [ ] All available grades from products are shown
+
+**When**: User selects multiple grades (e.g., S235JR, S355J2, S275JR)
+
+**Then**:
+- [ ] All selected checkboxes show as checked
+- [ ] "Filtre Curente" section shows: "Grad: S235JR, S355J2, S275JR"
+
+**When**: User scrolls to "Standard" section and selects standards
+
+**Then**:
+- [ ] Standard checkboxes work similarly to grades
+- [ ] Multiple standards can be selected
+- [ ] "Filtre Curente" updates with standard selections
+
+---
+
+### Test Scenario 7.12: Advanced Search Modal - Availability Filter
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User has opened the advanced search modal
+
+**When**: User views "Disponibilitate" section
+
+**Then**:
+- [ ] Three availability checkboxes are visible:
+  - În Stoc
+  - La Comandă
+  - Comandă Viitoare
+- [ ] Checkboxes are arranged in grid
+
+**When**: User selects "În Stoc" and "La Comandă"
+
+**Then**:
+- [ ] Both checkboxes show as checked
+- [ ] "Filtre Curente" shows: "Disponibilitate: În Stoc, La Comandă"
+
+---
+
+### Test Scenario 7.13: Advanced Search Modal - Current Filter Summary
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User has selected multiple filters in the advanced search modal:
+- Categories: Profile, Table
+- Grades: S235JR
+- Availability: În Stoc
+- Search: "UNP"
+
+**When**: User scrolls to "Filtre Curente" section
+
+**Then**:
+- [ ] Section is visible with gray background
+- [ ] Human-readable filter description is displayed
+- [ ] Description includes all selected filters separated by " | "
+- [ ] Example: "Categorie: profiles, plates | Grad: S235JR | Disponibilitate: in_stock | Căutare: \"UNP\""
+
+**When**: User adds or removes a filter
+
+**Then**:
+- [ ] "Filtre Curente" section updates immediately
+- [ ] All active filters are reflected in the description
+
+---
+
+### Test Scenario 7.14: Advanced Search Modal - Apply Search
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User has selected filters in advanced search modal
+
+**When**: User clicks "Aplică Căutarea" button
+
+**Then**:
+- [ ] Modal closes
+- [ ] Catalog page shows filtered products
+- [ ] All selected filters are applied to product grid
+- [ ] Filter chips appear for all active filters
+- [ ] Sidebar filters reflect the applied selections
+- [ ] URL updates with all filter parameters
+- [ ] Toast notification appears: "Filtre aplicate" with filter description
+
+**When**: User has no filters selected and clicks "Aplică Căutarea"
+
+**Then**:
+- [ ] Button is disabled (or does nothing)
+- [ ] User cannot apply empty search
+
+---
+
+### Test Scenario 7.15: Advanced Search Modal - Clear Filters
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User has multiple filters selected in advanced search modal
+
+**When**: User clicks "Șterge Tot" button
+
+**Then**:
+- [ ] All checkboxes become unchecked
+- [ ] Search text input is cleared
+- [ ] "Filtre Curente" section disappears or shows "Fără filtre"
+- [ ] Modal remains open
+
+**When**: User clicks "Anulează" button
+
+**Then**:
+- [ ] Modal closes
+- [ ] No filters are applied to catalog
+- [ ] User returns to previous filter state
+
+---
+
+### Test Scenario 7.16: Saved Searches - Save New Search (Authenticated User)
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is logged in and has filters selected in advanced search modal:
+- Category: profiles
+- Grade: S235JR
+- Availability: in_stock
+
+**When**: User clicks "Salvează" button
+
+**Then**:
+- [ ] Save search form appears
+- [ ] Input field is shown: "Nume Căutare"
+- [ ] Placeholder: "Ex: Profile S235JR în stoc"
+- [ ] "Salvează" and "Anulează" buttons are visible
+
+**When**: User enters name "Profile S235JR Standard" and clicks "Salvează"
+
+**Then**:
+- [ ] Toast notification: "Căutare salvată: Profile S235JR Standard"
+- [ ] Save form disappears
+- [ ] Search is saved to localStorage with user ID
+- [ ] "Căutări Salvate" section appears (if not already visible)
+- [ ] New saved search appears in the list
+
+**When**: User tries to save search with empty name
+
+**Then**:
+- [ ] Toast error: "Nume lipsă: Te rugăm să introduci un nume pentru căutare"
+- [ ] Search is not saved
+
+**When**: User tries to save duplicate filters (same filters already saved)
+
+**Then**:
+- [ ] Toast error: "Căutare existentă: O căutare similară există deja: [name]"
+- [ ] Search is not saved
+
+---
+
+### Test Scenario 7.17: Saved Searches - Load Saved Search
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged in and has saved searches in localStorage
+
+**When**: User opens advanced search modal and views "Căutări Salvate" section
+
+**Then**:
+- [ ] Section header shows star icon and "Căutări Salvate" label
+- [ ] List of saved searches is displayed
+- [ ] Each saved search shows:
+  - Search name
+  - Filter description (small gray text)
+  - Delete button (trash icon)
+- [ ] List has scroll if more than 5 saved searches
+
+**When**: User clicks on a saved search item
+
+**Then**:
+- [ ] All filters from that search are loaded
+- [ ] Checkboxes update to reflect saved filters
+- [ ] Search text input updates if search term was saved
+- [ ] "Filtre Curente" section shows loaded filters
+- [ ] Toast notification: "Căutare încărcată: [search name]"
+
+---
+
+### Test Scenario 7.18: Saved Searches - Delete Saved Search
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User has saved searches and is viewing them in the modal
+
+**When**: User clicks trash icon on a saved search
+
+**Then**:
+- [ ] Saved search is removed from the list
+- [ ] Toast notification: "Căutare ștearsă: [search name]"
+- [ ] localStorage is updated (search removed)
+- [ ] If no more saved searches, section may hide or show empty state
+
+---
+
+### Test Scenario 7.19: Recent Searches - Display and Load
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: User has performed several searches in the past
+
+**When**: User opens advanced search modal
+
+**Then**:
+- [ ] "Căutări Recente" section is visible (if recent searches exist)
+- [ ] Section header shows clock icon and label
+- [ ] Up to 5 most recent searches are displayed
+- [ ] Each recent search shows filter description (gray text)
+- [ ] Searches are clickable buttons
+
+**When**: User clicks on a recent search
+
+**Then**:
+- [ ] Filters from that search are loaded into modal
+- [ ] All checkboxes and inputs update
+- [ ] "Filtre Curente" shows loaded filters
+- [ ] Toast notification: "Căutare încărcată: Căutarea recentă a fost încărcată"
+
+**When**: User applies a search
+
+**Then**:
+- [ ] That search is automatically added to recent searches
+- [ ] Recent searches list updates (most recent appears first)
+- [ ] If more than 10 recent searches, oldest is removed
+- [ ] Recent searches are stored in localStorage with user ID
+
+---
+
+### Test Scenario 7.20: Saved Searches - Guest User Behavior
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User is NOT logged in
+
+**When**: User opens advanced search modal with filters selected
+
+**Then**:
+- [ ] "Salvează" button is NOT visible
+- [ ] "Căutări Salvate" section is NOT visible
+- [ ] User cannot save searches
+
+**When**: User applies filters
+
+**Then**:
+- [ ] Filters are applied normally
+- [ ] Recent searches still work (localStorage with guest ID)
+- [ ] "Căutări Recente" section shows recent guest searches
+
+---
+
+### Test Scenario 7.21: URL Persistence - Share Filtered URL
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User has applied multiple filters:
+- Family: profiles
+- Grade: S235JR, S355J2
+- Availability: in_stock
+- Price: 100-500 RON
+- Search: "UNP"
+
+**When**: User copies the current URL from browser address bar
+
+**Then**:
+- [ ] URL contains all filter parameters:
+  - `?family=profiles`
+  - `&grade=S235JR,S355J2`
+  - `&availability=in_stock`
+  - `&minPrice=100&maxPrice=500`
+  - `&search=UNP`
+- [ ] Parameters are properly encoded
+
+**When**: User pastes this URL in a new browser tab/window
+
+**Then**:
+- [ ] Page loads with all filters applied
+- [ ] Product grid shows filtered results
+- [ ] Filter chips display all active filters
+- [ ] Sidebar filters reflect the URL parameters:
+  - Checkboxes are checked
+  - Range sliders show correct positions
+- [ ] Search term is not visible in UI (only in filter chip)
+
+**When**: User shares URL with another user (or different browser)
+
+**Then**:
+- [ ] Other user sees the same filtered view
+- [ ] All filters are applied correctly
+- [ ] Product count matches
+
+---
+
+### Test Scenario 7.22: URL Persistence - Filter Changes Update URL
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is on catalog page
+
+**When**: User selects a filter (e.g., Family: profiles)
+
+**Then**:
+- [ ] URL immediately updates to include `?family=profiles`
+- [ ] Browser history is updated (back button will work)
+- [ ] Page does NOT reload (SPA behavior)
+
+**When**: User selects another filter (e.g., Grade: S235JR)
+
+**Then**:
+- [ ] URL updates to include both: `?family=profiles&grade=S235JR`
+- [ ] Order of parameters is consistent
+
+**When**: User removes a filter
+
+**Then**:
+- [ ] URL updates to remove that parameter
+- [ ] Other parameters remain
+- [ ] If last filter removed, URL becomes clean `/catalog`
+
+**When**: User uses browser back button
+
+**Then**:
+- [ ] Filters revert to previous state
+- [ ] Product grid updates
+- [ ] Filter UI updates (checkboxes, sliders)
+
+---
+
+### Test Scenario 7.23: Filter Counts - Dynamic Badge Updates
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is on catalog page with 100 total products
+
+**When**: User views faceted filters sidebar
+
+**Then**:
+- [ ] Each filter option shows a count badge
+- [ ] Badge shows number of products matching that filter
+- [ ] Example: "Profile (45)" means 45 products are profiles
+
+**When**: User selects "Profile" category filter
+
+**Then**:
+- [ ] Product grid filters to 45 profiles
+- [ ] Filter badges update to show counts WITHIN profiles:
+  - Grade badges show counts of grades within profiles
+  - Standard badges show counts of standards within profiles
+  - Availability badges show counts within profiles
+- [ ] Total result count shows "45 produse găsite"
+
+**When**: User additionally selects "S235JR" grade
+
+**Then**:
+- [ ] Product grid filters further (e.g., 12 products)
+- [ ] All filter badges update again
+- [ ] Badges show counts for profiles AND S235JR
+- [ ] Some filter options may show count (0) if no products match
+
+**Note**: In current implementation, badges may show counts from current page only, not full dataset. Document actual behavior.
+
+---
+
+### Test Scenario 7.24: Filter Collapsible Sections
+
+**Priority**: Low
+**Estimated Time**: 3 minutes
+
+**Given**: User is on catalog page
+
+**When**: User views the faceted filters sidebar
+
+**Then**:
+- [ ] Some filter sections are open by default (family, grade, availability)
+- [ ] Other sections are closed by default
+- [ ] Each section has a chevron icon:
+  - Down chevron when collapsed
+  - Up chevron when expanded
+
+**When**: User clicks on a collapsed section header (e.g., "Standard")
+
+**Then**:
+- [ ] Section expands smoothly
+- [ ] Chevron icon changes from down to up
+- [ ] Filter options become visible
+
+**When**: User clicks on an expanded section header
+
+**Then**:
+- [ ] Section collapses smoothly
+- [ ] Chevron icon changes from up to down
+- [ ] Filter options are hidden
+- [ ] Selected filters remain active (collapsing doesn't remove them)
+
+**When**: User collapses a section with active filters
+
+**Then**:
+- [ ] Section collapses but filters remain applied
+- [ ] Product grid stays filtered
+- [ ] Filter chips remain visible
+
+---
+
+### Test Scenario 7.25: Combination Filters - Complex Scenarios
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on catalog with diverse product set
+
+**When**: User applies multiple filter types simultaneously:
+1. Family: profiles, plates
+2. Grade: S235JR
+3. Availability: in_stock
+4. Price range: 50-300 RON
+5. Thickness: 5-15mm
+6. Search: "UNP"
+
+**Then**:
+- [ ] All filters are applied with AND logic
+- [ ] Product grid shows only products matching ALL criteria:
+  - (profiles OR plates) AND
+  - (S235JR) AND
+  - (in_stock) AND
+  - (price 50-300) AND
+  - (thickness 5-15mm) AND
+  - (contains "UNP" in title/SKU/description)
+- [ ] Multiple filter chips appear for all filters
+- [ ] URL contains all filter parameters
+- [ ] Result count reflects fully filtered set
+
+**When**: User removes one filter (e.g., search term)
+
+**Then**:
+- [ ] Product grid expands to include more products
+- [ ] Result count increases
+- [ ] Other filters remain active
+- [ ] URL updates to remove only that parameter
+
+---
+
+### Test Scenario 7.26: Pagination with Filters
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has filters applied that result in 50 products (12 per page = 5 pages)
+
+**When**: User is on page 3 of filtered results
+
+**Then**:
+- [ ] URL shows `?family=profiles&page=3`
+- [ ] Products 25-36 are displayed
+- [ ] Pagination shows "Page 3 of 5"
+
+**When**: User adds or removes a filter
+
+**Then**:
+- [ ] User is automatically reset to page 1
+- [ ] URL updates to `?family=profiles,plates&page=1`
+- [ ] First 12 products of new filtered set are shown
+- [ ] Pagination updates to reflect new total pages
+
+**When**: User applies filters that result in fewer than 12 products
+
+**Then**:
+- [ ] All products are shown on page 1
+- [ ] Pagination component may hide or show "Page 1 of 1"
+
+---
+
+### Test Scenario 7.27: Sort with Filters
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has filters applied
+
+**When**: User changes sort order to "Preț (Crescător)"
+
+**Then**:
+- [ ] Filtered products are sorted by price ascending
+- [ ] Filters remain active
+- [ ] URL updates: `?family=profiles&sort=price-asc`
+- [ ] Page resets to 1
+
+**When**: User changes sort to "Nume (A-Z)"
+
+**Then**:
+- [ ] Filtered products are sorted alphabetically
+- [ ] Filters remain active
+- [ ] URL updates sort parameter
+- [ ] Product order changes
+
+**When**: User changes sort back to "Implicit"
+
+**Then**:
+- [ ] Sort parameter is removed from URL
+- [ ] Products return to default order
+- [ ] Filters remain active
+
+---
+
+### Test Scenario 7.28: Advanced Search Modal - Enter Key Behavior
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: User has advanced search modal open
+
+**When**: User types in search text input and presses Enter key
+
+**Then**:
+- [ ] Modal does NOT close
+- [ ] Search is not automatically applied
+- [ ] User must click "Aplică Căutarea" button
+
+**When**: User is in save search name input and presses Enter
+
+**Then**:
+- [ ] Search is saved (same as clicking "Salvează")
+- [ ] Save form closes
+- [ ] Toast notification appears
+
+---
+
+### Test Scenario 7.29: Filter Persistence - Browser Refresh
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User has applied filters with URL: `?family=profiles&grade=S235JR`
+
+**When**: User refreshes the browser (F5 or Cmd+R)
+
+**Then**:
+- [ ] Page reloads with same filters applied
+- [ ] Product grid shows filtered results
+- [ ] Filter chips are displayed
+- [ ] Sidebar filters show correct selections
+- [ ] URL parameters are unchanged
+
+---
+
+### Test Scenario 7.30: Mobile Responsiveness - Filters
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is on mobile device (375px width)
+
+**When**: User views catalog page
+
+**Then**:
+- [ ] Filter sidebar may be hidden or collapsed on mobile
+- [ ] "Filters" button or icon is visible to open filters
+- [ ] Advanced search button is visible and accessible
+- [ ] Filter chips wrap to multiple rows if needed
+
+**When**: User opens filters on mobile
+
+**Then**:
+- [ ] Filters open as overlay/drawer or push content
+- [ ] All filter options are accessible
+- [ ] Checkboxes are large enough to tap (min 44x44px)
+- [ ] Range sliders are draggable on touch
+
+**When**: User opens advanced search modal on mobile
+
+**Then**:
+- [ ] Modal is full-screen or near full-screen
+- [ ] All sections are scrollable
+- [ ] Buttons are accessible
+- [ ] Keyboard doesn't obscure important content
+
+---
+
+### Test Scenario 7.31: Filter Edge Cases - No Results
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: User applies very restrictive filters
+
+**When**: Filters result in 0 products
+
+**Then**:
+- [ ] Product grid shows empty state
+- [ ] Message: "Nu am găsit produse cu aceste criterii" or similar
+- [ ] Result count shows "0 produse găsite"
+- [ ] Filters remain visible and active
+- [ ] User can adjust or clear filters
+
+**When**: User views filter badges
+
+**Then**:
+- [ ] Some filter options may show count (0)
+- [ ] User can see which additional filters have no products
+
+---
+
+### Test Scenario 7.32: Advanced Search Modal - Multiple Opens/Closes
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: User is on catalog page
+
+**When**: User opens advanced search modal, selects filters, then closes without applying
+
+**Then**:
+- [ ] Modal closes
+- [ ] Filters are not applied to catalog
+- [ ] Previous filter state is maintained
+
+**When**: User opens modal again
+
+**Then**:
+- [ ] Modal shows current active filters from catalog
+- [ ] If user previously selected but didn't apply, those selections are lost
+- [ ] Modal always syncs with current catalog filter state
+
+---
+
+### Test Scenario 7.33: Filter Performance - Large Product Sets
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: Catalog has 500+ products
+
+**When**: User applies a filter
+
+**Then**:
+- [ ] Filter updates happen within 500ms
+- [ ] Product grid updates smoothly without lag
+- [ ] No browser freezing or unresponsiveness
+- [ ] Filter badges update quickly
+
+**When**: User rapidly toggles multiple filters
+
+**Then**:
+- [ ] UI remains responsive
+- [ ] Final filter state is correct
+- [ ] No race conditions or incorrect states
+
+---
+
+### Test Scenario 7.34: Cross-Browser Testing - Filters
+
+**Priority**: Medium
+**Estimated Time**: 10 minutes
+
+**Given**: User has filters applied
+
+**When**: User tests in Chrome
+
+**Then**:
+- [ ] All filters work correctly
+- [ ] Range sliders are smooth
+- [ ] Checkboxes respond properly
+- [ ] Modal displays correctly
+
+**When**: User tests in Firefox
+
+**Then**:
+- [ ] All functionality matches Chrome
+- [ ] No visual glitches
+- [ ] URL encoding works correctly
+
+**When**: User tests in Safari
+
+**Then**:
+- [ ] All functionality works
+- [ ] Touch interactions work on iPad
+- [ ] localStorage persistence works
+
+**Repeat**: Test in Edge if applicable
+
+---
+
+## Phase 7 Summary - Quick Checklist
+
+### Phase 7: Search Optimization & Advanced Filtering (34 scenarios)
+
+| Test Scenario | Result | Notes |
+|--------------|--------|-------|
+| 7.1 - Faceted Filters Display | ⬜ Pass ⬜ Fail | |
+| 7.2 - Multi-Select Checkboxes | ⬜ Pass ⬜ Fail | |
+| 7.3 - Grade Filter Scroll | ⬜ Pass ⬜ Fail | |
+| 7.4 - Price Range Slider | ⬜ Pass ⬜ Fail | |
+| 7.5 - Dimension Range Sliders | ⬜ Pass ⬜ Fail | |
+| 7.6 - Clear All Functionality | ⬜ Pass ⬜ Fail | |
+| 7.7 - Filter Chips Display/Removal | ⬜ Pass ⬜ Fail | |
+| 7.8 - Advanced Search Modal Open/Close | ⬜ Pass ⬜ Fail | |
+| 7.9 - Search Text Input | ⬜ Pass ⬜ Fail | |
+| 7.10 - Category Selection | ⬜ Pass ⬜ Fail | |
+| 7.11 - Grade and Standard Selection | ⬜ Pass ⬜ Fail | |
+| 7.12 - Availability Filter | ⬜ Pass ⬜ Fail | |
+| 7.13 - Current Filter Summary | ⬜ Pass ⬜ Fail | |
+| 7.14 - Apply Search | ⬜ Pass ⬜ Fail | |
+| 7.15 - Clear Filters in Modal | ⬜ Pass ⬜ Fail | |
+| 7.16 - Save New Search (Authenticated) | ⬜ Pass ⬜ Fail | |
+| 7.17 - Load Saved Search | ⬜ Pass ⬜ Fail | |
+| 7.18 - Delete Saved Search | ⬜ Pass ⬜ Fail | |
+| 7.19 - Recent Searches | ⬜ Pass ⬜ Fail | |
+| 7.20 - Guest User Saved Searches | ⬜ Pass ⬜ Fail | |
+| 7.21 - URL Persistence Share | ⬜ Pass ⬜ Fail | |
+| 7.22 - Filter Changes Update URL | ⬜ Pass ⬜ Fail | |
+| 7.23 - Dynamic Badge Updates | ⬜ Pass ⬜ Fail | |
+| 7.24 - Collapsible Sections | ⬜ Pass ⬜ Fail | |
+| 7.25 - Complex Filter Combinations | ⬜ Pass ⬜ Fail | |
+| 7.26 - Pagination with Filters | ⬜ Pass ⬜ Fail | |
+| 7.27 - Sort with Filters | ⬜ Pass ⬜ Fail | |
+| 7.28 - Enter Key Behavior | ⬜ Pass ⬜ Fail | |
+| 7.29 - Browser Refresh Persistence | ⬜ Pass ⬜ Fail | |
+| 7.30 - Mobile Responsiveness | ⬜ Pass ⬜ Fail | |
+| 7.31 - No Results Edge Case | ⬜ Pass ⬜ Fail | |
+| 7.32 - Multiple Modal Opens | ⬜ Pass ⬜ Fail | |
+| 7.33 - Performance Large Sets | ⬜ Pass ⬜ Fail | |
+| 7.34 - Cross-Browser Testing | ⬜ Pass ⬜ Fail | |
+
+### Critical Bugs Found
+1. _______________
+2. _______________
+3. _______________
+
+### Minor Issues Found
+1. _______________
+2. _______________
+3. _______________
+
+### Overall Test Result
+- ⬜ All tests passed
+- ⬜ Tests passed with minor issues
+- ⬜ Critical bugs found - DO NOT RELEASE
+
+---
+
+**Last Updated**: 2025-11-10
+**Version**: 1.4.0
+**Phase Coverage**: Phase 1 (Infrastructure), Phase 2 (Catalog), Phase 3 (Product Detail Page), Phase 4 (Cart & RFQ), Phase 5 (BOM Upload), Phase 6 (Optional User Accounts & B2B Benefits), Phase 7 (Search Optimization & Advanced Filtering)
+**Total Test Scenarios**: 168 scenarios (134 previous + 34 Phase 7)
 **Next Review**: Before production release

@@ -15,6 +15,7 @@ import { useCart } from '@/context/CartContext';
 import { useAuth } from '@/context/AuthContext';
 import { submitRFQ } from '@/lib/api/rfq';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import type { RFQFormData, RFQFormStep } from '@/types/rfq';
 
 const RFQ_FORM_STORAGE_KEY = 'metalpro-rfq-form-data';
@@ -54,6 +55,7 @@ const RFQForm = () => {
   const { toast } = useToast();
   const { cart, itemCount } = useCart();
   const { user } = useAuth();
+  const analytics = useAnalytics();
 
   // Load initial state from sessionStorage
   const loadStoredStep = (): RFQFormStep => {
@@ -154,6 +156,11 @@ const RFQForm = () => {
     }
   }, []);
 
+  // Track RFQ start on mount
+  useEffect(() => {
+    analytics.trackRFQStart('rfq_form');
+  }, []);
+
   // Redirect if cart is empty
   if (itemCount === 0) {
     return (
@@ -187,6 +194,16 @@ const RFQForm = () => {
 
     // Mark step as completed
     setCompletedSteps((prev) => new Set(prev).add(step));
+
+    // Track step completion
+    const stepNames: Record<RFQFormStep, string> = {
+      1: 'company_info',
+      2: 'delivery_address',
+      3: 'preferences',
+      4: 'attachments',
+      5: 'review',
+    };
+    analytics.trackRFQStep(step, stepNames[step]);
 
     // Move to next step
     if (step < 5) {
@@ -241,6 +258,15 @@ const RFQForm = () => {
       const response = await submitRFQ(rfqData, user?.id);
 
       if (response.success && response.referenceNumber) {
+        // Track RFQ submission
+        analytics.trackRFQSubmit({
+          referenceNumber: response.referenceNumber,
+          itemCount: cart.lines.length,
+          totalValue: cart.totals.grandTotal,
+          company: rfqData.company.companyName,
+          incoterm: rfqData.incoterm,
+        });
+
         // Clear form storage on successful submission
         clearFormStorage();
 

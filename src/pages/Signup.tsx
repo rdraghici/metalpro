@@ -11,12 +11,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import type { SignupData } from '@/types/user';
 
 const Signup = () => {
   const navigate = useNavigate();
   const { signup } = useAuth();
   const { toast } = useToast();
+  const analytics = useAnalytics();
 
   const [accountType, setAccountType] = useState<'business' | 'individual'>('business');
   const [email, setEmail] = useState('');
@@ -77,6 +79,9 @@ const Signup = () => {
       }
 
       await signup(signupData);
+
+      // Track successful signup
+      analytics.trackSignup(accountType);
 
       toast({
         title: 'Cont creat cu succes!',

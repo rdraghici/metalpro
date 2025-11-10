@@ -1,14 +1,33 @@
+# MetalPro - Robots.txt
+# https://www.robotstxt.org/robotstxt.html
+
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /account/*
+Disallow: /rfq/confirmation
+Disallow: /api/
+Disallow: /*.json$
+
+# Sitemap location
+Sitemap: https://metalpro.ro/sitemap.xml
+
+# Crawl delay (optional - adjust based on server capacity)
+Crawl-delay: 1
+
+# Specific bot configurations
 User-agent: Googlebot
 Allow: /
+Disallow: /account
+Disallow: /account/*
 
 User-agent: Bingbot
 Allow: /
+Disallow: /account
+Disallow: /account/*
 
 User-agent: Twitterbot
 Allow: /
 
 User-agent: facebookexternalhit
-Allow: /
-
-User-agent: *
 Allow: /

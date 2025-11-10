@@ -10,12 +10,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useAnalytics } from '@/hooks/useAnalytics';
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
+  const analytics = useAnalytics();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,6 +34,10 @@ const Login = () => {
 
     try {
       await login({ email, password });
+
+      // Track successful login
+      analytics.trackLogin('business');
+
       toast({
         title: 'Autentificare reușită',
         description: 'Bine ai revenit!',

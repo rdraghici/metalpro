@@ -16,6 +16,7 @@ import { useProductConfig } from "@/hooks/useProductConfig";
 import { getProductBySlug } from "@/lib/api/products";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import type { Product } from "@/types";
 import type { AddToCartPayload } from "@/types/cart";
 
@@ -24,6 +25,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addToCart } = useCart();
+  const analytics = useAnalytics();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -53,6 +55,16 @@ export default function ProductDetail() {
       try {
         const fetchedProduct = await getProductBySlug(slug);
         setProduct(fetchedProduct);
+
+        // Track PDP view
+        analytics.trackPDPView({
+          id: fetchedProduct.id,
+          sku: fetchedProduct.sku,
+          title: fetchedProduct.title,
+          family: fetchedProduct.family,
+          grade: fetchedProduct.grade,
+          basePrice: fetchedProduct.pricePerUnit,
+        });
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -61,7 +73,7 @@ export default function ProductDetail() {
     };
 
     fetchProduct();
-  }, [slug]);
+  }, [slug, analytics]);
 
   const handleAddToEstimate = async () => {
     if (!isValid || !product) return;
@@ -85,6 +97,16 @@ export default function ProductDetail() {
 
       // Add to cart
       await addToCart(payload, product);
+
+      // Track add to estimate
+      analytics.trackAddToEstimate({
+        id: product.id,
+        sku: product.sku,
+        title: product.title,
+        quantity: config.quantity,
+        unit: config.sellingUnit,
+        totalPrice: priceEstimate.subtotal,
+      });
 
       // Show success toast
       toast({
