@@ -227,7 +227,7 @@ const CompanyInfoTab = () => {
           {user.company?.isVerified ? (
             <div className="flex items-center gap-2 text-green-600">
               <Badge variant="default">Verificat</Badge>
-              <p className="text-sm">Compania ta a fost verificată de echipa MetalPro</p>
+              <p className="text-sm">Compania ta a fost verificată de echipa MetalDirect</p>
             </div>
           ) : (
             <div className="space-y-3">

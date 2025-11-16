@@ -11,13 +11,16 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useTranslation } from '@/hooks/useTranslation';
 
+// Login page component
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
   const { toast } = useToast();
   const analytics = useAnalytics();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -39,12 +42,12 @@ const Login = () => {
       analytics.trackLogin('business');
 
       toast({
-        title: 'Autentificare reușită',
-        description: 'Bine ai revenit!',
+        title: t('auth.login_success'),
+        description: t('auth.welcome_back'),
       });
       navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Eroare la autentificare');
+      setError(err instanceof Error ? err.message : t('auth.login_error'));
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +66,7 @@ const Login = () => {
           {/* Back Button */}
           <Button variant="ghost" onClick={() => navigate('/')} className="gap-2 -ml-2">
             <ArrowLeft className="h-4 w-4" />
-            Înapoi la catalog
+            {t('auth.back_to_catalog')}
           </Button>
 
           {/* Login Card */}
@@ -71,10 +74,10 @@ const Login = () => {
             <CardHeader className="space-y-1">
               <div className="flex items-center gap-2 mb-2">
                 <LogIn className="h-6 w-6 text-primary" />
-                <CardTitle className="text-2xl">Autentificare</CardTitle>
+                <CardTitle className="text-2xl">{t('auth.login_title')}</CardTitle>
               </div>
               <CardDescription>
-                Conectează-te pentru a accesa proiectele salvate și istoricul comenzilor
+                {t('auth.login_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -86,11 +89,11 @@ const Login = () => {
                 )}
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">{t('auth.email')}</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="exemplu@companie.ro"
+                    placeholder={t('auth.email_placeholder')}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -100,18 +103,18 @@ const Login = () => {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Parolă</Label>
+                    <Label htmlFor="password">{t('auth.password')}</Label>
                     <Link
                       to="/forgot-password"
                       className="text-sm text-muted-foreground hover:text-primary"
                     >
-                      Ai uitat parola?
+                      {t('auth.forgot_password')}
                     </Link>
                   </div>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={t('auth.password_placeholder')}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -120,7 +123,7 @@ const Login = () => {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? 'Se autentifică...' : 'Autentifică-te'}
+                  {isLoading ? t('auth.logging_in') : t('auth.login_button')}
                 </Button>
               </form>
 
@@ -130,7 +133,7 @@ const Login = () => {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">sau</span>
+                  <span className="bg-background px-2 text-muted-foreground">{t('auth.or')}</span>
                 </div>
               </div>
 
@@ -142,14 +145,14 @@ const Login = () => {
                 onClick={handleContinueAsGuest}
               >
                 <User className="h-4 w-4 mr-2" />
-                Continuă fără cont
+                {t('auth.guest_continue')}
               </Button>
 
               {/* Signup Link */}
               <div className="mt-4 text-center text-sm text-muted-foreground">
-                Nu ai cont?{' '}
+                {t('auth.no_account')}{' '}
                 <Link to="/signup" className="text-primary hover:underline">
-                  Creează cont nou
+                  {t('auth.create_new_account')}
                 </Link>
               </div>
             </CardContent>
@@ -158,13 +161,13 @@ const Login = () => {
           {/* Value Proposition */}
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="pt-6">
-              <h3 className="font-semibold mb-2">Beneficiile unui cont MetalPro:</h3>
+              <h3 className="font-semibold mb-2">{t('auth.benefits_title')}</h3>
               <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>✓ Salvează proiecte BOM pentru reutilizare</li>
-                <li>✓ Vezi istoricul comenzilor și statusul lor</li>
-                <li>✓ Pre-completare automată cu datele companiei</li>
-                <li>✓ Adrese de livrare salvate</li>
-                <li>✓ Verificare business pentru procesare mai rapidă</li>
+                <li>✓ {t('auth.benefit_save_bom')}</li>
+                <li>✓ {t('auth.benefit_order_history')}</li>
+                <li>✓ {t('auth.benefit_autofill')}</li>
+                <li>✓ {t('auth.benefit_saved_addresses')}</li>
+                <li>✓ {t('auth.benefit_verification')}</li>
               </ul>
             </CardContent>
           </Card>

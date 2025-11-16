@@ -8201,9 +8201,9 @@ throw new Error("Test error");
 
 ---
 
-**Last Updated**: 2025-11-10
+**Last Updated**: 2025-11-15
 
-**Version**: 1.6.0
+**Version**: 1.7.0
 **Phase Coverage**:
 - Phase 1 (Infrastructure)
 - Phase 2 (Catalog)
@@ -8211,10 +8211,2472 @@ throw new Error("Test error");
 - Phase 4 (Cart & RFQ)
 - Phase 5 (BOM Upload)
 - Phase 6 (Optional User Accounts & B2B Benefits)
+- Phase 6C (Backend Infrastructure - Production Readiness)
 - Phase 7 (Search Optimization & Advanced Filtering)
 - Phase 8 (Analytics, SEO & Performance Optimization)
 - Phase 9 (Internationalization & Localization)
 
-**Total Test Scenarios**: 228 scenarios
+**Total Test Scenarios**: 243 scenarios
+
+---
+
+## Phase 6C: Backend Infrastructure - Production Readiness
+
+**Test Environment**: http://localhost:3001/
+**Prerequisites**:
+- Docker running with PostgreSQL and Redis containers
+- Backend server running (`npm run dev` in backend directory)
+- Prisma migrations applied
+- Database seeded with initial data
+
+### Phase 6C.1: Backend API Setup
+
+#### Test Scenario 6C.1.1: Infrastructure Health Check
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Docker containers are running and backend server is started
+
+**When**: User makes a GET request to http://localhost:3001/health
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"status": "healthy"`
+- [ ] Response contains `"service": "MetalPro Backend API"`
+- [ ] Response contains `"database": "connected"`
+- [ ] Response contains `"redis": "connected"`
+- [ ] Response includes timestamp in ISO format
+
+**Test Command**:
+```bash
+curl http://localhost:3001/health
+```
+
+---
+
+#### Test Scenario 6C.1.2: Database Connection Verification
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: PostgreSQL container is running
+
+**When**: User checks database connectivity
+
+**Then**:
+- [ ] Can connect to database at `localhost:5432`
+- [ ] Database `metalpro` exists
+- [ ] All 10 Prisma models are created as tables:
+  - users
+  - companies
+  - sessions
+  - categories
+  - products
+  - carts
+  - cart_items
+  - rfqs
+  - rfq_items
+  - projects
+  - addresses
+  - attachments
+
+**Test Commands**:
+```bash
+# Check Docker containers
+docker ps
+
+# Connect to PostgreSQL
+docker exec -it steel-craft-flow-postgres-1 psql -U metalpro_user -d metalpro
+
+# List tables in psql
+\dt
+```
+
+---
+
+#### Test Scenario 6C.1.3: Redis Cache Connection
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Redis container is running
+
+**When**: User checks Redis connectivity
+
+**Then**:
+- [ ] Redis responds to PING command
+- [ ] Redis is accessible at `localhost:6379`
+- [ ] Backend server successfully connects to Redis
+
+**Test Commands**:
+```bash
+# Test Redis connection
+docker exec -it steel-craft-flow-redis-1 redis-cli ping
+
+# Should return: PONG
+```
+
+---
+
+#### Test Scenario 6C.1.4: Database Seeding Verification
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Database migrations are applied and seed script has run
+
+**When**: User queries the database
+
+**Then**:
+- [ ] 6 categories exist in categories table
+- [ ] Categories include:
+  - Profile Metalice (HEA, IPE, UNP, etc.)
+  - Table de Oțel
+  - Țevi și Tuburi
+  - Elemente de Asamblare
+  - Oțel Inoxidabil
+  - Metale Neferoase
+- [ ] At least 5 sample products exist in products table
+- [ ] Sample products include HEA profiles, steel plates, pipes
+- [ ] All products have proper metadata JSON structure
+
+**Test Command**:
+```bash
+# Via API
+curl http://localhost:3001/api/categories
+curl http://localhost:3001/api/products
+```
+
+---
+
+### Phase 6C.2: Route Scaffolding
+
+#### Test Scenario 6C.2.1: Products API - List All Products
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running and database is seeded
+
+**When**: User makes GET request to `/api/products`
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"count"` field with number of products
+- [ ] Response contains `"data"` array of products
+- [ ] Each product includes:
+  - id, name, sku, category
+  - pricePerUnit, unit, minQuantity
+  - specifications, metadata
+  - isActive, createdAt, updatedAt
+
+**Test Command**:
+```bash
+curl http://localhost:3001/api/products
+```
+
+**Expected Response Structure**:
+```json
+{
+  "success": true,
+  "count": 5,
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Product Name",
+      "category": {
+        "id": "uuid",
+        "name": "Category Name"
+      },
+      ...
+    }
+  ]
+}
+```
+
+---
+
+#### Test Scenario 6C.2.2: Products API - Get Single Product
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running and products exist
+
+**When**: User makes GET request to `/api/products/{id}` with valid product ID
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"data"` object with product details
+- [ ] Product includes category relationship
+- [ ] All product fields are properly populated
+
+**When**: User makes GET request with invalid/non-existent product ID
+
+**Then**:
+- [ ] Response status code is 404
+- [ ] Response contains `"success": false`
+- [ ] Response contains error message
+
+**Test Commands**:
+```bash
+# Get valid product (replace {id} with actual product ID)
+curl http://localhost:3001/api/products/{id}
+
+# Get non-existent product
+curl http://localhost:3001/api/products/00000000-0000-0000-0000-000000000000
+```
+
+---
+
+#### Test Scenario 6C.2.3: Categories API - List All Categories
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running and database is seeded
+
+**When**: User makes GET request to `/api/categories`
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"count"` field
+- [ ] Response contains `"data"` array of categories
+- [ ] Each category includes:
+  - id, name, slug, description
+  - sortOrder
+  - _count.products (product count)
+- [ ] Categories are sorted by sortOrder ascending
+
+**Test Command**:
+```bash
+curl http://localhost:3001/api/categories
+```
+
+---
+
+#### Test Scenario 6C.2.4: Categories API - Get Single Category
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running and categories exist
+
+**When**: User makes GET request to `/api/categories/{id}` with valid category ID
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains category details
+- [ ] Response includes product count
+
+**When**: User makes GET request with invalid category ID
+
+**Then**:
+- [ ] Response status code is 404
+- [ ] Response contains error message
+
+**Test Commands**:
+```bash
+# Get valid category
+curl http://localhost:3001/api/categories/{id}
+
+# Get non-existent category
+curl http://localhost:3001/api/categories/00000000-0000-0000-0000-000000000000
+```
+
+---
+
+#### Test Scenario 6C.2.5: API Base Info Endpoint
+
+**Priority**: Low
+**Estimated Time**: 1 minute
+
+**Given**: Backend server is running
+
+**When**: User makes GET request to `/api`
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains:
+  - name: "MetalPro Backend API"
+  - version: "1.0.0"
+  - description
+  - endpoints (list of available API endpoints)
+
+**Test Command**:
+```bash
+curl http://localhost:3001/api
+```
+
+---
+
+### Phase 6C.3: Production Authentication System
+
+#### Test Scenario 6C.3.1: User Signup - Business Account
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User makes POST request to `/api/auth/signup` with:
+```json
+{
+  "email": "test@company.ro",
+  "password": "securepass123",
+  "name": "Test User",
+  "phone": "+40722123456",
+  "role": "BUSINESS",
+  "company": {
+    "name": "Test Company SRL",
+    "cui": "RO12345678",
+    "address": "Str. Test 123",
+    "city": "București",
+    "county": "București",
+    "postalCode": "010101"
+  }
+}
+```
+
+**Then**:
+- [ ] Response status code is 201
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"data"` object with:
+  - user object (without passwordHash)
+  - tokens object with accessToken and refreshToken
+- [ ] User object includes company information
+- [ ] User ID is a valid UUID
+- [ ] Email is stored in lowercase
+- [ ] Password is NOT visible in response
+
+**Test Command**:
+```bash
+curl -X POST http://localhost:3001/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@company.ro",
+    "password": "securepass123",
+    "name": "Test User",
+    "phone": "+40722123456",
+    "role": "BUSINESS",
+    "company": {
+      "name": "Test Company SRL",
+      "cui": "RO12345678",
+      "address": "Str. Test 123",
+      "city": "București",
+      "county": "București",
+      "postalCode": "010101"
+    }
+  }'
+```
+
+**Database Verification**:
+- [ ] User record created in `users` table
+- [ ] Password is bcrypt-hashed (starts with $2b$ and is 60 chars long)
+- [ ] Company record created in `companies` table
+- [ ] Session record created in `sessions` table with access and refresh tokens
+
+---
+
+#### Test Scenario 6C.3.2: User Signup - Individual Account
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: User makes POST request to `/api/auth/signup` with:
+```json
+{
+  "email": "individual@test.ro",
+  "password": "mypassword123",
+  "name": "Individual User",
+  "role": "INDIVIDUAL"
+}
+```
+
+**Then**:
+- [ ] Response status code is 201
+- [ ] User created without company information
+- [ ] Tokens generated successfully
+- [ ] User role is "INDIVIDUAL"
+
+**Test Command**:
+```bash
+curl -X POST http://localhost:3001/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "individual@test.ro",
+    "password": "mypassword123",
+    "name": "Individual User",
+    "role": "INDIVIDUAL"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.3: User Signup - Validation Errors
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: Backend server is running
+
+**When**: User attempts signup with missing required fields
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error message indicating required fields
+
+**When**: User attempts signup with password < 8 characters
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "Parola trebuie să conțină cel puțin 8 caractere"
+
+**When**: User attempts signup with duplicate email
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "Un cont cu acest email există deja."
+
+**Test Commands**:
+```bash
+# Missing required fields
+curl -X POST http://localhost:3001/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@test.ro"}'
+
+# Short password
+curl -X POST http://localhost:3001/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "short@test.ro",
+    "password": "short",
+    "name": "Test",
+    "role": "INDIVIDUAL"
+  }'
+
+# Duplicate email (use email from previous signup)
+curl -X POST http://localhost:3001/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@company.ro",
+    "password": "password123",
+    "name": "Duplicate",
+    "role": "INDIVIDUAL"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.4: User Login - Successful
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: User account exists with email "test@company.ro" and password "securepass123"
+
+**When**: User makes POST request to `/api/auth/login` with:
+```json
+{
+  "email": "test@company.ro",
+  "password": "securepass123"
+}
+```
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"success": true`
+- [ ] Response contains user object with company information
+- [ ] Response contains new JWT tokens (different from signup tokens)
+- [ ] Session created in database
+- [ ] User object does NOT contain passwordHash
+
+**Test Command**:
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@company.ro",
+    "password": "securepass123"
+  }'
+```
+
+**Save the accessToken from response for next tests!**
+
+---
+
+#### Test Scenario 6C.3.5: User Login - Failed Authentication
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User account exists
+
+**When**: User attempts login with wrong password
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains `"success": false`
+- [ ] Response contains error: "Email sau parolă incorectă."
+
+**When**: User attempts login with non-existent email
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains error: "Email sau parolă incorectă."
+
+**When**: User attempts login with missing credentials
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error message
+
+**Test Commands**:
+```bash
+# Wrong password
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@company.ro",
+    "password": "wrongpassword"
+  }'
+
+# Non-existent email
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "nonexistent@test.ro",
+    "password": "anypassword"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.6: Get Current User (Authenticated)
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: User is logged in and has a valid access token
+
+**When**: User makes GET request to `/api/users/me` with Authorization header:
+```
+Authorization: Bearer {accessToken}
+```
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains user information
+- [ ] Response includes company information (if business account)
+- [ ] Response does NOT include passwordHash
+
+**When**: User makes request without Authorization header
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains error: "Unauthorized - No token provided"
+
+**When**: User makes request with invalid token
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains error: "Invalid token"
+
+**Test Commands**:
+```bash
+# With valid token
+curl -X GET http://localhost:3001/api/users/me \
+  -H "Authorization: Bearer {PASTE_YOUR_ACCESS_TOKEN_HERE}"
+
+# Without token
+curl -X GET http://localhost:3001/api/users/me
+
+# With invalid token
+curl -X GET http://localhost:3001/api/users/me \
+  -H "Authorization: Bearer invalid.token.here"
+```
+
+---
+
+#### Test Scenario 6C.3.7: Update User Profile
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged in with valid access token
+
+**When**: User makes PATCH request to `/api/users/me` with:
+```json
+{
+  "name": "Updated Name",
+  "phone": "+40722999888"
+}
+```
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains updated user object
+- [ ] User name is changed to "Updated Name"
+- [ ] User phone is changed to "+40722999888"
+- [ ] updatedAt timestamp is updated
+- [ ] Other fields remain unchanged
+
+**Test Command**:
+```bash
+curl -X PATCH http://localhost:3001/api/users/me \
+  -H "Authorization: Bearer {PASTE_YOUR_ACCESS_TOKEN_HERE}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Updated Name",
+    "phone": "+40722999888"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.8: Update Company Information
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged in (business account) with valid access token
+
+**When**: User makes PATCH request to `/api/users/me/company` with:
+```json
+{
+  "legalName": "Updated Company SRL",
+  "address": "New Address 123",
+  "city": "Cluj-Napoca"
+}
+```
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains updated company object
+- [ ] Company legalName is updated
+- [ ] Company address is updated
+- [ ] Company city is updated
+- [ ] Other company fields remain unchanged
+
+**When**: Individual user (no company) makes same request
+
+**Then**:
+- [ ] New company record is created for the user
+- [ ] Company fields are set from request
+
+**Test Command**:
+```bash
+curl -X PATCH http://localhost:3001/api/users/me/company \
+  -H "Authorization: Bearer {PASTE_YOUR_ACCESS_TOKEN_HERE}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "legalName": "Updated Company SRL",
+    "address": "New Address 123",
+    "city": "Cluj-Napoca"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.9: Token Refresh
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: User has a valid refresh token from login/signup
+
+**When**: User makes POST request to `/api/auth/refresh` with:
+```json
+{
+  "refreshToken": "{REFRESH_TOKEN}"
+}
+```
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains new accessToken
+- [ ] Response contains new refreshToken
+- [ ] Response contains user object
+- [ ] Old refresh token is invalidated
+- [ ] New session is created/updated in database
+
+**When**: User provides invalid or expired refresh token
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains error: "Invalid or expired refresh token"
+
+**Test Commands**:
+```bash
+# With valid refresh token
+curl -X POST http://localhost:3001/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "{PASTE_YOUR_REFRESH_TOKEN_HERE}"
+  }'
+
+# With invalid refresh token
+curl -X POST http://localhost:3001/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{
+    "refreshToken": "invalid.refresh.token"
+  }'
+```
+
+---
+
+#### Test Scenario 6C.3.10: User Logout
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User is logged in with valid access token
+
+**When**: User makes POST request to `/api/auth/logout` with Authorization header
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains success message: "Logged out successfully"
+- [ ] Session is deleted from database
+- [ ] Access token is invalidated
+
+**When**: User attempts to use the same access token after logout
+
+**Then**:
+- [ ] Request is rejected with 401 status
+- [ ] Error message: "Session expired or invalid"
+
+**Test Commands**:
+```bash
+# Logout
+curl -X POST http://localhost:3001/api/auth/logout \
+  -H "Authorization: Bearer {PASTE_YOUR_ACCESS_TOKEN_HERE}"
+
+# Try to use token after logout
+curl -X GET http://localhost:3001/api/users/me \
+  -H "Authorization: Bearer {SAME_ACCESS_TOKEN}"
+```
+
+---
+
+#### Test Scenario 6C.3.11: JWT Token Expiration
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**Given**: Access token expires in 24 hours (configured in .env)
+
+**When**: User uses an expired access token
+
+**Then**:
+- [ ] Response status code is 401
+- [ ] Response contains error indicating token expiration
+
+**Note**: To test this properly, either:
+1. Temporarily change `JWT_EXPIRES_IN=10s` in .env and wait 10 seconds
+2. Manually create an expired token with past expiration time
+
+---
+
+#### Test Scenario 6C.3.12: Password Security Verification
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User has signed up
+
+**When**: Tester inspects database directly
+
+**Then**:
+- [ ] Password in database is bcrypt-hashed (starts with `$2b$`)
+- [ ] Hash is 60 characters long
+- [ ] Original password is NOT stored anywhere
+- [ ] Salt rounds = 12 (configurable in code)
+
+**When**: User signs up with same password twice
+
+**Then**:
+- [ ] Two different password hashes are generated (bcrypt uses random salt)
+
+**Database Check Command**:
+```bash
+# Connect to database
+docker exec -it steel-craft-flow-postgres-1 psql -U metalpro_user -d metalpro
+
+# Check password hashes
+SELECT email, "passwordHash" FROM users;
+```
+
+---
+
+#### Test Scenario 6C.3.13: Session Management
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: User has logged in
+
+**When**: Tester checks sessions table in database
+
+**Then**:
+- [ ] Session record exists with userId
+- [ ] Session contains access token
+- [ ] Session contains refresh token
+- [ ] Session has expiresAt timestamp (7 days from creation)
+
+**When**: User logs out
+
+**Then**:
+- [ ] Session record is deleted from database
+
+**When**: User refreshes token
+
+**Then**:
+- [ ] Session record is updated with new tokens
+- [ ] expiresAt is extended
+
+**Database Check Commands**:
+```bash
+# Connect to database
+docker exec -it steel-craft-flow-postgres-1 psql -U metalpro_user -d metalpro
+
+# Check sessions
+SELECT id, "userId", "expiresAt", "createdAt" FROM sessions;
+```
+
+---
+
+#### Test Scenario 6C.3.14: CORS Configuration
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running with CORS enabled
+
+**When**: Request is made from allowed origin (http://localhost:8080)
+
+**Then**:
+- [ ] Request succeeds
+- [ ] Response includes CORS headers:
+  - Access-Control-Allow-Origin: http://localhost:8080
+  - Access-Control-Allow-Credentials: true
+
+**When**: Request is made from different origin
+
+**Then**:
+- [ ] Request may be blocked by browser (depending on configuration)
+
+**Test Command**:
+```bash
+# Check CORS headers
+curl -I http://localhost:3001/api -H "Origin: http://localhost:8080"
+```
+
+---
+
+#### Test Scenario 6C.3.15: Request Logging
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Any API request is made
+
+**Then**:
+- [ ] Request is logged to console
+- [ ] Log includes timestamp in ISO format
+- [ ] Log includes HTTP method (GET, POST, etc.)
+- [ ] Log includes request path
+
+**Check server console output for entries like:**
+```
+[2025-11-15T10:44:23.568Z] POST /api/auth/login
+[2025-11-15T10:44:30.123Z] GET /api/users/me
+```
+
+---
+
+### Phase 6C.4: File Upload & Storage
+
+#### Test Scenario 6C.4.1: BOM File Upload - Guest User
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Guest user uploads a BOM file (CSV format)
+
+**Then**:
+- [ ] Response status code is 201
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"message": "Fișier BOM încărcat cu succes"`
+- [ ] Response contains file metadata:
+  - fileId (UUID)
+  - fileName (original filename)
+  - filePath (server path)
+  - fileUrl (accessible URL)
+  - mimeType
+  - size (in bytes)
+- [ ] File is saved to `uploads/bom-uploads/guest/` directory
+- [ ] File URL is accessible via browser/curl
+
+**Test Commands**:
+```bash
+# Create test BOM file
+echo "Product,Quantity,Dimensions
+HEA 200,10,200mm
+Table 10mm,5,2000x1000mm" > /tmp/test-bom.csv
+
+# Upload file
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/test-bom.csv"
+
+# Access uploaded file (use URL from response)
+curl http://localhost:3001/uploads/bom-uploads/guest/{fileId}-test-bom.csv
+```
+
+**Verify on Disk**:
+```bash
+ls -lh /Users/rdraghici/Desktop/Study/MetalPro/MetalPro/steel-craft-flow/backend/uploads/bom-uploads/guest/
+```
+
+---
+
+#### Test Scenario 6C.4.2: BOM File Upload - Authenticated User
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged in with valid access token
+
+**When**: Authenticated user uploads a BOM file
+
+**Then**:
+- [ ] Response status code is 201
+- [ ] File is saved to `uploads/bom-uploads/{userId}/` directory (not guest folder)
+- [ ] File URL includes user ID in path
+- [ ] File is accessible via returned URL
+
+**Test Commands**:
+```bash
+# Login first
+TOKEN=$(curl -s -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@metalpro.ro","password":"testpassword123"}' \
+  | grep -o '"accessToken":"[^"]*"' | cut -d'"' -f4)
+
+# Upload with authentication
+curl -X POST http://localhost:3001/api/upload/bom \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "file=@/tmp/test-bom.csv"
+```
+
+---
+
+#### Test Scenario 6C.4.3: BOM File Upload - Excel Format
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads an Excel file (.xlsx)
+
+**Then**:
+- [ ] Upload succeeds for .xlsx files
+- [ ] Upload succeeds for .xls files
+- [ ] Response contains correct mimeType
+
+**Test Commands**:
+```bash
+# For this test, use an actual Excel file
+# Example with curl:
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/path/to/sample.xlsx"
+```
+
+**Note**: Create a sample Excel file with product data to test.
+
+---
+
+#### Test Scenario 6C.4.4: BOM File Upload - File Type Validation
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: Backend server is running
+
+**When**: User attempts to upload invalid file types
+
+**Then**:
+- [ ] .exe files are rejected
+- [ ] .zip files are rejected
+- [ ] .js files are rejected
+- [ ] Error message: "Format fișier invalid. Acceptăm doar: .xlsx, .xls, .csv, .txt"
+- [ ] Response status code is 400
+
+**When**: User uploads valid file types
+
+**Then**:
+- [ ] .csv files are accepted
+- [ ] .txt files are accepted
+- [ ] .xlsx files are accepted
+- [ ] .xls files are accepted
+
+**Test Commands**:
+```bash
+# Test invalid file type
+echo "Test" > /tmp/test.exe
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/test.exe"
+
+# Should return error: Format fișier invalid...
+
+# Test valid file type
+echo "Product,Qty" > /tmp/test.csv
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/test.csv"
+
+# Should succeed
+```
+
+---
+
+#### Test Scenario 6C.4.5: BOM File Upload - File Size Validation
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads a file larger than 10MB
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "Fișierul este prea mare. Dimensiunea maximă: 10MB"
+- [ ] File is not saved to disk
+
+**When**: User uploads a file under 10MB
+
+**Then**:
+- [ ] Upload succeeds
+- [ ] File is saved normally
+
+**Test Commands**:
+```bash
+# Create large file (11MB)
+dd if=/dev/zero of=/tmp/large-bom.csv bs=1M count=11
+
+# Try to upload
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/large-bom.csv"
+
+# Should return error: Fișierul este prea mare...
+
+# Create normal size file (1MB)
+dd if=/dev/zero of=/tmp/normal-bom.csv bs=1M count=1
+
+# Upload should succeed
+curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/normal-bom.csv"
+```
+
+---
+
+#### Test Scenario 6C.4.6: BOM File Upload - Missing File
+
+**Priority**: Medium
+**Estimated Time**: 1 minute
+
+**Given**: Backend server is running
+
+**When**: User submits upload request without a file
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "Nu a fost furnizat niciun fișier"
+
+**Test Command**:
+```bash
+curl -X POST http://localhost:3001/api/upload/bom
+
+# Should return: Nu a fost furnizat niciun fișier
+```
+
+---
+
+#### Test Scenario 6C.4.7: RFQ Attachment Upload - PDF File
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads a PDF attachment for an RFQ
+
+**Then**:
+- [ ] Response status code is 201
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"message": "Atașament încărcat cu succes"`
+- [ ] File is saved to `uploads/rfq-attachments/{rfqId}/` directory
+- [ ] File URL is accessible
+
+**Test Commands**:
+```bash
+# Create test PDF file
+echo "Test attachment content" > /tmp/test-attachment.pdf
+
+# Upload attachment
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/test-attachment.pdf" \
+  -F "rfqId=test-rfq-123"
+
+# Verify file saved
+ls -lh /Users/rdraghici/Desktop/Study/MetalPro/MetalPro/steel-craft-flow/backend/uploads/rfq-attachments/test-rfq-123/
+```
+
+---
+
+#### Test Scenario 6C.4.8: RFQ Attachment Upload - Image Files
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads image attachments (JPG, PNG, GIF)
+
+**Then**:
+- [ ] .jpg files are accepted
+- [ ] .jpeg files are accepted
+- [ ] .png files are accepted
+- [ ] .gif files are accepted
+- [ ] Correct mimeType is detected
+
+**Test Commands**:
+```bash
+# For this test, use actual image files
+# Example:
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/path/to/image.jpg" \
+  -F "rfqId=test-rfq-456"
+```
+
+---
+
+#### Test Scenario 6C.4.9: RFQ Attachment Upload - Document Files
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads document attachments (DOC, DOCX)
+
+**Then**:
+- [ ] .doc files are accepted
+- [ ] .docx files are accepted
+- [ ] Files are saved correctly
+
+**Test Commands**:
+```bash
+# Use actual Word documents for testing
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/path/to/document.docx" \
+  -F "rfqId=test-rfq-789"
+```
+
+---
+
+#### Test Scenario 6C.4.10: RFQ Attachment Upload - Missing RFQ ID
+
+**Priority**: Medium
+**Estimated Time**: 1 minute
+
+**Given**: Backend server is running
+
+**When**: User uploads attachment without providing rfqId
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "rfqId este necesar"
+
+**Test Command**:
+```bash
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/test-attachment.pdf"
+
+# Should return: rfqId este necesar
+```
+
+---
+
+#### Test Scenario 6C.4.11: RFQ Attachment Upload - File Type Validation
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User attempts to upload invalid file types as attachments
+
+**Then**:
+- [ ] .exe files are rejected
+- [ ] .zip files are rejected
+- [ ] .txt files are rejected (not in allowed list)
+- [ ] Error message: "Format fișier invalid. Acceptăm: PDF, JPG, PNG, GIF, DOC, DOCX"
+- [ ] Response status code is 400
+
+**Test Commands**:
+```bash
+# Test invalid file type
+echo "Test" > /tmp/test.exe
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/test.exe" \
+  -F "rfqId=test-rfq-123"
+
+# Should return error: Format fișier invalid...
+```
+
+---
+
+#### Test Scenario 6C.4.12: RFQ Attachment Upload - File Size Validation
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads an attachment larger than 5MB
+
+**Then**:
+- [ ] Response status code is 400
+- [ ] Response contains error: "Fișierul este prea mare. Dimensiunea maximă: 5MB"
+
+**Test Commands**:
+```bash
+# Create large file (6MB)
+dd if=/dev/zero of=/tmp/large-attachment.pdf bs=1M count=6
+
+# Try to upload
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/large-attachment.pdf" \
+  -F "rfqId=test-rfq-123"
+
+# Should return: Fișierul este prea mare...
+```
+
+---
+
+#### Test Scenario 6C.4.13: File Access via Static URL
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Files have been uploaded successfully
+
+**When**: User accesses file via returned URL
+
+**Then**:
+- [ ] BOM files are accessible via `/uploads/bom-uploads/...`
+- [ ] Attachment files are accessible via `/uploads/rfq-attachments/...`
+- [ ] Browser can download/display files
+- [ ] Correct Content-Type headers are sent
+- [ ] Files are served without authentication (public access)
+
+**Test Commands**:
+```bash
+# After uploading a file, use the returned fileUrl
+# Example:
+curl http://localhost:3001/uploads/bom-uploads/guest/{fileId}-test-bom.csv
+
+# Should return file contents
+
+# Test in browser by pasting URL
+```
+
+---
+
+#### Test Scenario 6C.4.14: File Organization Structure
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: Multiple files have been uploaded by different users and for different RFQs
+
+**When**: Tester inspects uploads directory
+
+**Then**:
+- [ ] Directory structure exists:
+  - `uploads/bom-uploads/guest/`
+  - `uploads/bom-uploads/{userId}/` (for each authenticated user)
+  - `uploads/rfq-attachments/{rfqId}/` (for each RFQ)
+- [ ] Files are organized correctly
+- [ ] File names include UUID prefix to prevent collisions
+- [ ] Original filenames are preserved in response metadata
+
+**Verification Commands**:
+```bash
+# Check directory structure
+tree uploads/
+
+# Or with ls
+ls -lR uploads/
+```
+
+---
+
+#### Test Scenario 6C.4.15: Multiple File Uploads for Same RFQ
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads multiple attachments for the same RFQ
+
+**Then**:
+- [ ] All files are saved to same RFQ folder
+- [ ] Each file has unique UUID prefix
+- [ ] No file overwrites occur
+- [ ] All files are accessible via their URLs
+
+**Test Commands**:
+```bash
+# Upload first attachment
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/attachment1.pdf" \
+  -F "rfqId=test-rfq-999"
+
+# Upload second attachment
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/attachment2.jpg" \
+  -F "rfqId=test-rfq-999"
+
+# Upload third attachment
+curl -X POST http://localhost:3001/api/upload/attachment \
+  -F "file=@/tmp/attachment3.png" \
+  -F "rfqId=test-rfq-999"
+
+# Verify all files exist
+ls -lh uploads/rfq-attachments/test-rfq-999/
+
+# Should show 3 files with different UUID prefixes
+```
+
+---
+
+#### Test Scenario 6C.4.16: Upload Performance Test
+
+**Priority**: Low
+**Estimated Time**: 5 minutes
+
+**Given**: Backend server is running
+
+**When**: User uploads files of various sizes
+
+**Then**:
+- [ ] Small files (<100KB) upload in <1 second
+- [ ] Medium files (1-5MB) upload in <5 seconds
+- [ ] Large files (5-10MB) upload in <15 seconds
+- [ ] Server remains responsive during uploads
+- [ ] Memory usage stays reasonable
+
+**Test Commands**:
+```bash
+# Create files of different sizes
+dd if=/dev/zero of=/tmp/small.csv bs=1K count=50
+dd if=/dev/zero of=/tmp/medium.csv bs=1M count=3
+dd if=/dev/zero of=/tmp/large.csv bs=1M count=8
+
+# Upload and time each
+time curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/small.csv"
+
+time curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/medium.csv"
+
+time curl -X POST http://localhost:3001/api/upload/bom \
+  -F "file=@/tmp/large.csv"
+```
+
+---
+
+### Phase 6C Summary - Quick Checklist
+
+#### Phase 6C.1: Backend API Setup (4 scenarios)
+- [ ] 6C.1.1 - Infrastructure Health Check
+- [ ] 6C.1.2 - Database Connection Verification
+- [ ] 6C.1.3 - Redis Cache Connection
+- [ ] 6C.1.4 - Database Seeding Verification
+
+#### Phase 6C.2: Route Scaffolding (5 scenarios)
+- [ ] 6C.2.1 - Products API - List All Products
+- [ ] 6C.2.2 - Products API - Get Single Product
+- [ ] 6C.2.3 - Categories API - List All Categories
+- [ ] 6C.2.4 - Categories API - Get Single Category
+- [ ] 6C.2.5 - API Base Info Endpoint
+
+#### Phase 6C.3: Production Authentication System (15 scenarios)
+- [ ] 6C.3.1 - User Signup - Business Account
+- [ ] 6C.3.2 - User Signup - Individual Account
+- [ ] 6C.3.3 - User Signup - Validation Errors
+- [ ] 6C.3.4 - User Login - Successful
+- [ ] 6C.3.5 - User Login - Failed Authentication
+- [ ] 6C.3.6 - Get Current User (Authenticated)
+- [ ] 6C.3.7 - Update User Profile
+- [ ] 6C.3.8 - Update Company Information
+- [ ] 6C.3.9 - Token Refresh
+- [ ] 6C.3.10 - User Logout
+- [ ] 6C.3.11 - JWT Token Expiration
+- [ ] 6C.3.12 - Password Security Verification
+- [ ] 6C.3.13 - Session Management
+- [ ] 6C.3.14 - CORS Configuration
+- [ ] 6C.3.15 - Request Logging
+
+#### Phase 6C.4: File Upload & Storage (16 scenarios)
+- [ ] 6C.4.1 - BOM File Upload - Guest User
+- [ ] 6C.4.2 - BOM File Upload - Authenticated User
+- [ ] 6C.4.3 - BOM File Upload - Excel Format
+- [ ] 6C.4.4 - BOM File Upload - File Type Validation
+- [ ] 6C.4.5 - BOM File Upload - File Size Validation
+- [ ] 6C.4.6 - BOM File Upload - Missing File
+- [ ] 6C.4.7 - RFQ Attachment Upload - PDF File
+- [ ] 6C.4.8 - RFQ Attachment Upload - Image Files
+- [ ] 6C.4.9 - RFQ Attachment Upload - Document Files
+- [ ] 6C.4.10 - RFQ Attachment Upload - Missing RFQ ID
+- [ ] 6C.4.11 - RFQ Attachment Upload - File Type Validation
+- [ ] 6C.4.12 - RFQ Attachment Upload - File Size Validation
+- [ ] 6C.4.13 - File Access via Static URL
+- [ ] 6C.4.14 - File Organization Structure
+- [ ] 6C.4.15 - Multiple File Uploads for Same RFQ
+- [ ] 6C.4.16 - Upload Performance Test
+
+**Total Phase 6C Scenarios**: 40 scenarios
 
 **Next Review**: Before production release
+
+---
+
+### Phase 6C.5: Email Service Integration (AWS SES)
+
+#### Test Scenario 6C.5.1: Email Service - Development Mode
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running without AWS credentials
+
+**When**: Email service initializes
+
+**Then**:
+- [ ] Server logs show: "📧 Email service running in DEVELOPMENT mode (no AWS credentials)"
+- [ ] Server logs show: "📧 Emails will be logged to console instead of being sent via SES"
+- [ ] Server starts successfully without errors
+
+**Verification**:
+```bash
+# Check server startup logs
+# Should see development mode messages
+```
+
+---
+
+#### Test Scenario 6C.5.2: RFQ Confirmation Email - Test Endpoint
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running in development mode
+
+**When**: Testing RFQ confirmation email
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains `"success": true`
+- [ ] Response contains `"message": "Email de confirmare RFQ trimis cu succes..."`
+- [ ] Server console logs email details:
+  - To: recipient email
+  - From: noreply@metalpro.ro
+  - Subject: Confirmare RFQ RFQ-2025-XXXXX - MetalPro
+- [ ] Email HTML template is well-formed
+
+**Test Commands**:
+```bash
+# Test RFQ confirmation email
+curl -X POST http://localhost:3001/api/email-test/rfq-confirmation \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com"}'
+
+# Check server console for email log output
+```
+
+---
+
+#### Test Scenario 6C.5.3: Operator Notification Email - Test Endpoint
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Testing operator notification email
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Email is sent to OPERATOR_EMAIL address (sales@metalpro.ro)
+- [ ] Email contains RFQ details (reference number, company, contact person)
+- [ ] Email includes "Acțiune necesară" urgent notice
+- [ ] Server console logs email details
+
+**Test Commands**:
+```bash
+# Test operator notification
+curl -X POST http://localhost:3001/api/email-test/operator-notification
+
+# Check console logs for operator email details
+```
+
+---
+
+#### Test Scenario 6C.5.4: Email Verification Email - Test Endpoint
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Testing email verification
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Email contains verification link with token
+- [ ] Link format: `{FRONTEND_URL}/verify-email?token={token}`
+- [ ] Email includes 24-hour expiration notice
+- [ ] Subject: "Verifică adresa de email - MetalPro"
+
+**Test Commands**:
+```bash
+# Test email verification
+curl -X POST http://localhost:3001/api/email-test/email-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"newuser@example.com"}'
+```
+
+---
+
+#### Test Scenario 6C.5.5: Password Reset Email - Test Endpoint
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Testing password reset email
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Email contains password reset link with token
+- [ ] Link format: `{FRONTEND_URL}/reset-password?token={token}`
+- [ ] Email includes 1-hour expiration notice
+- [ ] Email includes security warning
+- [ ] Subject: "Resetare Parolă - MetalPro"
+
+**Test Commands**:
+```bash
+# Test password reset email
+curl -X POST http://localhost:3001/api/email-test/password-reset \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com"}'
+```
+
+---
+
+#### Test Scenario 6C.5.6: Quote Ready Email - Test Endpoint
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Testing quote ready notification
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Email contains quote reference number
+- [ ] Email displays final quote amount prominently
+- [ ] Email includes PDF download link
+- [ ] Email includes contact information
+- [ ] Subject: "Ofertă Pregătită - RFQ-2025-XXXXX"
+
+**Test Commands**:
+```bash
+# Test quote ready email
+curl -X POST http://localhost:3001/api/email-test/quote-ready \
+  -H "Content-Type: application/json" \
+  -d '{"email":"customer@example.com"}'
+```
+
+---
+
+#### Test Scenario 6C.5.7: All Email Types - Comprehensive Test
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Testing all email types at once
+
+**Then**:
+- [ ] Response status code is 200
+- [ ] Response contains results for all 5 email types
+- [ ] All email types show `"status": "success"`
+- [ ] Server console shows 5 email logs:
+  1. RFQ Confirmation
+  2. Operator Notification
+  3. Email Verification
+  4. Password Reset
+  5. Quote Ready
+
+**Test Commands**:
+```bash
+# Test all email types
+curl -X POST http://localhost:3001/api/email-test/all \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@metalpro.ro"}'
+
+# Expected response:
+# {
+#   "success": true,
+#   "message": "Toate testele de email au fost executate",
+#   "data": {
+#     "recipient": "test@metalpro.ro",
+#     "results": [
+#       {"type": "RFQ Confirmation", "status": "success"},
+#       {"type": "Operator Notification", "status": "success"},
+#       {"type": "Email Verification", "status": "success"},
+#       {"type": "Password Reset", "status": "success"},
+#       {"type": "Quote Ready", "status": "success"}
+#     ]
+#   }
+# }
+```
+
+---
+
+#### Test Scenario 6C.5.8: Email Template - HTML Structure
+
+**Priority**: Medium
+**Estimated Time**: 5 minutes
+
+**Given**: Email test has been executed
+
+**When**: Inspecting email HTML in console logs
+
+**Then**:
+- [ ] All emails use proper HTML structure with DOCTYPE
+- [ ] Emails include inline CSS for email client compatibility
+- [ ] Emails are mobile-responsive (max-width: 600px)
+- [ ] All emails include MetalPro branding
+- [ ] All emails include footer with disclaimer
+- [ ] Links use proper formatting and colors
+- [ ] Special characters (Romanian: ă, â, î, ș, ț) display correctly
+
+**Manual Verification**:
+Copy HTML from console logs and open in browser to verify rendering.
+
+---
+
+### Phase 6C.6: Security Hardening
+
+#### Test Scenario 6C.6.1: Rate Limiting - General API
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Making multiple requests to /api/products
+
+**Then**:
+- [ ] First 100 requests within 15 minutes succeed
+- [ ] Response headers include:
+  - `RateLimit-Policy`
+  - `RateLimit-Limit: 100`
+  - `RateLimit-Remaining` (decreases with each request)
+  - `RateLimit-Reset` (seconds until reset)
+- [ ] 101st request returns HTTP 429 (Too Many Requests)
+- [ ] Error message: "Too many requests"
+
+**Test Commands**:
+```bash
+# Make 5 requests and check headers
+for i in {1..5}; do
+  echo "Request $i:"
+  curl -v http://localhost:3001/api/products 2>&1 | grep -i ratelimit
+  echo ""
+done
+
+# Check remaining count decreases
+```
+
+---
+
+#### Test Scenario 6C.6.2: Rate Limiting - Authentication Endpoints (Strict)
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Making multiple failed login attempts
+
+**Then**:
+- [ ] First 5 login attempts are processed (may fail with wrong credentials)
+- [ ] 6th attempt returns HTTP 429 (Too Many Requests)
+- [ ] Error response: `{"error":"Too many authentication attempts","message":"..."}`
+- [ ] Rate limit resets after 15 minutes
+
+**Test Commands**:
+```bash
+# Make 6 login attempts
+for i in {1..6}; do
+  echo "Login attempt $i:"
+  curl -X POST http://localhost:3001/api/auth/login \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@test.com","password":"wrongpass"}' \
+    -w "\nHTTP Status: %{http_code}\n\n"
+done
+
+# 6th attempt should return 429
+```
+
+**Expected Output**:
+```
+Login attempt 6:
+{"error":"Too many authentication attempts","message":"Too many authentication attempts from this IP, please try again after 15 minutes."}
+HTTP Status: 429
+```
+
+---
+
+#### Test Scenario 6C.6.3: Rate Limiting - File Upload Endpoints
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Uploading files rapidly
+
+**Then**:
+- [ ] First 20 uploads within 1 hour succeed
+- [ ] 21st upload returns HTTP 429
+- [ ] Error message: "Too many file uploads"
+
+**Test Commands**:
+```bash
+# Create test file
+echo "test" > /tmp/test.csv
+
+# Make multiple upload requests
+for i in {1..3}; do
+  curl -X POST http://localhost:3001/api/upload/bom \
+    -F "file=@/tmp/test.csv" \
+    -w "\nHTTP Status: %{http_code}\n"
+done
+```
+
+---
+
+#### Test Scenario 6C.6.4: Rate Limiting - RFQ Submission
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Submitting multiple RFQ requests
+
+**Then**:
+- [ ] First 10 RFQ submissions within 1 hour are allowed
+- [ ] 11th submission returns HTTP 429
+- [ ] Error message: "Too many RFQ submissions"
+
+---
+
+#### Test Scenario 6C.6.5: Health Check - Rate Limit Bypass
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: IP address has exceeded rate limits
+
+**When**: Accessing /health endpoint
+
+**Then**:
+- [ ] Health check endpoint always works (bypasses rate limiter)
+- [ ] Returns HTTP 200 even when rate limited
+- [ ] Response contains system health status
+
+**Test Commands**:
+```bash
+# After triggering rate limit, health check should still work
+curl http://localhost:3001/health
+
+# Should return 200 with health status
+```
+
+---
+
+#### Test Scenario 6C.6.6: XSS Protection - Script Tag Sanitization
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Submitting request with XSS payload
+
+**Then**:
+- [ ] Input containing `<script>` tags is sanitized
+- [ ] Special characters are escaped:
+  - `<` → `&lt;`
+  - `>` → `&gt;`
+  - `"` → `&quot;`
+  - `'` → `&#x27;`
+  - `/` → `&#x2F;`
+- [ ] No script execution in responses
+
+**Test Commands**:
+```bash
+# Test XSS in login endpoint
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"<script>alert(\"XSS\")</script>","password":"test"}'
+
+# Check response - should not contain unescaped script tags
+```
+
+---
+
+#### Test Scenario 6C.6.7: MongoDB Injection Protection
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Submitting request with MongoDB operators
+
+**Then**:
+- [ ] MongoDB operators are sanitized:
+  - `$ne` is removed/replaced
+  - `$gt` is removed/replaced
+  - `$lt` is removed/replaced
+  - Dot notation in keys is replaced
+- [ ] Server logs warning: "[Security] Sanitized MongoDB operator from request"
+- [ ] Request is processed with sanitized data
+
+**Test Commands**:
+```bash
+# Test MongoDB injection attempt
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":{"$ne":""},"password":"test"}'
+
+# Check server logs for sanitization warning
+# Request should fail authentication (not bypass with $ne)
+```
+
+---
+
+#### Test Scenario 6C.6.8: Environment Variable Validation
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is starting
+
+**When**: Server initializes
+
+**Then**:
+- [ ] Server validates all required environment variables
+- [ ] Server logs: "✅ Environment validation passed"
+- [ ] Server logs environment details:
+  - Environment (development/production)
+  - JWT Secret length
+  - Email service status
+- [ ] Server fails to start if critical variables are missing
+
+**Verification**:
+```bash
+# Check server startup logs for validation messages:
+# ✅ Environment validation passed
+# 📍 Environment: development
+# 🔐 JWT Secret: your-super... (64 characters)
+# 📧 Email Service: Not configured (development mode)
+```
+
+---
+
+#### Test Scenario 6C.6.9: Error Handling - Production Mode
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: Server is running in production mode (NODE_ENV=production)
+
+**When**: An internal server error occurs
+
+**Then**:
+- [ ] Error response does not expose stack trace
+- [ ] Error response is generic: "An unexpected error occurred. Please try again later."
+- [ ] Detailed error is logged server-side only
+- [ ] HTTP status code is appropriate (500, 400, etc.)
+
+**When**: Server is in development mode
+
+**Then**:
+- [ ] Error response includes detailed information
+- [ ] Stack trace is included in response
+- [ ] Request path and method are included
+
+---
+
+#### Test Scenario 6C.6.10: Security Headers - Helmet.js
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Making any API request
+
+**Then**:
+- [ ] Response includes security headers:
+  - `X-DNS-Prefetch-Control`
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+  - `X-Download-Options`
+  - `Strict-Transport-Security`
+- [ ] CORS headers are present:
+  - `Access-Control-Allow-Origin`
+  - `Access-Control-Allow-Methods`
+
+**Test Commands**:
+```bash
+# Check security headers
+curl -v http://localhost:3001/api/products 2>&1 | grep -i "x-"
+
+# Should see various X- security headers
+```
+
+---
+
+#### Test Scenario 6C.6.11: CORS Configuration
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running with FRONTEND_URL=http://localhost:8080
+
+**When**: Making request from allowed origin
+
+**Then**:
+- [ ] Request succeeds
+- [ ] CORS headers allow the origin
+
+**When**: Making request from disallowed origin
+
+**Then**:
+- [ ] Request is blocked by CORS policy
+- [ ] Browser console shows CORS error
+
+**Test Commands**:
+```bash
+# Test with allowed origin
+curl -H "Origin: http://localhost:8080" \
+  -H "Access-Control-Request-Method: POST" \
+  -X OPTIONS \
+  http://localhost:3001/api/products
+
+# Should return CORS headers allowing the request
+```
+
+---
+
+#### Test Scenario 6C.6.12: Input Sanitization - Comprehensive Test
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: Backend server is running
+
+**When**: Submitting various malicious inputs
+
+**Then**:
+- [ ] SQL injection attempts are blocked (via Prisma parameterization)
+- [ ] XSS attempts are sanitized
+- [ ] MongoDB injection attempts are sanitized
+- [ ] File upload validation prevents dangerous file types
+- [ ] All inputs are properly validated and sanitized
+
+**Test Commands**:
+```bash
+# Run the security test suite
+chmod +x test-security.sh
+./test-security.sh
+
+# Should show:
+# ✓ Environment validation
+# ✓ API rate limiting (100 req/15min)
+# ✓ Auth rate limiting (5 req/15min)
+# ✓ XSS protection
+# ✓ MongoDB injection protection
+# ✓ Secure error handling
+# ✓ Health check bypass
+# ✓ Rate limit headers
+```
+
+---
+
+### Phase 6C.8: Monitoring & Logging
+
+---
+
+#### Test Scenario 6C.8.1: Health Check - Comprehensive Status
+
+**Priority**: Critical
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running with database and Redis connected
+
+**When**: Making a GET request to `/health`
+
+**Then**:
+- [ ] Response status is 200 OK
+- [ ] Response includes `status: "healthy"`
+- [ ] Response includes `service: "MetalPro Backend API"`
+- [ ] Response includes current environment
+- [ ] Response includes uptime in seconds
+- [ ] Response includes database check: "connected"
+- [ ] Response includes redis check: "connected"
+
+**Test Commands**:
+```bash
+# Test health check
+curl http://localhost:3001/health | jq
+
+# Expected response:
+# {
+#   "status": "healthy",
+#   "service": "MetalPro Backend API",
+#   "environment": "development",
+#   "timestamp": "2025-11-15T10:30:45.123Z",
+#   "uptime": 3600,
+#   "checks": {
+#     "database": "connected",
+#     "redis": "connected"
+#   }
+# }
+```
+
+---
+
+#### Test Scenario 6C.8.2: Health Check - Degraded State
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running but database is unavailable
+
+**When**: Making a GET request to `/health`
+
+**Then**:
+- [ ] Response status is 503 Service Unavailable
+- [ ] Response includes `status: "degraded"`
+- [ ] Response includes database check: "disconnected"
+- [ ] Error is logged to `logs/error.log`
+
+**Test Commands**:
+```bash
+# Stop database (in separate terminal)
+docker-compose stop postgres
+
+# Test health check
+curl -i http://localhost:3001/health
+
+# Expected: HTTP/1.1 503 Service Unavailable
+
+# Check error log
+tail -f backend/logs/error.log | jq
+
+# Restart database
+docker-compose start postgres
+```
+
+---
+
+#### Test Scenario 6C.8.3: Liveness Probe
+
+**Priority**: High
+**Estimated Time**: 1 minute
+
+**Given**: Backend server is running
+
+**When**: Making a GET request to `/health/live`
+
+**Then**:
+- [ ] Response status is 200 OK
+- [ ] Response includes `status: "alive"`
+- [ ] Response includes timestamp
+- [ ] Endpoint responds quickly (< 50ms)
+
+**Test Commands**:
+```bash
+# Test liveness probe
+curl http://localhost:3001/health/live | jq
+
+# Expected response:
+# {
+#   "status": "alive",
+#   "timestamp": "2025-11-15T10:30:45.123Z"
+# }
+```
+
+---
+
+#### Test Scenario 6C.8.4: Readiness Probe - Ready State
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running with database connected
+
+**When**: Making a GET request to `/health/ready`
+
+**Then**:
+- [ ] Response status is 200 OK
+- [ ] Response includes `status: "ready"`
+- [ ] Response includes timestamp
+
+**Test Commands**:
+```bash
+# Test readiness probe
+curl http://localhost:3001/health/ready | jq
+
+# Expected response:
+# {
+#   "status": "ready",
+#   "timestamp": "2025-11-15T10:30:45.123Z"
+# }
+```
+
+---
+
+#### Test Scenario 6C.8.5: Readiness Probe - Not Ready State
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running but database is unavailable
+
+**When**: Making a GET request to `/health/ready`
+
+**Then**:
+- [ ] Response status is 503 Service Unavailable
+- [ ] Response includes `status: "not ready"`
+- [ ] Response includes error message
+- [ ] Response includes timestamp
+
+**Test Commands**:
+```bash
+# Stop database
+docker-compose stop postgres
+
+# Test readiness probe
+curl -i http://localhost:3001/health/ready | jq
+
+# Expected: HTTP/1.1 503 Service Unavailable
+# {
+#   "status": "not ready",
+#   "error": "Database not accessible",
+#   "timestamp": "2025-11-15T10:30:45.123Z"
+# }
+
+# Restart database
+docker-compose start postgres
+```
+
+---
+
+#### Test Scenario 6C.8.6: Request Logging - Automatic Tracking
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Making various API requests
+
+**Then**:
+- [ ] Each request is logged to `logs/combined.log`
+- [ ] Log includes method, path, status code, and duration
+- [ ] Log format is JSON
+- [ ] Log includes timestamp
+
+**Test Commands**:
+```bash
+# Make some API requests
+curl http://localhost:3001/api/products
+curl http://localhost:3001/api/categories
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"wrong"}'
+
+# Check combined log
+tail -20 backend/logs/combined.log | jq
+
+# Expected log entries:
+# {
+#   "level": "info",
+#   "message": "HTTP Request",
+#   "method": "GET",
+#   "path": "/api/products",
+#   "statusCode": 200,
+#   "duration": "45ms",
+#   "timestamp": "2025-11-15 10:30:45",
+#   "service": "metalpro-backend"
+# }
+```
+
+---
+
+#### Test Scenario 6C.8.7: Slow Request Detection
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running
+
+**When**: Making a request that takes > 1 second
+
+**Then**:
+- [ ] Request is logged as normal
+- [ ] Additional warning log is created for slow request
+- [ ] Warning log includes "Slow Request" message
+- [ ] Warning log includes duration
+
+**Test Commands**:
+```bash
+# Note: In production, you might need to trigger a slow query
+# For testing, check logs during normal operations
+
+# Monitor logs in real-time
+tail -f backend/logs/combined.log | jq
+
+# Make requests and look for any slow request warnings
+# Any request > 1 second should generate a warning
+```
+
+---
+
+#### Test Scenario 6C.8.8: Error Logging
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: Backend server is running
+
+**When**: Triggering an error (e.g., 404, authentication failure)
+
+**Then**:
+- [ ] Error details are logged to `logs/error.log`
+- [ ] Error log includes error message, stack trace, path, and method
+- [ ] Error log format is JSON
+- [ ] Normal requests are NOT in error.log
+
+**Test Commands**:
+```bash
+# Trigger errors
+curl http://localhost:3001/nonexistent-route
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"invalid","password":"wrong"}'
+
+# Check error log (should only contain error-level logs)
+tail -20 backend/logs/error.log | jq
+
+# Verify combined.log has all logs
+tail -20 backend/logs/combined.log | jq
+```
+
+---
+
+#### Test Scenario 6C.8.9: Log File Structure
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server has been running and processing requests
+
+**When**: Checking the `logs/` directory
+
+**Then**:
+- [ ] `logs/error.log` exists
+- [ ] `logs/combined.log` exists
+- [ ] Both files contain JSON-formatted logs
+- [ ] Files are in `backend/logs/` directory
+
+**Test Commands**:
+```bash
+# Check log directory structure
+ls -lh backend/logs/
+
+# Expected files:
+# error.log
+# combined.log
+
+# Verify JSON format
+head -5 backend/logs/combined.log | jq
+head -5 backend/logs/error.log | jq
+```
+
+---
+
+#### Test Scenario 6C.8.10: Development Mode Logging
+
+**Priority**: Low
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is running in development mode (NODE_ENV not set to production)
+
+**When**: Making API requests
+
+**Then**:
+- [ ] Logs appear in console (colorized)
+- [ ] Logs appear in log files (JSON format)
+- [ ] Debug-level logs are visible in development
+- [ ] Console output is human-readable
+
+**Test Commands**:
+```bash
+# Ensure NODE_ENV is not production
+echo $NODE_ENV
+
+# Start server and observe console output
+npm run dev
+
+# Make a request
+curl http://localhost:3001/api/products
+
+# Should see colorized console output AND
+# Check log file also has the entry
+tail -5 backend/logs/combined.log | jq
+```
+
+---
+
+### Phase 6C Summary - Updated Checklist
+
+#### Phase 6C.1: Backend API Setup (4 scenarios)
+- [ ] 6C.1.1 - Infrastructure Health Check
+- [ ] 6C.1.2 - Database Connection Verification
+- [ ] 6C.1.3 - Redis Cache Connection
+- [ ] 6C.1.4 - Database Seeding Verification
+
+#### Phase 6C.2: Route Scaffolding (5 scenarios)
+- [ ] 6C.2.1 - Products API - List All Products
+- [ ] 6C.2.2 - Products API - Get Single Product
+- [ ] 6C.2.3 - Categories API - List All Categories
+- [ ] 6C.2.4 - Categories API - Get Single Category
+- [ ] 6C.2.5 - API Base Info Endpoint
+
+#### Phase 6C.3: Production Authentication System (15 scenarios)
+- [ ] 6C.3.1 - User Signup - Business Account
+- [ ] 6C.3.2 - User Signup - Individual Account
+- [ ] 6C.3.3 - User Signup - Validation Errors
+- [ ] 6C.3.4 - User Login - Successful
+- [ ] 6C.3.5 - User Login - Failed Authentication
+- [ ] 6C.3.6 - Get Current User (Authenticated)
+- [ ] 6C.3.7 - Update User Profile
+- [ ] 6C.3.8 - Update Company Information
+- [ ] 6C.3.9 - Token Refresh
+- [ ] 6C.3.10 - User Logout
+- [ ] 6C.3.11 - JWT Token Expiration
+- [ ] 6C.3.12 - Password Security Verification
+- [ ] 6C.3.13 - Session Management
+- [ ] 6C.3.14 - CORS Configuration
+- [ ] 6C.3.15 - Request Logging
+
+#### Phase 6C.4: File Upload & Storage (16 scenarios)
+- [ ] 6C.4.1 - BOM File Upload - Guest User
+- [ ] 6C.4.2 - BOM File Upload - Authenticated User
+- [ ] 6C.4.3 - BOM File Upload - Excel Format
+- [ ] 6C.4.4 - BOM File Upload - File Type Validation
+- [ ] 6C.4.5 - BOM File Upload - File Size Validation
+- [ ] 6C.4.6 - BOM File Upload - Missing File
+- [ ] 6C.4.7 - RFQ Attachment Upload - PDF File
+- [ ] 6C.4.8 - RFQ Attachment Upload - Image Files
+- [ ] 6C.4.9 - RFQ Attachment Upload - Document Files
+- [ ] 6C.4.10 - RFQ Attachment Upload - Missing RFQ ID
+- [ ] 6C.4.11 - RFQ Attachment Upload - File Type Validation
+- [ ] 6C.4.12 - RFQ Attachment Upload - File Size Validation
+- [ ] 6C.4.13 - File Access via Static URL
+- [ ] 6C.4.14 - File Organization Structure
+- [ ] 6C.4.15 - Multiple File Uploads for Same RFQ
+- [ ] 6C.4.16 - Upload Performance Test
+
+#### Phase 6C.5: Email Service Integration - AWS SES (8 scenarios)
+- [ ] 6C.5.1 - Email Service - Development Mode
+- [ ] 6C.5.2 - RFQ Confirmation Email - Test Endpoint
+- [ ] 6C.5.3 - Operator Notification Email - Test Endpoint
+- [ ] 6C.5.4 - Email Verification Email - Test Endpoint
+- [ ] 6C.5.5 - Password Reset Email - Test Endpoint
+- [ ] 6C.5.6 - Quote Ready Email - Test Endpoint
+- [ ] 6C.5.7 - All Email Types - Comprehensive Test
+- [ ] 6C.5.8 - Email Template - HTML Structure
+
+#### Phase 6C.6: Security Hardening (12 scenarios)
+- [ ] 6C.6.1 - Rate Limiting - General API
+- [ ] 6C.6.2 - Rate Limiting - Authentication Endpoints (Strict)
+- [ ] 6C.6.3 - Rate Limiting - File Upload Endpoints
+- [ ] 6C.6.4 - Rate Limiting - RFQ Submission
+- [ ] 6C.6.5 - Health Check - Rate Limit Bypass
+- [ ] 6C.6.6 - XSS Protection - Script Tag Sanitization
+- [ ] 6C.6.7 - MongoDB Injection Protection
+- [ ] 6C.6.8 - Environment Variable Validation
+- [ ] 6C.6.9 - Error Handling - Production Mode
+- [ ] 6C.6.10 - Security Headers - Helmet.js
+- [ ] 6C.6.11 - CORS Configuration
+- [ ] 6C.6.12 - Input Sanitization - Comprehensive Test
+
+#### Phase 6C.8: Monitoring & Logging (10 scenarios)
+- [ ] 6C.8.1 - Health Check - Comprehensive Status
+- [ ] 6C.8.2 - Health Check - Degraded State
+- [ ] 6C.8.3 - Liveness Probe
+- [ ] 6C.8.4 - Readiness Probe - Ready State
+- [ ] 6C.8.5 - Readiness Probe - Not Ready State
+- [ ] 6C.8.6 - Request Logging - Automatic Tracking
+- [ ] 6C.8.7 - Slow Request Detection
+- [ ] 6C.8.8 - Error Logging
+- [ ] 6C.8.9 - Log File Structure
+- [ ] 6C.8.10 - Development Mode Logging
+
+**Total Phase 6C Scenarios**: 70 scenarios (40 + 8 + 12 + 10)
+
+**Last Updated**: November 15, 2025
+**Next Review**: Before production release
+
+---
+

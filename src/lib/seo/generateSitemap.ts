@@ -7,7 +7,7 @@
 
 import type { Product, Category } from '@/types/product';
 
-const SITE_URL = 'https://metalpro.ro';
+const SITE_URL = 'https://metal-direct.ro';
 
 interface SitemapUrl {
   loc: string;

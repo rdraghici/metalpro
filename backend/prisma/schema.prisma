@@ -1,0 +1,328 @@
+// =====================================================
+// MetalPro Database Schema
+// =====================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================
+// USERS & AUTHENTICATION
+// =====================================================
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  name          String
+  phone         String?
+  role          UserRole  @default(BUSINESS)
+  emailVerified Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  company   Company?
+  addresses Address[]
+  projects  Project[]
+  rfqs      RFQ[]
+  sessions  Session[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserRole {
+  INDIVIDUAL
+  BUSINESS
+}
+
+model Company {
+  id         String    @id @default(uuid())
+  userId     String    @unique
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  legalName  String
+  cui        String?
+  address    String?
+  city       String?
+  county     String?
+  postalCode String?
+  country    String    @default("Romania")
+
+  isVerified Boolean   @default(false)
+  verifiedAt DateTime?
+
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([cui])
+  @@map("companies")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  token        String   @unique
+  refreshToken String?  @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+
+  createdAt    DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+  @@map("sessions")
+}
+
+// =====================================================
+// PRODUCTS & CATALOG
+// =====================================================
+
+model Category {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  nameEn      String?
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0)
+
+  products    Product[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("categories")
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id])
+
+  sku          String   @unique
+  title        String
+  grade        String?
+  standard     String?
+  dimensions   String?
+  availability String   @default("in_stock")
+
+  baseUnit     String  // kg, m, pcs
+  pricePerUnit Float   // Gross estimate price
+
+  weight   Float? // kg per unit
+  lengthM  Float? // meters (for profiles, pipes)
+
+  metadata Json? // Flexible for future specs
+
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([sku])
+  @@index([availability])
+  @@map("products")
+}
+
+// =====================================================
+// CART (Session-based for guests, DB for authenticated)
+// =====================================================
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String?  // Null for guest carts
+  sessionId String?  // For guest identification
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime // Auto-cleanup old carts
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("carts")
+}
+
+model CartItem {
+  id        String @id @default(uuid())
+  cartId    String
+  cart      Cart   @relation(fields: [cartId], references: [id], onDelete: Cascade)
+
+  productId String
+  quantity  Float
+  unit      String
+
+  specs Json? // lengthM, finish, etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+// =====================================================
+// RFQs (Request for Quote)
+// =====================================================
+
+model RFQ {
+  id              String    @id @default(uuid())
+  userId          String?   // Null for guest RFQs
+  user            User?     @relation(fields: [userId], references: [id])
+
+  referenceNumber String    @unique // RFQ-2025-00042
+  status          RFQStatus @default(SUBMITTED)
+
+  // Company Info (snapshot at submission time)
+  companyName    String
+  cui            String?
+  contactPerson  String
+  email          String
+  phone          String
+
+  // Addresses
+  billingAddress  Json
+  deliveryAddress Json
+
+  // Preferences
+  incoterm     String?
+  deliveryDate DateTime?
+  notes        String?
+
+  // Attachments
+  attachments Attachment[]
+
+  // Cart snapshot (preserved at submission)
+  cartSnapshot Json
+  items        RFQItem[]
+
+  // Pricing (filled by operator)
+  estimatedTotal   Float? // Gross estimate from frontend
+  finalQuoteAmount Float? // Final quote from operator
+  finalQuotePdfUrl String?
+  quotedAt         DateTime?
+
+  // Timestamps
+  submittedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([referenceNumber])
+  @@map("rfqs")
+}
+
+enum RFQStatus {
+  SUBMITTED
+  ACKNOWLEDGED
+  IN_PROGRESS
+  QUOTED
+  COMPLETED
+  CANCELLED
+}
+
+model RFQItem {
+  id          String @id @default(uuid())
+  rfqId       String
+  rfq         RFQ    @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  productId   String?
+  productSku  String
+  productName String
+
+  quantity   Float
+  unit       String
+  specs      Json?
+
+  grossPrice Float  // Estimate from frontend
+  finalPrice Float? // Final price from operator
+
+  createdAt DateTime @default(now())
+
+  @@index([rfqId])
+  @@map("rfq_items")
+}
+
+// =====================================================
+// SAVED BOM PROJECTS
+// =====================================================
+
+model Project {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?
+  fileName    String
+
+  bomData Json // BOMUploadResult structure
+
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("projects")
+}
+
+// =====================================================
+// SAVED ADDRESSES
+// =====================================================
+
+model Address {
+  id         String      @id @default(uuid())
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type       AddressType
+  isDefault  Boolean     @default(false)
+
+  street     String
+  city       String
+  county     String
+  postalCode String
+  country    String      @default("Romania")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, type])
+  @@map("addresses")
+}
+
+enum AddressType {
+  BILLING
+  DELIVERY
+}
+
+// =====================================================
+// FILE ATTACHMENTS
+// =====================================================
+
+model Attachment {
+  id         String @id @default(uuid())
+  rfqId      String
+  rfq        RFQ    @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+
+  fileName   String
+  fileSize   Int
+  mimeType   String
+  storageUrl String // S3 URL or local path
+
+  uploadedAt DateTime @default(now())
+
+  @@index([rfqId])
+  @@map("attachments")
+}

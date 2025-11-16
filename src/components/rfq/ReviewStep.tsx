@@ -361,7 +361,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
                 <a href="#" className="underline">
                   termenii și condițiile
                 </a>{' '}
-                MetalPro și sunt de acord ca datele mele să fie procesate pentru generarea ofertei.
+                MetalDirect și sunt de acord ca datele mele să fie procesate pentru generarea ofertei.
               </p>
             </div>
           </div>

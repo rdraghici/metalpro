@@ -30,7 +30,7 @@ export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQ
     // 1. Upload files to S3 and get URLs
     const uploadedAttachments = data.attachments.map((att) => ({
       ...att,
-      url: `https://s3.metalpro.ro/rfq-attachments/${referenceNumber}/${att.name}`,
+      url: `https://s3.metal-direct.ro/rfq-attachments/${referenceNumber}/${att.name}`,
     }));
 
     // 2. Create RFQ record in database
@@ -114,7 +114,7 @@ async function sendRFQNotifications(rfq: RFQ): Promise<void> {
 
   console.log('📧 Email notifications sent:');
   console.log(`✅ To customer: ${rfq.company.contact.email}`);
-  console.log('✅ To sales team: sales@metalpro.ro');
+  console.log('✅ To sales team: sales@metal-direct.ro');
 
   // In production:
   // await sendEmail({
@@ -124,7 +124,7 @@ async function sendRFQNotifications(rfq: RFQ): Promise<void> {
   // });
   //
   // await sendEmail({
-  //   to: 'sales@metalpro.ro',
+  //   to: 'sales@metal-direct.ro',
   //   template: 'new-rfq-notification',
   //   data: { rfq },
   // });

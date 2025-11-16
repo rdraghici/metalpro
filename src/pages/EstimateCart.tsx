@@ -184,7 +184,7 @@ const EstimateCart = () => {
                         <strong>Telefon:</strong> +40 xxx xxx xxx
                       </p>
                       <p>
-                        <strong>Email:</strong> sales@metalpro.ro
+                        <strong>Email:</strong> sales@metal-direct.ro
                       </p>
                       <p>
                         <strong>Program:</strong> L-V, 08:00-16:30

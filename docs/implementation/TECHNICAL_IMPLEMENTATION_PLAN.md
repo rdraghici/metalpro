@@ -851,7 +851,7 @@ if (isGuest) {
 
 > **IMPORTANT:** This phase has been **extracted into a separate document** for detailed planning.
 >
-> **See:** [`PRODUCTION_READINESS.md`](./PRODUCTION_READINESS.md) for complete implementation guide.
+> **See:** [`PRODUCTION_READINESS.md`](PRODUCTION_READINESS.md) for complete implementation guide.
 >
 > **Implementation Decisions:**
 > - **Infrastructure:** AWS Cloud (S3, RDS PostgreSQL, ElastiCache Redis)
@@ -867,7 +867,7 @@ if (isGuest) {
 
 **For complete Phase 6C implementation details, see:**
 
-### 📄 [PRODUCTION_READINESS.md](./PRODUCTION_READINESS.md)
+### 📄 [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md)
 
 The production readiness document includes:
 

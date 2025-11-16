@@ -2,77 +2,77 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
-    <loc>https://metalpro.ro/</loc>
+    <loc>https://metal-direct.ro/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <!-- Main Catalog -->
   <url>
-    <loc>https://metalpro.ro/catalog</loc>
+    <loc>https://metal-direct.ro/catalog</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
   <!-- Category Pages -->
   <url>
-    <loc>https://metalpro.ro/catalog/profiles</loc>
+    <loc>https://metal-direct.ro/catalog/profiles</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/catalog/plates</loc>
+    <loc>https://metal-direct.ro/catalog/plates</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/catalog/pipes</loc>
+    <loc>https://metal-direct.ro/catalog/pipes</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/catalog/fasteners</loc>
+    <loc>https://metal-direct.ro/catalog/fasteners</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/catalog/stainless-steel</loc>
+    <loc>https://metal-direct.ro/catalog/stainless-steel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/catalog/non-ferrous</loc>
+    <loc>https://metal-direct.ro/catalog/non-ferrous</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Feature Pages -->
   <url>
-    <loc>https://metalpro.ro/bom-upload</loc>
+    <loc>https://metal-direct.ro/bom-upload</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/rfq</loc>
+    <loc>https://metal-direct.ro/rfq</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- Auth Pages -->
   <url>
-    <loc>https://metalpro.ro/login</loc>
+    <loc>https://metal-direct.ro/login</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
-    <loc>https://metalpro.ro/signup</loc>
+    <loc>https://metal-direct.ro/signup</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>

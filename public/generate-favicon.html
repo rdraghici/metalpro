@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Favicon Generator - MetalDirect</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      margin: 20px 0;
+    }
+    button {
+      background: linear-gradient(135deg, hsl(215 85% 27%), hsl(215 85% 35%));
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 10px 5px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    .preview {
+      display: inline-block;
+      margin: 10px;
+    }
+    h1 { color: hsl(215 85% 27%); }
+  </style>
+</head>
+<body>
+  <h1>MetalDirect Favicon Generator</h1>
+  <p>Click the buttons below to generate and download favicon files:</p>
+
+  <div id="previews"></div>
+
+  <script>
+    const sizes = [
+      { size: 180, name: 'apple-touch-icon.png', label: 'Apple Touch Icon (180x180)' },
+      { size: 192, name: 'android-chrome-192x192.png', label: 'Android Chrome (192x192)' },
+      { size: 512, name: 'android-chrome-512x512.png', label: 'Android Chrome (512x512)' },
+      { size: 32, name: 'favicon-32x32.png', label: 'Favicon (32x32)' },
+      { size: 16, name: 'favicon-16x16.png', label: 'Favicon (16x16)' },
+    ];
+
+    function createFavicon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      // Create gradient
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, 'hsl(215, 85%, 27%)');
+      gradient.addColorStop(1, 'hsl(215, 85%, 35%)');
+
+      // Draw rounded rectangle background
+      const radius = size * 0.08;
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.roundRect(0, 0, size, size, radius);
+      ctx.fill();
+
+      // Draw "M" text
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${size * 0.6}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('M', size / 2, size / 2 + size * 0.05);
+
+      return canvas;
+    }
+
+    function downloadCanvas(canvas, filename) {
+      canvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    // Generate previews and download buttons
+    const previewsDiv = document.getElementById('previews');
+    sizes.forEach(({ size, name, label }) => {
+      const div = document.createElement('div');
+      div.className = 'preview';
+
+      const canvas = createFavicon(size);
+      canvas.style.width = '100px';
+      canvas.style.height = '100px';
+
+      const button = document.createElement('button');
+      button.textContent = `Download ${label}`;
+      button.onclick = () => {
+        const fullCanvas = createFavicon(size);
+        downloadCanvas(fullCanvas, name);
+      };
+
+      const labelDiv = document.createElement('div');
+      labelDiv.innerHTML = `<strong>${label}</strong>`;
+
+      div.appendChild(labelDiv);
+      div.appendChild(canvas);
+      div.appendChild(button);
+      previewsDiv.appendChild(div);
+    });
+
+    // Add roundRect polyfill for older browsers
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, width, height, radius) {
+        this.moveTo(x + radius, y);
+        this.lineTo(x + width - radius, y);
+        this.quadraticCurveTo(x + width, y, x + width, y + radius);
+        this.lineTo(x + width, y + height - radius);
+        this.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        this.lineTo(x + radius, y + height);
+        this.quadraticCurveTo(x, y + height, x, y + height - radius);
+        this.lineTo(x, y + radius);
+        this.quadraticCurveTo(x, y, x + radius, y);
+        this.closePath();
+      };
+    }
+  </script>
+</body>
+</html>

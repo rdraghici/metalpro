@@ -1,9 +1,11 @@
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const Footer = () => {
   const analytics = useAnalytics();
+  const { t } = useTranslation();
   return (
     <footer className="bg-secondary text-secondary-foreground">
       {/* Main Footer */}
@@ -16,63 +18,42 @@ const Footer = () => {
                 <span className="text-white font-bold text-lg">M</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold">MetalPro</h1>
-                <p className="text-xs text-muted-foreground">Materiale metalice B2B</p>
+                <h1 className="text-xl font-bold">{t('header.company_name')}</h1>
+                <p className="text-xs text-muted-foreground">{t('footer.tagline')}</p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Furnizor de materiale metalice pentru industrie cu peste 15 ani de experiență. 
-              Calitate garantată și livrare rapidă în toată țara.
+            <p className="text-sm text-secondary-foreground/80 leading-relaxed">
+              {t('footer.company_info')}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold mb-4">Categorii Principale</h3>
-            <div className="space-y-2">
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Profile Metalice
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Table de Oțel
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Țevi și Tuburi
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Elemente Asamblare
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Oțel Inoxidabil
-              </Button>
+            <h3 className="font-semibold mb-4">{t('footer.main_categories')}</h3>
+            <div className="space-y-2 text-sm text-secondary-foreground/80">
+              <p>{t('footer.category_profiles')}</p>
+              <p>{t('footer.category_plates')}</p>
+              <p>{t('footer.category_pipes')}</p>
+              <p>{t('footer.category_fasteners')}</p>
+              <p>{t('footer.category_stainless')}</p>
             </div>
           </div>
 
           {/* Services */}
           <div>
-            <h3 className="font-semibold mb-4">Servicii</h3>
-            <div className="space-y-2">
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Debitare la dimensiune
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Transport specializat
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Consultanță tehnică
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Certificare materiale
-              </Button>
-              <Button variant="link" className="p-0 h-auto justify-start text-muted-foreground hover:text-foreground">
-                Support proiecte
-              </Button>
+            <h3 className="font-semibold mb-4">{t('footer.services')}</h3>
+            <div className="space-y-2 text-sm text-secondary-foreground/80">
+              <p>{t('footer.cutting_service')}</p>
+              <p>{t('footer.specialized_transport')}</p>
+              <p>{t('footer.technical_consulting')}</p>
+              <p>{t('footer.material_certification')}</p>
+              <p>{t('footer.project_support')}</p>
             </div>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="font-semibold mb-4">Contact</h3>
+            <h3 className="font-semibold mb-4">{t('footer.contact')}</h3>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-primary" />
@@ -87,11 +68,11 @@ const Footer = () => {
               <div className="flex items-center gap-3 text-sm">
                 <Mail className="h-4 w-4 text-primary" />
                 <a
-                  href="mailto:vanzari@metalpro.ro"
+                  href="mailto:vanzari@metal-direct.ro"
                   className="hover:text-primary transition-colors"
                   onClick={() => analytics.trackContactClick('email')}
                 >
-                  vanzari@metalpro.ro
+                  vanzari@metal-direct.ro
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm">
@@ -112,17 +93,17 @@ const Footer = () => {
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-muted-foreground">
-              © 2024 MetalPro. Toate drepturile rezervate.
+              {t('footer.copyright')}
             </div>
             <div className="flex items-center gap-6 text-sm">
               <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
-                Termeni și condiții
+                {t('footer.terms')}
               </Button>
               <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
-                Politica de confidențialitate
+                {t('footer.privacy')}
               </Button>
               <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
-                GDPR
+                {t('footer.gdpr')}
               </Button>
             </div>
           </div>

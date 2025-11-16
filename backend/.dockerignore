@@ -1,0 +1,52 @@
+# ==============================================
+# Docker Ignore File
+# Excludes unnecessary files from Docker build context
+# ==============================================
+
+# Node modules (will be installed in Docker)
+node_modules
+
+# Build output (will be generated in Docker)
+dist
+
+# Environment files (use Docker secrets/env vars)
+.env
+.env.*
+!.env.example
+
+# Git
+.git
+.gitignore
+
+# Documentation
+*.md
+!README.md
+docs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage
+.nyc_output
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Uploads (mount as volume in production)
+uploads/*
+
+# Docker files
+Dockerfile
+.dockerignore
+docker-compose*.yml

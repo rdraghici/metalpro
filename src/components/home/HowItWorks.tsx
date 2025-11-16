@@ -1,41 +1,46 @@
 import { Search, Settings, Calculator, FileText } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-
-const steps = [
-  {
-    icon: Search,
-    title: "1. Explorează & Filtrează",
-    description: "Navighează prin categorii sau caută produse specifice folosind filtrele avansate pentru standard, grad, dimensiuni și disponibilitate.",
-    color: "text-blue-500"
-  },
-  {
-    icon: Settings,
-    title: "2. Configurează Specificațiile",
-    description: "Selectează dimensiunile, lungimile, finisajele și cantitățile exacte. Calculatorul nostru îți oferă greutatea și estimarea de preț în timp real.",
-    color: "text-orange-500"
-  },
-  {
-    icon: Calculator,
-    title: "3. Verifică Estimarea",
-    description: "Revizuiește coșul de estimare cu toate specificațiile, prețurile indicative, TVA și costurile de transport estimate.",
-    color: "text-green-500"
-  },
-  {
-    icon: FileText,
-    title: "4. Trimite Cererea RFQ",
-    description: "Completează datele companiei și trimite cererea de ofertă. Echipa noastră te va contacta în 24h cu oferta finală personalizată.",
-    color: "text-purple-500"
-  }
-];
+import { useTranslation } from "@/hooks/useTranslation";
 
 const HowItWorks = () => {
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      icon: Search,
+      titleKey: "home.how_it_works_step1_title",
+      descriptionKey: "home.how_it_works_step1_description",
+      color: "text-blue-500"
+    },
+    {
+      icon: Settings,
+      titleKey: "home.how_it_works_step2_title",
+      descriptionKey: "home.how_it_works_step2_description",
+      color: "text-orange-500"
+    },
+    {
+      icon: Calculator,
+      titleKey: "home.how_it_works_step3_title",
+      descriptionKey: "home.how_it_works_step3_description",
+      color: "text-green-500"
+    },
+    {
+      icon: FileText,
+      titleKey: "home.how_it_works_step4_title",
+      descriptionKey: "home.how_it_works_step4_description",
+      color: "text-purple-500"
+    }
+  ];
+
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-headline mb-4">Cum Funcționează</h2>
+          <h2 className="text-headline mb-4">{t('home.how_it_works_title')}</h2>
           <p className="text-body-large text-muted-foreground max-w-2xl mx-auto">
-            Patru pași simpli pentru a obține o ofertă personalizată pentru materialele metalice
+            {t('home.how_it_works_subtitle')}
           </p>
         </div>
 
@@ -57,10 +62,10 @@ const HowItWorks = () => {
 
                 {/* Content */}
                 <h3 className="text-title mb-3 group-hover:text-primary transition-colors">
-                  {step.title}
+                  {t(step.titleKey)}
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {step.description}
+                  {t(step.descriptionKey)}
                 </p>
               </CardContent>
 
@@ -74,16 +79,22 @@ const HowItWorks = () => {
 
         {/* Call to Action */}
         <div className="text-center mt-12 p-8 gradient-card rounded-2xl border border-card-border shadow-soft">
-          <h3 className="text-title mb-2">Gata să începi?</h3>
+          <h3 className="text-title mb-2">{t('home.how_it_works_cta_title')}</h3>
           <p className="text-muted-foreground mb-4">
-            Începe să explorezi catalogul nostru și configurează prima ta cerere de ofertă
+            {t('home.how_it_works_cta_subtitle')}
           </p>
           <div className="flex items-center justify-center gap-4">
-            <button className="bg-primary text-primary-foreground hover:bg-primary-hover px-6 py-3 rounded-lg font-medium shadow-industrial transition-all">
-              Explorează Catalogul
+            <button
+              className="bg-primary text-primary-foreground hover:bg-primary-hover px-6 py-3 rounded-lg font-medium shadow-industrial transition-all"
+              onClick={() => navigate('/catalog')}
+            >
+              {t('home.how_it_works_cta_catalog')}
             </button>
-            <button className="border border-border hover:bg-card-hover px-6 py-3 rounded-lg font-medium transition-all">
-              Încarcă Lista BOM
+            <button
+              className="border border-border hover:bg-card-hover px-6 py-3 rounded-lg font-medium transition-all"
+              onClick={() => navigate('/bom-upload')}
+            >
+              {t('home.how_it_works_cta_bom')}
             </button>
           </div>
         </div>

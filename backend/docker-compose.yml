@@ -1,0 +1,112 @@
+# ==============================================
+# MetalPro Backend - Docker Compose Configuration
+# ==============================================
+# For local development and testing
+# Production deployment uses AWS ECS/EC2
+
+version: '3.8'
+
+services:
+  # ==============================================
+  # PostgreSQL Database
+  # ==============================================
+  postgres:
+    image: postgres:15-alpine
+    container_name: metalpro-postgres
+    environment:
+      POSTGRES_DB: metalpro
+      POSTGRES_USER: metalpro_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-metalpro_dev_password_2024}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U metalpro_user -d metalpro"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - metalpro-network
+
+  # ==============================================
+  # Redis Cache
+  # ==============================================
+  redis:
+    image: redis:7-alpine
+    container_name: metalpro-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - metalpro-network
+
+  # ==============================================
+  # Backend API
+  # ==============================================
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: metalpro-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      DATABASE_URL: postgresql://metalpro_user:${DB_PASSWORD:-metalpro_dev_password_2024}@postgres:5432/metalpro?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this-in-production-minimum-32-characters}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      REFRESH_TOKEN_EXPIRES_IN: ${REFRESH_TOKEN_EXPIRES_IN:-7d}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:3001}
+      UPLOAD_DIR: uploads
+      ANAF_API_URL: https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva
+      # AWS SES (Email Service)
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      SES_FROM_EMAIL: ${SES_FROM_EMAIL:-noreply@metalpro.ro}
+      OPERATOR_EMAIL: ${OPERATOR_EMAIL:-sales@metalpro.ro}
+      # Logging
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    volumes:
+      - ./uploads:/app/uploads
+    ports:
+      - "3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - metalpro-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ==============================================
+# Named Volumes
+# ==============================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ==============================================
+# Network
+# ==============================================
+networks:
+  metalpro-network:
+    driver: bridge

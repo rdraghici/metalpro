@@ -50,18 +50,18 @@ export function MetaTags({
   ogDescription,
   ogImage,
   ogUrl,
-  ogSiteName = 'MetalPro',
+  ogSiteName = 'MetalDirect',
   twitterCard = 'summary_large_image',
   twitterTitle,
   twitterDescription,
   twitterImage,
-  twitterSite = '@metalpro',
+  twitterSite = '@metaldirect',
   twitterCreator,
   productPrice,
   productCurrency = 'RON',
   productAvailability,
   productCondition = 'new',
-  productBrand = 'MetalPro',
+  productBrand = 'MetalDirect',
 }: MetaTagsProps) {
   useEffect(() => {
     // Set document title
@@ -186,9 +186,9 @@ export function MetaTags({
  * Default meta tags for the application
  */
 export const DEFAULT_META = {
-  title: 'MetalPro - Materiale Metalice Prime B2B | Profile, Table, Țevi',
+  title: 'MetalDirect - Materiale Metalice Prime B2B | Profile, Table, Țevi',
   description:
-    'MetalPro oferă materiale metalice prime pentru industrie: profile metalice (HEA, IPE, UNP), table de oțel, țevi și tuburi, elemente de asamblare, oțel inoxidabil și metale neferoase. Estimări online și oferte rapide.',
+    'MetalDirect oferă materiale metalice prime pentru industrie: profile metalice (HEA, IPE, UNP), table de oțel, țevi și tuburi, elemente de asamblare, oțel inoxidabil și metale neferoase. Estimări online și oferte rapide.',
   keywords: [
     'materiale metalice',
     'profile metalice',
@@ -205,8 +205,8 @@ export const DEFAULT_META = {
     'distribuitie metale',
     'B2B metale',
   ],
-  ogSiteName: 'MetalPro',
+  ogSiteName: 'MetalDirect',
   ogType: 'website' as const,
   twitterCard: 'summary_large_image' as const,
-  twitterSite: '@metalpro',
+  twitterSite: '@metaldirect',
 };

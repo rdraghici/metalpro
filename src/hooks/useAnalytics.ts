@@ -17,7 +17,7 @@ export function useAnalytics() {
 
   // Track page views on route change
   useEffect(() => {
-    const title = document.title || 'MetalPro';
+    const title = document.title || 'MetalDirect';
     gtm.trackPageView(location.pathname, title);
   }, [location.pathname]);
 
@@ -175,7 +175,7 @@ export function usePageTracking(pageTitle?: string) {
   const location = useLocation();
 
   useEffect(() => {
-    const title = pageTitle || document.title || 'MetalPro';
+    const title = pageTitle || document.title || 'MetalDirect';
     gtm.trackPageView(location.pathname, title);
   }, [location.pathname, pageTitle]);
 }

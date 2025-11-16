@@ -85,7 +85,7 @@ const Signup = () => {
 
       toast({
         title: 'Cont creat cu succes!',
-        description: 'Bine ai venit la MetalPro.',
+        description: 'Bine ai venit la MetalDirect.',
       });
 
       navigate('/account');

@@ -1,10 +1,12 @@
 import { ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslation } from "@/hooks/useTranslation";
 
 const CategoryGrid = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const categories = [
     {
@@ -107,7 +109,11 @@ const CategoryGrid = () => {
                 </div>
 
                 {/* CTA */}
-                <Button variant="ghost" className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                <Button
+                  variant="ghost"
+                  className="w-full group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+                  onClick={() => navigate(`/catalog/${category.id}`)}
+                >
                   {t('home.cta_view_products')}
                   <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
@@ -118,7 +124,11 @@ const CategoryGrid = () => {
 
         {/* View All */}
         <div className="text-center mt-12">
-          <Button variant="outline" size="lg">
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate('/catalog')}
+          >
             {t('home.cta_view_all_categories')}
             <ArrowRight className="h-5 w-5" />
           </Button>

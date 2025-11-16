@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ const RFQConfirmation = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { clearCart } = useCart();
+  const { t } = useTranslation();
 
   const referenceNumber = searchParams.get('ref');
 
@@ -43,10 +45,9 @@ const RFQConfirmation = () => {
 
           {/* Success Message */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold mb-3">Cererea a fost trimisă cu succes!</h1>
+            <h1 className="text-3xl font-bold mb-3">{t('rfq.confirmation_title')}</h1>
             <p className="text-lg text-muted-foreground">
-              Mulțumim pentru cererea dumneavoastră. Echipa noastră va reveni cu o ofertă în cel mai
-              scurt timp.
+              {t('rfq.confirmation_message')}
             </p>
           </div>
 
@@ -55,15 +56,15 @@ const RFQConfirmation = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-green-900">
                 <FileText className="h-5 w-5" />
-                Număr de Referință
+                {t('rfq.reference_number_title')}
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="bg-white rounded-lg p-4 text-center border border-green-200">
-                <p className="text-sm text-muted-foreground mb-1">Codul cererii dumneavoastră:</p>
+                <p className="text-sm text-muted-foreground mb-1">{t('rfq.reference_code')}</p>
                 <p className="text-2xl font-bold font-mono text-green-700">{referenceNumber}</p>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Vă rugăm să păstrați acest număr pentru referințe ulterioare
+                  {t('rfq.reference_save')}
                 </p>
               </div>
             </CardContent>
@@ -74,7 +75,7 @@ const RFQConfirmation = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Clock className="h-5 w-5" />
-                Ce urmează?
+                {t('rfq.what_next')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -83,10 +84,9 @@ const RFQConfirmation = () => {
                   1
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Confirmare Email</h3>
+                  <h3 className="font-semibold mb-1">{t('rfq.step1_title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Veți primi un email de confirmare în câteva minute cu detaliile cererii
-                    dumneavoastră.
+                    {t('rfq.step1_description')}
                   </p>
                 </div>
               </div>
@@ -98,9 +98,9 @@ const RFQConfirmation = () => {
                   2
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Procesare Cerere</h3>
+                  <h3 className="font-semibold mb-1">{t('rfq.step2_title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Echipa noastră de vânzări va analiza cererea și va pregăti o ofertă personalizată.
+                    {t('rfq.step2_description')}
                   </p>
                 </div>
               </div>
@@ -112,10 +112,9 @@ const RFQConfirmation = () => {
                   3
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Primire Ofertă</h3>
+                  <h3 className="font-semibold mb-1">{t('rfq.step3_title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Veți primi oferta finală în <strong>maximum 24 ore lucrătoare</strong> prin email
-                    sau telefon.
+                    {t('rfq.step3_description')}
                   </p>
                 </div>
               </div>
@@ -127,9 +126,9 @@ const RFQConfirmation = () => {
                   4
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-1">Negociere & Finalizare</h3>
+                  <h3 className="font-semibold mb-1">{t('rfq.step4_title')}</h3>
                   <p className="text-sm text-muted-foreground">
-                    Un specialist vă va contacta pentru a discuta detaliile și a finaliza comanda.
+                    {t('rfq.step4_description')}
                   </p>
                 </div>
               </div>
@@ -139,9 +138,9 @@ const RFQConfirmation = () => {
           {/* Contact Information */}
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>Aveți întrebări?</CardTitle>
+              <CardTitle>{t('rfq.questions_title')}</CardTitle>
               <CardDescription>
-                Echipa noastră este disponibilă pentru a vă ajuta
+                {t('rfq.questions_description')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -151,7 +150,7 @@ const RFQConfirmation = () => {
                     <Phone className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Telefon</p>
+                    <p className="text-sm font-medium">{t('rfq.phone_label')}</p>
                     <p className="text-sm text-muted-foreground">+40 xxx xxx xxx</p>
                   </div>
                 </div>
@@ -161,8 +160,8 @@ const RFQConfirmation = () => {
                     <Mail className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Email</p>
-                    <p className="text-sm text-muted-foreground">sales@metalpro.ro</p>
+                    <p className="text-sm font-medium">{t('rfq.email_label')}</p>
+                    <p className="text-sm text-muted-foreground">sales@metal-direct.ro</p>
                   </div>
                 </div>
               </div>
@@ -171,7 +170,7 @@ const RFQConfirmation = () => {
 
               <div className="bg-muted/50 p-4 rounded-lg">
                 <p className="text-sm text-center">
-                  <strong>Program:</strong> Luni - Vineri, 08:00 - 16:30
+                  <strong>{t('rfq.schedule')}</strong>
                 </p>
               </div>
             </CardContent>
@@ -181,18 +180,17 @@ const RFQConfirmation = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" onClick={() => navigate('/')} className="gap-2">
               <Home className="h-5 w-5" />
-              Înapoi la Pagina Principală
+              {t('rfq.back_home')}
             </Button>
             <Button variant="outline" size="lg" onClick={() => navigate('/catalog')}>
-              Explorează Catalogul
+              {t('rfq.explore_catalog')}
             </Button>
           </div>
 
           {/* Footer Note */}
           <div className="mt-12 text-center">
             <p className="text-sm text-muted-foreground">
-              Dacă nu primiți emailul de confirmare în 10 minute, vă rugăm să verificați folderul de
-              spam sau să ne contactați direct.
+              {t('rfq.email_note')}
             </p>
           </div>
         </div>

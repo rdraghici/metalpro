@@ -7,17 +7,17 @@
 import type { Product, Category } from '@/types/product';
 import type { MetaTagsProps } from '@/components/seo/MetaTags';
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://metalpro.ro';
+const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://metal-direct.ro';
 
 /**
  * Generate metadata for product detail pages
  */
 export function generateProductMetadata(product: Product): MetaTagsProps {
-  const title = `${product.title} - ${product.grade || ''} ${product.standard || ''} | MetalPro`.trim();
+  const title = `${product.title} - ${product.grade || ''} ${product.standard || ''} | MetalDirect`.trim();
 
   const description = `${product.title} (SKU: ${product.sku}) - ${product.grade || ''} ${product.standard || ''}.
     ${product.dimensions || ''} ${product.availability === 'in_stock' ? 'În stoc' : 'La comandă'}.
-    Estimare online și ofertă rapidă de la MetalPro.`.replace(/\s+/g, ' ').trim();
+    Estimare online și ofertă rapidă de la MetalDirect.`.replace(/\s+/g, ' ').trim();
 
   const keywords = [
     product.title,
@@ -27,7 +27,7 @@ export function generateProductMetadata(product: Product): MetaTagsProps {
     product.family,
     'materiale metalice',
     'distribuitor metale',
-    'MetalPro',
+    'MetalDirect',
   ].filter(Boolean) as string[];
 
   // Calculate availability status
@@ -57,7 +57,7 @@ export function generateProductMetadata(product: Product): MetaTagsProps {
     productCurrency: 'RON',
     productAvailability: availability,
     productCondition: 'new',
-    productBrand: product.producer || 'MetalPro',
+    productBrand: product.producer || 'MetalDirect',
   };
 }
 
@@ -65,9 +65,9 @@ export function generateProductMetadata(product: Product): MetaTagsProps {
  * Generate metadata for category pages
  */
 export function generateCategoryMetadata(category: Category): MetaTagsProps {
-  const title = `${category.name} - Catalog Complet | MetalPro`;
+  const title = `${category.name} - Catalog Complet | MetalDirect`;
 
-  const description = `Explorează gama completă de ${category.name.toLowerCase()} de la MetalPro.
+  const description = `Explorează gama completă de ${category.name.toLowerCase()} de la MetalDirect.
     ${category.description || 'Materiale metalice prime pentru industrie cu livrare rapidă și estimări online.'}`.replace(/\s+/g, ' ').trim();
 
   const keywords = [
@@ -76,7 +76,7 @@ export function generateCategoryMetadata(category: Category): MetaTagsProps {
     'materiale metalice',
     'catalog metale',
     'B2B metale',
-    'MetalPro',
+    'MetalDirect',
   ];
 
   return {
@@ -100,13 +100,13 @@ export function generateCatalogMetadata(filters?: {
   grade?: string[];
   standard?: string[];
 }): MetaTagsProps {
-  let title = 'Catalog Materiale Metalice | MetalPro';
+  let title = 'Catalog Materiale Metalice | MetalDirect';
   let description = 'Catalog complet de materiale metalice prime: profile (HEA, IPE, UNP), table de oțel, țevi și tuburi, elemente de asamblare. Estimări online și livrare rapidă.';
 
   // Customize based on filters
   if (filters?.family) {
-    title = `${filters.family} - Catalog | MetalPro`;
-    description = `Explorează gama de ${filters.family.toLowerCase()} disponibilă la MetalPro. Estimări online, stoc actualizat și livrare rapidă.`;
+    title = `${filters.family} - Catalog | MetalDirect`;
+    description = `Explorează gama de ${filters.family.toLowerCase()} disponibilă la MetalDirect. Estimări online, stoc actualizat și livrare rapidă.`;
   }
 
   if (filters?.grade && filters.grade.length > 0) {
@@ -121,7 +121,7 @@ export function generateCatalogMetadata(filters?: {
     'tevi metalice',
     ...(filters?.grade || []),
     ...(filters?.standard || []),
-    'MetalPro',
+    'MetalDirect',
   ];
 
   return {
@@ -142,12 +142,12 @@ export function generateCatalogMetadata(filters?: {
  */
 export function generateBOMMetadata(): MetaTagsProps {
   return {
-    title: 'Încarcă BOM - Lista de Materiale | MetalPro',
+    title: 'Încarcă BOM - Lista de Materiale | MetalDirect',
     description: 'Încarcă lista ta de materiale (BOM) în format Excel sau CSV. Sistemul nostru identifică automat produsele și generează estimarea rapidă.',
-    keywords: ['BOM upload', 'lista materiale', 'import Excel', 'CSV import', 'estimare automată', 'MetalPro'],
+    keywords: ['BOM upload', 'lista materiale', 'import Excel', 'CSV import', 'estimare automată', 'MetalDirect'],
     canonical: `${SITE_URL}/bom-upload`,
     ogType: 'website',
-    ogTitle: 'Încarcă BOM - Lista de Materiale | MetalPro',
+    ogTitle: 'Încarcă BOM - Lista de Materiale | MetalDirect',
     ogDescription: 'Încarcă lista ta de materiale și primește estimare automată în câteva secunde.',
     ogImage: `${SITE_URL}/images/og-bom.jpg`,
     ogUrl: `${SITE_URL}/bom-upload`,
@@ -159,12 +159,12 @@ export function generateBOMMetadata(): MetaTagsProps {
  */
 export function generateRFQMetadata(): MetaTagsProps {
   return {
-    title: 'Cerere Ofertă (RFQ) - Finalizare Comandă | MetalPro',
+    title: 'Cerere Ofertă (RFQ) - Finalizare Comandă | MetalDirect',
     description: 'Finalizează comanda și primește o ofertă detaliată de la echipa noastră de vânzări. Răspuns în 24 de ore lucrătoare.',
-    keywords: ['cerere oferta', 'RFQ', 'request for quote', 'comanda metale', 'oferta metale', 'MetalPro'],
+    keywords: ['cerere oferta', 'RFQ', 'request for quote', 'comanda metale', 'oferta metale', 'MetalDirect'],
     canonical: `${SITE_URL}/rfq`,
     ogType: 'website',
-    ogTitle: 'Cerere Ofertă (RFQ) | MetalPro',
+    ogTitle: 'Cerere Ofertă (RFQ) | MetalDirect',
     ogDescription: 'Trimite cererea ta de ofertă și primește răspuns în 24h.',
     ogImage: `${SITE_URL}/images/og-rfq.jpg`,
     ogUrl: `${SITE_URL}/rfq`,
@@ -176,13 +176,13 @@ export function generateRFQMetadata(): MetaTagsProps {
  */
 export function generateAccountMetadata(): MetaTagsProps {
   return {
-    title: 'Contul Meu - Dashboard | MetalPro',
-    description: 'Gestionează contul tău MetalPro: istoric comenzi, proiecte salvate, adrese de livrare și preferințe.',
-    keywords: ['cont client', 'dashboard', 'istoric comenzi', 'proiecte salvate', 'MetalPro'],
+    title: 'Contul Meu - Dashboard | MetalDirect',
+    description: 'Gestionează contul tău MetalDirect: istoric comenzi, proiecte salvate, adrese de livrare și preferințe.',
+    keywords: ['cont client', 'dashboard', 'istoric comenzi', 'proiecte salvate', 'MetalDirect'],
     canonical: `${SITE_URL}/account`,
     robots: 'noindex, nofollow', // Private pages shouldn't be indexed
     ogType: 'website',
-    ogTitle: 'Contul Meu | MetalPro',
+    ogTitle: 'Contul Meu | MetalDirect',
     ogDescription: 'Gestionează contul și comenzile tale.',
   };
 }
@@ -215,7 +215,7 @@ export function generateProductSchema(product: Product): object {
     description: `${product.title} - ${product.grade || ''} ${product.standard || ''}`,
     brand: {
       '@type': 'Brand',
-      name: product.producer || 'MetalPro',
+      name: product.producer || 'MetalDirect',
     },
     offers: {
       '@type': 'Offer',
@@ -229,7 +229,7 @@ export function generateProductSchema(product: Product): object {
           : 'https://schema.org/OutOfStock',
       seller: {
         '@type': 'Organization',
-        name: 'MetalPro',
+        name: 'MetalDirect',
       },
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days
     },
@@ -246,7 +246,7 @@ export function generateOrganizationSchema(): object {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'MetalPro',
+    name: 'MetalDirect',
     url: SITE_URL,
     logo: `${SITE_URL}/logo.png`,
     contactPoint: {

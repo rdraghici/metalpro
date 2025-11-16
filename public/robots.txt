@@ -1,4 +1,4 @@
-# MetalPro - Robots.txt
+# MetalDirect - Robots.txt
 # https://www.robotstxt.org/robotstxt.html
 
 User-agent: *
@@ -10,7 +10,7 @@ Disallow: /api/
 Disallow: /*.json$
 
 # Sitemap location
-Sitemap: https://metalpro.ro/sitemap.xml
+Sitemap: https://metal-direct.ro/sitemap.xml
 
 # Crawl delay (optional - adjust based on server capacity)
 Crawl-delay: 1
