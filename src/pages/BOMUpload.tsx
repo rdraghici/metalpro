@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, Upload, ArrowLeft, Info, ShoppingCart } from 'lucide-react';
 import Header from '@/components/layout/Header';
@@ -34,6 +34,7 @@ const BOMUpload = () => {
   const [bomRows, setBomRows] = useState<BOMRow[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [editingRow, setEditingRow] = useState<BOMRow | null>(null);
+  const [resetKey, setResetKey] = useState(0);
 
   // Check for loaded project from account page
   useEffect(() => {
@@ -217,8 +218,13 @@ const BOMUpload = () => {
   };
 
   const handleReset = () => {
+    // Reset all BOM-related state to ensure clean reset
     setBomRows([]);
     setUploadResult(null);
+    setEditingRow(null);
+    setIsProcessing(false);
+    // Increment resetKey to force remount of upload form
+    setResetKey((prev) => prev + 1);
   };
 
   const handleSaveProject = async () => {
@@ -314,7 +320,7 @@ const BOMUpload = () => {
 
           {/* Main Content */}
           {!uploadResult ? (
-            <div className="space-y-6">
+            <div key={resetKey} className="space-y-6">
               {/* Template Download Card */}
               <Card>
                 <CardHeader>

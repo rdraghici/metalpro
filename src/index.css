@@ -230,6 +230,19 @@ All colors MUST be HSL.
     background: var(--gradient-hero);
   }
 
+  /* On mobile/tablet, prevent hero from blocking clicks to filters/controls below */
+  @media (max-width: 1024px) {
+    .gradient-hero {
+      pointer-events: none !important;
+    }
+
+    /* Re-enable only for interactive elements inside hero (if any) */
+    .gradient-hero a,
+    .gradient-hero button {
+      pointer-events: auto !important;
+    }
+  }
+
   .gradient-card {
     background: var(--gradient-card);
   }

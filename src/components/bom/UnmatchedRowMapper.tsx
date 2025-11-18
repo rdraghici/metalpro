@@ -39,7 +39,7 @@ const UnmatchedRowMapper: React.FC<UnmatchedRowMapperProps> = ({
   onConfirm,
   onCancel,
 }) => {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('__all__');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProductId, setSelectedProductId] = useState<string>('');
 
@@ -47,7 +47,7 @@ const UnmatchedRowMapper: React.FC<UnmatchedRowMapperProps> = ({
     let filtered = products.filter((p) => p.isActive);
 
     // Filter by category
-    if (selectedCategoryId) {
+    if (selectedCategoryId && selectedCategoryId !== '__all__') {
       filtered = filtered.filter((p) => p.categoryId === selectedCategoryId);
     }
 
@@ -75,7 +75,7 @@ const UnmatchedRowMapper: React.FC<UnmatchedRowMapperProps> = ({
     if (row && selectedProductId) {
       onConfirm(row, selectedProductId);
       // Reset state
-      setSelectedCategoryId('');
+      setSelectedCategoryId('__all__');
       setSearchQuery('');
       setSelectedProductId('');
     }
@@ -137,7 +137,7 @@ const UnmatchedRowMapper: React.FC<UnmatchedRowMapperProps> = ({
                   <SelectValue placeholder="Toate categoriile" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Toate categoriile</SelectItem>
+                  <SelectItem value="__all__">Toate categoriile</SelectItem>
                   {categories
                     .filter((c) => c.isActive)
                     .map((category) => (

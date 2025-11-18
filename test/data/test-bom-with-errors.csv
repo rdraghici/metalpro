@@ -1,0 +1,10 @@
+Familie,Standard,Grad,Dimensiune,Lungime (m),Cantitate,Unitate,Finisaj,Note
+profiles,EN 10025,S235JR,HEA 100,6,10,buc,,Valid row
+,,,,,,,,Empty row
+invalid_family,EN 10025,S235JR,HEA 200,12,5,buc,,Invalid family
+profiles,EN 10025,S235JR,UNKNOWN_SIZE,6,10,buc,,Unknown product size
+plates,EN 10025,S235JR,6mm,,abc,kg,,Invalid quantity (not a number)
+profiles,EN 10025,S235JR,IPE 160,-5,15,buc,,Negative length
+pipes,EN 10219,S235JRH,40x20x2,6,20,invalid_unit,,Invalid unit
+profiles,EN 10025,S235JR,HEA 120,6,8,buc,,Valid row 2
+plates,EN 10025,S235JR,8mm,,400,kg,,Valid row 3
