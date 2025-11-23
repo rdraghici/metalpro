@@ -136,32 +136,62 @@ curl http://localhost:3001/api/users
 
 ## Step-by-Step Deployment
 
-### Step 1: Create AWS RDS PostgreSQL Database
+### Step 1: Create AWS RDS PostgreSQL Database ✅
 
 1. **Open AWS RDS Console**
-2. **Create Database**:
-   - Engine: PostgreSQL 15+
-   - Template: Production
+2. **Create Database** (Standard Create):
+   - **Engine**: PostgreSQL
+   - **Engine Version**: 15.x (latest PostgreSQL 15)
+   - **Templates**: Free tier (cost-effective for starting; switch to Production template for high availability)
+
+   **Settings**:
    - DB instance identifier: `metalpro-production`
    - Master username: `metalpro_user`
-   - Master password: (Generate strong password)
-   - DB instance class: db.t3.micro (for small workloads) or db.t3.medium
-   - Storage: 20 GB GP3 (Auto Scaling enabled)
-   - VPC: Default or custom VPC
-   - Public access: No (accessible only from ECS/EC2)
-   - Security group: Allow PostgreSQL (5432) from backend security group
+   - Master password: (Generate strong password - **SAVE THIS!**)
+   - Confirm password: (same as above)
 
-3. **Note the endpoint**: `metalpro-production.xxxxx.us-east-1.rds.amazonaws.com`
+   **Instance Configuration**:
+   - DB instance class: `db.t3.micro` (Free tier eligible)
 
-4. **Create database schema**:
+   **Storage**:
+   - Storage type: `gp3`
+   - Allocated storage: `20 GB`
+   - Storage autoscaling: ✅ Enable (max 40 GB)
+
+   **Connectivity**:
+   - Virtual private cloud: Default VPC
+   - Public access: **Yes** (secured with security group rules below)
+   - VPC security group: Create new
+   - New security group name: `metalpro-rds-sg`
+
+   **Additional Configuration**:
+   - Initial database name: `metalpro` (creates the database automatically)
+   - Backup retention: 7 days
+   - ✅ Enable deletion protection (prevents accidental deletion)
+
+3. **Note the endpoint**: `metalpro-production.xxxxx.eu-central-1.rds.amazonaws.com`
+
+4. **Configure Security Group** (Important for public access):
+   - Go to EC2 → Security Groups → `metalpro-rds-sg`
+   - **Inbound rules**:
+     - Type: PostgreSQL
+     - Protocol: TCP
+     - Port: 5432
+     - Source: Your IP (for initial setup/testing)
+     - Source: Backend ECS security group (add after creating ECS service)
+   - **Important**: Remove "Your IP" rule after deployment is complete and only allow ECS access
+
+5. **Test Connection** (Optional - verify database is accessible):
 ```bash
-# Connect to RDS from bastion host or local machine with VPN
-psql -h metalpro-production.xxxxx.us-east-1.rds.amazonaws.com \
+# Connect to RDS from your local machine
+psql -h metalpro-production.xxxxx.eu-central-1.rds.amazonaws.com \
      -U metalpro_user \
-     -d postgres
+     -d metalpro
 
-# Create database
-CREATE DATABASE metalpro;
+# Database 'metalpro' is already created from "Initial database name" setting
+# Verify connection:
+\l  # List databases
+\q  # Quit
 ```
 
 ---
@@ -189,18 +219,18 @@ CREATE DATABASE metalpro;
 # Create repository
 aws ecr create-repository \
   --repository-name metalpro-backend \
-  --region us-east-1
+  --region eu-central-1
 
 # Note the repository URI
-# Example: 123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend
+# Example: 123456789012.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend
 ```
 
 2. **Authenticate Docker to ECR**:
 ```bash
 # Get login password and authenticate
-aws ecr get-login-password --region us-east-1 | \
+aws ecr get-login-password --region eu-central-1 | \
   docker login --username AWS --password-stdin \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com
+  123456789012.dkr.ecr.eu-central-1.amazonaws.com
 ```
 
 3. **Build and Tag Image**:
@@ -210,12 +240,12 @@ docker build -t metalpro-backend:latest .
 
 # Tag for ECR
 docker tag metalpro-backend:latest \
-  123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend:latest
+  123456789012.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend:latest
 ```
 
 4. **Push Image to ECR**:
 ```bash
-docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend:latest
+docker push 123456789012.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend:latest
 ```
 
 ---
@@ -237,7 +267,7 @@ docker push 123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend:latest
    - Memory: 1 GB (or 2 GB for higher load)
    - Container definition:
      - Name: `metalpro-backend`
-     - Image: `123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend:latest`
+     - Image: `123456789012.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend:latest`
      - Port mappings: 3001
      - Environment variables: (Load from .env.production)
      - Health check: CMD-SHELL, `curl -f http://localhost:3001/health || exit 1`
@@ -263,7 +293,7 @@ Create `task-definition.json`:
   "containerDefinitions": [
     {
       "name": "metalpro-backend",
-      "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/metalpro-backend:latest",
+      "image": "123456789012.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend:latest",
       "essential": true,
       "portMappings": [
         {
@@ -278,11 +308,11 @@ Create `task-definition.json`:
       "secrets": [
         {
           "name": "DATABASE_URL",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:metalpro/database-url"
+          "valueFrom": "arn:aws:secretsmanager:eu-central-1:123456789012:secret:metalpro/database-url"
         },
         {
           "name": "JWT_SECRET",
-          "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:metalpro/jwt-secret"
+          "valueFrom": "arn:aws:secretsmanager:eu-central-1:123456789012:secret:metalpro/jwt-secret"
         }
       ],
       "healthCheck": {
@@ -296,7 +326,7 @@ Create `task-definition.json`:
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/metalpro-backend",
-          "awslogs-region": "us-east-1",
+          "awslogs-region": "eu-central-1",
           "awslogs-stream-prefix": "ecs"
         }
       }
@@ -344,7 +374,7 @@ Before the first deployment, run Prisma migrations:
 ```bash
 # SSH to bastion host or use ECS Exec
 # Set environment variables
-export DATABASE_URL="postgresql://metalpro_user:PASSWORD@metalpro-production.xxxxx.us-east-1.rds.amazonaws.com:5432/metalpro"
+export DATABASE_URL="postgresql://metalpro_user:PASSWORD@metalpro-production.xxxxx.eu-central-1.rds.amazonaws.com:5432/metalpro"
 
 # Run migrations
 npx prisma migrate deploy
@@ -451,7 +481,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: eu-central-1
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -613,7 +643,7 @@ curl http://localhost:3001/health
 **Verify connectivity**:
 ```bash
 # Test from ECS container
-psql -h metalpro-production.xxxxx.us-east-1.rds.amazonaws.com \
+psql -h metalpro-production.xxxxx.eu-central-1.rds.amazonaws.com \
      -U metalpro_user \
      -d metalpro
 ```
@@ -633,5 +663,5 @@ psql -h metalpro-production.xxxxx.us-east-1.rds.amazonaws.com \
 
 ---
 
-**Last Updated**: November 15, 2025
+**Last Updated**: November 23, 2025
 **Version**: 1.0.0
