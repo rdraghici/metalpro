@@ -142,5 +142,5 @@ export function validateEnv(): EnvConfig {
   console.log(`📧 Email Service: ${process.env.SMTP_USER ? 'Configured' : 'Not configured (development mode)'}`);
   console.log('');
 
-  return process.env as EnvConfig;
+  return process.env as unknown as EnvConfig;
 }

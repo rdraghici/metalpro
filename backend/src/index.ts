@@ -19,12 +19,15 @@ dotenv.config();
 validateEnv();
 
 const app: Express = express();
-const PORT = process.env.PORT || 3001;
+const PORT = Number(process.env.PORT) || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 
 // =====================================================
 // MIDDLEWARE
 // =====================================================
+
+// Trust proxy (required when behind ALB/load balancer)
+app.set('trust proxy', 1);
 
 // Security headers
 app.use(helmet());
@@ -80,9 +83,19 @@ app.get('/health', async (req: Request, res: Response) => {
     },
   };
 
-  // Check database connection
+  // Helper function to add timeout to promises
+  const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) =>
+        setTimeout(() => reject(new Error('Timeout')), timeoutMs)
+      ),
+    ]);
+  };
+
+  // Check database connection (3 second timeout)
   try {
-    await prisma.$queryRaw`SELECT 1`;
+    await withTimeout(prisma.$queryRaw`SELECT 1`, 3000);
     health.checks.database = 'connected';
   } catch (error) {
     health.checks.database = 'disconnected';
@@ -90,9 +103,9 @@ app.get('/health', async (req: Request, res: Response) => {
     logger.error('Health check: Database connection failed', { error });
   }
 
-  // Check Redis connection
+  // Check Redis connection (3 second timeout)
   try {
-    await redisClient.ping();
+    await withTimeout(redisClient.ping(), 3000);
     health.checks.redis = 'connected';
   } catch (error) {
     health.checks.redis = 'disconnected';
@@ -223,20 +236,20 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // START SERVER
 // =====================================================
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   const banner = '='.repeat(60);
   console.log(banner);
   console.log('🚀 MetalPro Backend Server Started');
   console.log(banner);
-  console.log(`📡 Server running on: http://localhost:${PORT}`);
+  console.log(`📡 Server running on: http://0.0.0.0:${PORT}`);
   console.log(`🌐 Frontend URL: ${FRONTEND_URL}`);
   console.log(`🏭 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️  Database: PostgreSQL (metalpro)`);
   console.log(`💾 Cache: Redis`);
   console.log(banner);
   console.log('\n📚 Available endpoints:');
-  console.log(`  GET  http://localhost:${PORT}/health`);
-  console.log(`  GET  http://localhost:${PORT}/api`);
+  console.log(`  GET  http://0.0.0.0:${PORT}/health`);
+  console.log(`  GET  http://0.0.0.0:${PORT}/api`);
   console.log(banner);
   console.log('\n✅ Ready to accept requests!\n');
 

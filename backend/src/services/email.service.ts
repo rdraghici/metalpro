@@ -4,8 +4,8 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'noreply@metalpro.ro';
-const OPERATOR_EMAIL = process.env.OPERATOR_EMAIL || 'sales@metalpro.ro';
+const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'noreply@metal-direct.ro';
+const OPERATOR_EMAIL = process.env.OPERATOR_EMAIL || 'sales@metal-direct.ro';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
