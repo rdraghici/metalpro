@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MetalPro Backend now uses **AWS SES (Simple Email Service)** for sending transactional emails. This guide will help you set up SES for production.
+The Metal Direct Backend now uses **AWS SES (Simple Email Service)** for sending transactional emails. This guide will help you set up SES for production.
 
 ---
 
@@ -20,8 +20,8 @@ When you test emails, you'll see output like:
 ```
 📧 [EMAIL - RFQ Confirmation] Would send email via SES:
 To: customer@example.com
-From: noreply@metalpro.ro
-Subject: Confirmare RFQ RFQ-2025-00042 - MetalPro
+From: noreply@metal-direct.ro
+Subject: Confirmare RFQ RFQ-2025-00042 - Metal Direct
 ```
 
 ---
@@ -48,14 +48,14 @@ Subject: Confirmare RFQ RFQ-2025-00042 - MetalPro
 1. In SES Console, go to **Verified Identities**
 2. Click **Create identity**
 3. Select **Email address**
-4. Enter your sender email: `noreply@metalpro.ro`
+4. Enter your sender email: `noreply@metal-direct.ro`
 5. Click **Create identity**
 6. Check your email inbox for verification email from AWS
 7. Click the verification link
 
 #### Verify Operator Email (Recommended)
 
-1. Repeat the same process for `sales@metalpro.ro`
+1. Repeat the same process for `sales@metal-direct.ro`
 2. This allows you to receive RFQ notification emails
 
 ### Step 4: Request Production Access
@@ -71,10 +71,10 @@ To remove these limits:
 2. Click **Request production access**
 3. Fill out the form:
    - **Mail type**: Transactional
-   - **Website URL**: Your MetalPro website URL
+   - **Website URL**: Your Metal Direct website URL
    - **Use case description**:
      ```
-     MetalPro B2B platform for steel products. We send transactional emails:
+     Metal Direct B2B platform for steel products. We send transactional emails:
      - RFQ confirmation emails to customers
      - Order notifications to operators
      - Email verification for new users
@@ -90,7 +90,7 @@ To remove these limits:
 
 1. In AWS Console, go to **IAM** (Identity and Access Management)
 2. Click **Users** → **Create user**
-3. User name: `metalpro-ses-user`
+3. User name: `metal-direct-ses-user`
 4. Click **Next**
 5. Select **Attach policies directly**
 6. Search for and select: **AmazonSESFullAccess**
@@ -98,7 +98,7 @@ To remove these limits:
 
 ### Step 6: Generate Access Keys
 
-1. Click on the user you just created (`metalpro-ses-user`)
+1. Click on the user you just created (`metal-direct-ses-user`)
 2. Go to **Security credentials** tab
 3. Scroll down to **Access keys**
 4. Click **Create access key**
@@ -118,8 +118,8 @@ Update your production `.env` file:
 AWS_REGION=us-east-1                           # Replace with your region
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE         # Your access key
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG... # Your secret key
-SES_FROM_EMAIL=noreply@metalpro.ro             # Verified sender email
-OPERATOR_EMAIL=sales@metalpro.ro               # Verified operator email
+SES_FROM_EMAIL=noreply@metal-direct.ro             # Verified sender email
+OPERATOR_EMAIL=sales@metal-direct.ro               # Verified operator email
 ```
 
 ### Step 8: Test Production Email
@@ -186,7 +186,7 @@ AWS SES pricing (as of 2025):
 - **First 62,000 emails/month**: $0 (FREE with EC2/Lambda)
 - **Additional emails**: $0.10 per 1,000 emails
 
-**Example for MetalPro:**
+**Example for Metal Direct:**
 - 5,000 emails/month = **FREE** ✅
 - 100,000 emails/month = **~$4/month**
 
@@ -219,7 +219,7 @@ Very affordable compared to SendGrid or other services!
 
 **Solution**:
 1. Go to SES Console → Verified Identities
-2. Verify `noreply@metalpro.ro`
+2. Verify `noreply@metal-direct.ro`
 3. Check verification email inbox
 
 ### Emails not being sent (no error)
@@ -313,7 +313,7 @@ For AWS SES support:
 - AWS Documentation: https://docs.aws.amazon.com/ses/
 - AWS Support: https://console.aws.amazon.com/support/
 
-For MetalPro Backend issues:
+For Metal Direct Backend issues:
 - Check server logs
 - Review `SECURITY.md` for security considerations
 - Contact backend team
@@ -326,8 +326,8 @@ Before deploying to production:
 
 - [ ] AWS account created
 - [ ] SES region selected (e.g., `us-east-1`)
-- [ ] Sender email verified (`noreply@metalpro.ro`)
-- [ ] Operator email verified (`sales@metalpro.ro`)
+- [ ] Sender email verified (`noreply@metal-direct.ro`)
+- [ ] Operator email verified (`sales@metal-direct.ro`)
 - [ ] Production access requested and approved
 - [ ] IAM user created with SES permissions
 - [ ] Access keys generated and saved securely
