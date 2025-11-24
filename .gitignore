@@ -22,3 +22,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+docs/pipeline/GITHUB_SECRETS_SETUP.md
