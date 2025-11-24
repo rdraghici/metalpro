@@ -9,6 +9,7 @@ export default defineConfig({
   plugins: [
     react({
       jsxImportSource: 'react',
+      devTarget: 'esnext',
     }),
   ],
   test: {
@@ -30,6 +31,11 @@ export default defineConfig({
         'dist/',
       ],
     },
+    server: {
+      deps: {
+        inline: ['react', 'react-dom'],
+      },
+    },
   },
   resolve: {
     alias: {
@@ -40,5 +46,6 @@ export default defineConfig({
   esbuild: {
     jsx: 'automatic',
     jsxImportSource: 'react',
+    jsxDev: false,
   },
 });
