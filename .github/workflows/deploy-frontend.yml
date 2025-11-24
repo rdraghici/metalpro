@@ -40,7 +40,7 @@ jobs:
           NODE_ENV: production
         run: |
           echo "Building production bundle..."
-          npm run build:skip-tests
+          npm run build
 
           echo "Build completed successfully!"
           ls -lh dist/

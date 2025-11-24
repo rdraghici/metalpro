@@ -6,7 +6,11 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      jsxImportSource: 'react',
+    }),
+  ],
   test: {
     globals: true,
     environment: 'jsdom',
@@ -32,5 +36,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
       '@test': path.resolve(__dirname, './test'),
     },
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
   },
 });
