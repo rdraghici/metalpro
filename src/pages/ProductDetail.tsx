@@ -13,8 +13,9 @@ import DeliveryCue from "@/components/pdp/DeliveryCue";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProductConfig } from "@/hooks/useProductConfig";
-import { getProductBySlug } from "@/lib/api/products";
+import { getProductBySlug, getSimilarProducts } from "@/lib/api/products";
 import { useCart } from "@/context/CartContext";
+import ProductCard from "@/components/catalog/ProductCard";
 import { useToast } from "@/hooks/use-toast";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -30,6 +31,7 @@ export default function ProductDetail() {
   const analytics = useAnalytics();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
 
   const {
     config,
@@ -58,15 +60,21 @@ export default function ProductDetail() {
         const fetchedProduct = await getProductBySlug(slug);
         setProduct(fetchedProduct);
 
-        // Track PDP view
-        analytics.trackPDPView({
-          id: fetchedProduct.id,
-          sku: fetchedProduct.sku,
-          title: fetchedProduct.title,
-          family: fetchedProduct.family,
-          grade: fetchedProduct.grade,
-          basePrice: fetchedProduct.pricePerUnit,
-        });
+        // Track PDP view only if product was found
+        if (fetchedProduct) {
+          analytics.trackPDPView({
+            id: fetchedProduct.id,
+            sku: fetchedProduct.sku,
+            title: fetchedProduct.title,
+            family: fetchedProduct.family,
+            grade: fetchedProduct.grade,
+            basePrice: fetchedProduct.pricePerUnit,
+          });
+
+          // Fetch similar products
+          const similar = await getSimilarProducts(fetchedProduct, 4);
+          setSimilarProducts(similar);
+        }
       } catch (error) {
         console.error("Error fetching product:", error);
       } finally {
@@ -208,8 +216,18 @@ export default function ProductDetail() {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Product Image / Icon */}
-              <div className="flex items-center justify-center bg-muted rounded-lg p-12 min-h-[400px]">
-                <Package className="h-32 w-32 text-muted-foreground" />
+              <div className="bg-white rounded-lg overflow-hidden min-h-[400px]">
+                {product.imageUrl ? (
+                  <img
+                    src={product.imageUrl}
+                    alt={product.title}
+                    className="w-full h-[400px] object-cover"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center h-[400px]">
+                    <Package className="h-32 w-32 text-muted-foreground" />
+                  </div>
+                )}
               </div>
 
               {/* Product Info */}
@@ -324,15 +342,19 @@ export default function ProductDetail() {
           </div>
         </section>
 
-        {/* Related Products (Placeholder) */}
-        <section className="py-12 bg-muted/30 border-t">
-          <div className="container mx-auto px-4">
-            <h2 className="text-2xl font-bold mb-6">{t('product.similar_products')}</h2>
-            <div className="text-center py-12 text-muted-foreground">
-              <p>{t('product.similar_products_coming_soon')}</p>
+        {/* Related Products */}
+        {similarProducts.length > 0 && (
+          <section className="py-12 bg-muted/30 border-t">
+            <div className="container mx-auto px-4">
+              <h2 className="text-2xl font-bold mb-6">{t('product.similar_products')}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {similarProducts.map((similarProduct) => (
+                  <ProductCard key={similarProduct.id} product={similarProduct} />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </main>
       <Footer />
     </div>

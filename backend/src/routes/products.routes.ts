@@ -20,10 +20,32 @@ router.get('/', async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
     });
 
+    // Transform products to match frontend type expectations
+    const transformedProducts = products.map(product => {
+      const metadata = product.metadata as any;
+      return {
+        ...product,
+        slug: metadata?.slug || product.sku.toLowerCase().replace(/_/g, '-'),
+        family: metadata?.family || product.category?.slug || 'profiles',
+        standards: metadata?.standards || (product.standard ? [product.standard] : []),
+        producer: metadata?.producer || null,
+        dimensions: metadata?.dimensions || product.dimensions,
+        description: metadata?.description || null,
+        deliveryEstimate: metadata?.deliveryEstimate || null,
+        indicativePrice: {
+          currency: 'RON' as const,
+          unit: product.baseUnit,
+          min: product.pricePerUnit,
+          max: product.pricePerUnit,
+        },
+        sectionProps: metadata?.sectionProps || {},
+      };
+    });
+
     res.json({
       success: true,
-      count: products.length,
-      data: products,
+      count: transformedProducts.length,
+      data: transformedProducts,
     });
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -53,9 +75,29 @@ router.get('/:id', async (req: Request, res: Response) => {
       });
     }
 
+    // Transform product to match frontend type expectations
+    const metadata = product.metadata as any;
+    const transformedProduct = {
+      ...product,
+      slug: metadata?.slug || product.sku.toLowerCase().replace(/_/g, '-'),
+      family: metadata?.family || product.category?.slug || 'profiles',
+      standards: metadata?.standards || (product.standard ? [product.standard] : []),
+      producer: metadata?.producer || null,
+      dimensions: metadata?.dimensions || product.dimensions,
+      description: metadata?.description || null,
+      deliveryEstimate: metadata?.deliveryEstimate || null,
+      indicativePrice: {
+        currency: 'RON' as const,
+        unit: product.baseUnit,
+        min: product.pricePerUnit,
+        max: product.pricePerUnit,
+      },
+      sectionProps: metadata?.sectionProps || {},
+    };
+
     res.json({
       success: true,
-      data: product,
+      data: transformedProduct,
     });
   } catch (error) {
     console.error('Error fetching product:', error);

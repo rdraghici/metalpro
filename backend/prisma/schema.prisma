@@ -39,6 +39,8 @@ model User {
 enum UserRole {
   INDIVIDUAL
   BUSINESS
+  BACKOFFICE
+  ADMIN
 }
 
 model Company {
@@ -122,6 +124,9 @@ model Product {
   lengthM  Float? // meters (for profiles, pipes)
 
   metadata Json? // Flexible for future specs
+
+  imageUrl  String? // Primary product image
+  imageUrls Json?   // Array of additional images
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
@@ -209,13 +214,27 @@ model RFQ {
   // Pricing (filled by operator)
   estimatedTotal   Float? // Gross estimate from frontend
   finalQuoteAmount Float? // Final quote from operator
+  deliveryCost     Float?
+  processingFee    Float?
+  vatAmount        Float?
   finalQuotePdfUrl String?
-  quotedAt         DateTime?
+
+  // Back-office management
+  assignedToId   String?
+  internalNotes  String? // Internal comments for operators
+  customerNotes  String? // Customer-facing notes
+
+  // Status timestamps
+  submittedAt    DateTime  @default(now())
+  acknowledgedAt DateTime?
+  inProgressAt   DateTime?
+  quotedAt       DateTime?
+  completedAt    DateTime?
+  cancelledAt    DateTime?
 
   // Timestamps
-  submittedAt DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([status])

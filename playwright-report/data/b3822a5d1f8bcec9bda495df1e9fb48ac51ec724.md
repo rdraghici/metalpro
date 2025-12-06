@@ -1,0 +1,484 @@
+# Page snapshot
+
+```yaml
+- generic:
+  - generic:
+    - list
+    - region "Notifications alt+T"
+    - generic:
+      - complementary:
+        - generic:
+          - heading [level=1]: MetalPro
+          - paragraph: Back-Office
+        - navigation:
+          - link:
+            - /url: /backoffice/dashboard
+            - img
+            - text: Dashboard
+          - link:
+            - /url: /backoffice/rfqs
+            - img
+            - text: RFQs
+          - link:
+            - /url: /backoffice/products
+            - img
+            - text: Products
+          - link:
+            - /url: /backoffice/categories
+            - img
+            - text: Categories
+        - generic:
+          - generic:
+            - generic:
+              - img
+            - generic:
+              - paragraph: Admin MetalPro
+              - paragraph: ADMIN
+          - button:
+            - img
+            - text: Logout
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Product Management
+                - paragraph: Manage your product catalog
+              - generic:
+                - button:
+                  - img
+                  - text: Export
+                - button:
+                  - img
+                  - text: Import
+                - button:
+                  - img
+                  - text: Add Product
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - textbox:
+                      - /placeholder: Search products...
+                    - button:
+                      - img
+                  - combobox:
+                    - generic: All Products
+                    - img
+                  - button: Clear Filters
+            - generic:
+              - generic:
+                - heading [level=3]: Products (19)
+              - generic:
+                - generic:
+                  - table:
+                    - rowgroup:
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: SKU
+                        - cell: Product
+                        - cell: Category
+                        - cell: Price
+                        - cell: Status
+                        - cell: Actions
+                    - rowgroup:
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PIPE-MOCK-PRODU-PA9Y
+                        - cell:
+                          - generic: Mock Product Title
+                          - generic: S12345JS
+                        - cell: Țevi și Conducte
+                        - cell: 18.00 RON
+                        - cell:
+                          - generic: Inactive
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/13484ebb-9fc4-4a9d-a0fa-65a9383c9d3d/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PIPE-RECT-100x60x3
+                        - cell:
+                          - generic: Țeavă rectangulară 100x60x3mm
+                          - generic: S235JRH
+                        - cell: Țevi și Conducte
+                        - cell: 35.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/a8313d28-f06f-402c-8344-e0aff1908910/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: ALU-6060-30x30x2
+                        - cell:
+                          - generic: Profil aluminiu 6060 30x30x2mm
+                          - generic: Al 6060 T66
+                        - cell: Metale Neferoase
+                        - cell: 21.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/a6eefc9f-0a52-4c53-96ff-4ac934d334c7/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PLT-304-2
+                        - cell:
+                          - generic: Tablă inox AISI 304 2mm
+                          - generic: AISI 304 (1.4301)
+                        - cell: Inox
+                        - cell: 31.50 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/5eb4651d-9322-4f03-975d-bc07981d4e00/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: BOLT-M10x40-8.8
+                        - cell:
+                          - generic: Șurub M10x40 clasa 8.8 zincat
+                          - generic: Clasa 8.8
+                        - cell: Elemente de Fixare
+                        - cell: 0.55 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/f8b1b6e9-a795-42f2-b161-d4ed008911f3/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PIPE-RND-48.3x3
+                        - cell:
+                          - generic: Țeavă rotundă Ø48.3x3mm
+                          - generic: S235JRH
+                        - cell: Țevi și Conducte
+                        - cell: 12.50 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/e73999dd-5691-4471-afdf-a72a41c1de41/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: IPE160-S235
+                        - cell:
+                          - generic: IPE 160 S235JR
+                          - generic: S235JR
+                        - cell: Profile Metalice
+                        - cell: 47.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/bbfaacb0-5329-407b-8fc5-512dd443d421/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: HEA200-S235
+                        - cell:
+                          - generic: HEA 200 S235JR
+                          - generic: S235JR
+                        - cell: Profile Metalice
+                        - cell: 120.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/daa26b66-b993-4573-b903-f99911a900ba/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PLT-S355-15
+                        - cell:
+                          - generic: Tablă S355JR 15mm
+                          - generic: S355JR
+                        - cell: Table de Oțel
+                        - cell: 4.15 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/b325d0a2-7ffb-4cc8-ae4f-b8c8966cb051/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PIPE-304-50x2
+                        - cell:
+                          - generic: Țeavă inox AISI 304 Ø50x2mm
+                          - generic: AISI 304 (1.4301)
+                        - cell: Inox
+                        - cell: 95.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/33d4c098-9960-451a-8f87-d5400d40edeb/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: NUT-M10-8
+                        - cell:
+                          - generic: Piuliță M10 clasa 8 zincată
+                          - generic: Clasa 8
+                        - cell: Elemente de Fixare
+                        - cell: 0.20 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/a0bd43e1-c2a3-4532-befe-39cdf91214cb/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: UNP80-S235
+                        - cell:
+                          - generic: UNP 80 S235JR
+                          - generic: S235JR
+                        - cell: Profile Metalice
+                        - cell: 28.50 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/d9b82551-841b-46af-92a3-8e310409b47f/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PLT-DC01-1
+                        - cell:
+                          - generic: Tablă DC01 1mm
+                          - generic: DC01
+                        - cell: Table de Oțel
+                        - cell: 4.60 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/8f59134d-8e68-4379-9fa4-bab40c69e4d3/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: HEA100-S235
+                        - cell:
+                          - generic: HEA 100 S235JR
+                          - generic: S235JR
+                        - cell: Profile Metalice
+                        - cell: 50.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/ad33b927-e398-4972-b7e7-1b28ea88d2cf/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PLT-S235-10
+                        - cell:
+                          - generic: Tablă S235JR 10mm
+                          - generic: S235JR
+                        - cell: Table de Oțel
+                        - cell: 3.85 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/e1f0eff7-be00-42d1-aa4c-2c2981348fd5/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: HEA300-S355
+                        - cell:
+                          - generic: HEA 300 S355JR
+                          - generic: S355JR
+                        - cell: Profile Metalice
+                        - cell: 255.00 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/f0fc251c-235a-41e0-bd03-74110ee71d4b/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: UNP200-S235
+                        - cell:
+                          - generic: UNP 200 S235JR
+                          - generic: S235JR
+                        - cell: Profile Metalice
+                        - cell: 77.50 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/fabee878-c2f6-40d5-90c4-8489634f03a2/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PLT-S235-6
+                        - cell:
+                          - generic: Tablă S235JR 6mm
+                          - generic: S235JR
+                        - cell: Table de Oțel
+                        - cell: 3.85 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/5b205c4c-f27e-4e99-8d5e-0a53353c5086/edit
+                              - button:
+                                - img
+                      - row:
+                        - cell:
+                          - checkbox
+                        - cell: PIPE-RECT-40x20x2
+                        - cell:
+                          - generic: Țeavă rectangulară 40x20x2mm
+                          - generic: S235JRH
+                        - cell: Țevi și Conducte
+                        - cell: 9.50 RON
+                        - cell:
+                          - generic: Active
+                        - cell:
+                          - generic:
+                            - link:
+                              - /url: /backoffice/products/b4fcd8e8-6b23-49ba-9c17-6f7abb86e873/edit
+                              - button:
+                                - img
+  - dialog "Add New Product" [active] [ref=e2]:
+    - generic [ref=e3]:
+      - heading "Add New Product" [level=2] [ref=e4]
+      - paragraph [ref=e5]: Fill in the product details below. Fields marked with * are required.
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - generic [ref=e9]:
+            - text: Category *
+            - combobox "Category *" [ref=e10] [cursor=pointer]:
+              - generic: Select a category
+              - img [ref=e11]
+            - combobox [ref=e13]
+          - generic [ref=e14]:
+            - text: SKU *
+            - generic [ref=e15]:
+              - textbox "SKU *" [ref=e16]:
+                - /placeholder: e.g., PROF-HEA100-A1B2
+              - button "Generate" [disabled]
+        - generic [ref=e17]:
+          - text: Product Title *
+          - textbox "Product Title *" [ref=e18]:
+            - /placeholder: e.g., HEA 100 S235JR
+        - generic [ref=e19]:
+          - generic [ref=e20]:
+            - text: Grade
+            - textbox "Grade" [ref=e21]:
+              - /placeholder: e.g., S235JR
+          - generic [ref=e22]:
+            - text: Standard
+            - textbox "Standard" [ref=e23]:
+              - /placeholder: e.g., EN 10025-2
+        - generic [ref=e24]:
+          - text: Dimensions
+          - textbox "Dimensions" [ref=e25]:
+            - /placeholder: e.g., 100x96x5x8
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - text: Base Unit *
+            - combobox "Base Unit *" [ref=e28] [cursor=pointer]:
+              - generic: Kilograms (kg)
+              - img [ref=e29]
+            - combobox [ref=e31]
+          - generic [ref=e32]:
+            - text: Price per Unit (RON) *
+            - spinbutton "Price per Unit (RON) *" [ref=e33]
+        - generic [ref=e34]:
+          - generic [ref=e35]:
+            - text: Weight (kg)
+            - spinbutton "Weight (kg)" [ref=e36]
+          - generic [ref=e37]:
+            - text: Length (m)
+            - spinbutton "Length (m)" [ref=e38]
+        - generic [ref=e39]:
+          - generic [ref=e40]:
+            - text: Availability
+            - combobox "Availability" [ref=e41] [cursor=pointer]:
+              - generic: In Stock
+              - img [ref=e42]
+            - combobox [ref=e44]
+          - generic [ref=e45]:
+            - text: Active Status
+            - generic [ref=e46]:
+              - switch "Active Status Active" [checked] [ref=e47] [cursor=pointer]
+              - checkbox [checked]
+              - generic [ref=e48]: Active
+        - generic [ref=e49]:
+          - checkbox "Save and continue adding products" [ref=e50]
+          - generic [ref=e51]: Save and continue adding products
+      - generic [ref=e52]:
+        - button "Cancel" [ref=e53] [cursor=pointer]
+        - button "Add Product" [ref=e54] [cursor=pointer]
+    - button "Close" [ref=e55] [cursor=pointer]:
+      - img [ref=e56]
+      - generic [ref=e59]: Close
+```

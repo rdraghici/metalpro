@@ -55,15 +55,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     const dims = product.dimensions;
     if (!dims) return null;
 
-    if ('height' in dims && 'width' in dims) {
-      return `${dims.height}×${dims.width}mm`;
+    // Handle string dimensions (e.g., "100x96x20")
+    if (typeof dims === 'string') {
+      return dims;
     }
-    if ('diameter' in dims) {
-      return `Ø${dims.diameter}mm`;
+
+    // Handle object dimensions
+    if (typeof dims === 'object') {
+      if ('height' in dims && 'width' in dims) {
+        return `${dims.height}×${dims.width}mm`;
+      }
+      if ('diameter' in dims) {
+        return `Ø${dims.diameter}mm`;
+      }
+      if ('thickness' in dims) {
+        return `${dims.thickness}mm`;
+      }
     }
-    if ('thickness' in dims) {
-      return `${dims.thickness}mm`;
-    }
+
     return null;
   };
 
@@ -118,7 +127,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 {getDimensionSummary()}
               </Badge>
             )}
-            {product.standards[0] && (
+            {product.standards && product.standards[0] && (
               <Badge variant="outline" className="text-xs font-normal">
                 {product.standards[0]}
               </Badge>

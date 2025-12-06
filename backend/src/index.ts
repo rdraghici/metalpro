@@ -30,7 +30,11 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 app.set('trust proxy', 1);
 
 // Security headers
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
 
 // CORS configuration
 app.use(
@@ -61,8 +65,15 @@ app.use(sanitizeXSS);
 // Request logging middleware (Winston-based)
 app.use(requestLogger);
 
-// Serve static files from uploads directory
+// Serve static files from uploads directory with CORS headers
 const uploadDir = process.env.UPLOAD_DIR || 'uploads';
+app.use('/uploads', (req: Request, res: Response, next: NextFunction) => {
+  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 app.use('/uploads', express.static(path.join(process.cwd(), uploadDir)));
 
 // =====================================================
@@ -176,6 +187,8 @@ import projectsRoutes from './routes/projects.routes';
 import addressesRoutes from './routes/addresses.routes';
 import uploadRoutes from './routes/upload.routes';
 import emailTestRoutes from './routes/email-test.routes';
+import backofficeRoutes from './routes/backoffice.routes';
+import backofficeCategoryRoutes from './routes/backoffice-category.routes';
 
 // Register routes with specific rate limiters
 app.use('/api/auth', authLimiter, authRoutes);
@@ -188,6 +201,8 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/upload', uploadLimiter, uploadRoutes);
 app.use('/api/email-test', emailTestRoutes);
+app.use('/api/backoffice', backofficeRoutes);
+app.use('/api/backoffice/categories', backofficeCategoryRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

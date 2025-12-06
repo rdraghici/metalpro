@@ -299,6 +299,69 @@ export class EmailService {
   }
 
   /**
+   * Send RFQ acknowledgment email to customer
+   */
+  async sendRFQAcknowledgment(rfq: RFQData): Promise<void> {
+    const subject = `RFQ ${rfq.referenceNumber} în Lucru - MetalPro`;
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #0066cc; color: white; padding: 20px; text-align: center; }
+          .content { padding: 20px; background-color: #f9f9f9; }
+          .status-box { background-color: #cfe2ff; border-left: 4px solid #0d6efd; padding: 15px; margin: 20px 0; }
+          .button { background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none;
+                    border-radius: 4px; display: inline-block; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>✅ RFQ Confirmat</h1>
+          </div>
+          <div class="content">
+            <p>Bună ${rfq.contactPerson},</p>
+            <p>Îți confirmăm că am primit și procesat cererea ta de ofertă cu referința <strong>${rfq.referenceNumber}</strong>.</p>
+
+            <div class="status-box">
+              <strong>📋 Status:</strong> În lucru<br/>
+              <strong>⏱️ Timp estimat:</strong> 24-48 ore<br/>
+              <strong>📧 Referință:</strong> ${rfq.referenceNumber}
+            </div>
+
+            <p>Echipa noastră de specialiști analizează în detaliu cererea ta și pregătește o ofertă personalizată.
+            Vei primi notificare automată când oferta va fi gata.</p>
+
+            <p>Poți urmări statusul comenzii în contul tău:</p>
+            <a href="${FRONTEND_URL}/account/orders" class="button">Vezi Statusul Comenzii</a>
+
+            <p style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
+              <strong>📞 Întrebări?</strong><br/>
+              Pentru clarificări sau modificări, ne poți contacta la:<br/>
+              Email: ${OPERATOR_EMAIL}<br/>
+              Telefon: +40 XXX XXX XXX
+            </p>
+
+            <p>Cu stimă,<br/>Echipa MetalPro</p>
+          </div>
+          <div class="footer">
+            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
+            <p>Acest email a fost trimis automat. Pentru întrebări, te rugăm să răspunzi la acest mesaj.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    await this.sendEmail(rfq.email, subject, html, 'RFQ Acknowledgment');
+  }
+
+  /**
    * Send quote ready notification to customer
    */
   async sendQuoteReady(quote: QuoteData): Promise<void> {

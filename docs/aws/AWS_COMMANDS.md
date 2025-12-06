@@ -477,6 +477,98 @@ aws s3 rm s3://metal-direct-frontend/ --recursive
 
 ---
 
+## S3 (Product Images)
+
+### S3 Bucket Setup
+
+**Bucket Name**
+```bash
+PRODUCT_IMAGES_BUCKET="metalpro-product-images"
+```
+
+**Create Bucket**
+```bash
+aws s3api create-bucket \
+  --bucket metalpro-product-images \
+  --region eu-central-1 \
+  --create-bucket-configuration LocationConstraint=eu-central-1
+```
+
+**Configure Public Access Block**
+```bash
+# Allow public read access for product images
+aws s3api put-public-access-block \
+  --bucket metalpro-product-images \
+  --public-access-block-configuration \
+    "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=false"
+```
+
+**Set Bucket Policy (Public Read)**
+```bash
+aws s3api put-bucket-policy \
+  --bucket metalpro-product-images \
+  --policy '{
+    "Version": "2012-10-17",
+    "Statement": [{
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::metalpro-product-images/*"
+    }]
+  }'
+```
+
+**Configure CORS**
+```bash
+aws s3api put-bucket-cors \
+  --bucket metalpro-product-images \
+  --cors-configuration '{
+    "CORSRules": [{
+      "AllowedOrigins": ["http://localhost:8080", "https://metal-direct.ro"],
+      "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
+      "AllowedHeaders": ["*"],
+      "MaxAgeSeconds": 3000
+    }]
+  }'
+```
+
+### Product Image Operations
+
+**Upload Product Image**
+```bash
+# Upload image with public-read ACL
+aws s3 cp /path/to/image.jpg \
+  s3://metalpro-product-images/products/{SKU}/image.jpg \
+  --content-type image/jpeg \
+  --cache-control "max-age=31536000"
+```
+
+**List Product Images**
+```bash
+# List all images
+aws s3 ls s3://metalpro-product-images/products/ --recursive
+
+# List images for specific product
+aws s3 ls s3://metalpro-product-images/products/{SKU}/
+```
+
+**Delete Product Image**
+```bash
+aws s3 rm s3://metalpro-product-images/products/{SKU}/image.jpg
+```
+
+**Get Image URL**
+```bash
+# Direct S3 URL
+https://metalpro-product-images.s3.eu-central-1.amazonaws.com/products/{SKU}/image.jpg
+
+# Or via CloudFront (if configured)
+# Set AWS_CLOUDFRONT_URL in .env
+```
+
+---
+
 ## Secrets Manager
 
 ### Database Credentials
@@ -712,8 +804,9 @@ Z0090057MKCWJVEBZUGQ
 # Certificate (us-east-1)
 arn:aws:acm:us-east-1:952956873675:certificate/5f5ceb09-663d-4c3b-b362-adc700d5b755
 
-# S3 Bucket
+# S3 Buckets
 metal-direct-frontend
+metalpro-product-images
 
 # ECR Repository
 952956873675.dkr.ecr.eu-central-1.amazonaws.com/metalpro-backend

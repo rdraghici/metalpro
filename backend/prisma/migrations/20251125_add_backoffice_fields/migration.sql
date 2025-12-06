@@ -1,0 +1,10 @@
+-- Add backoffice-related fields to rfqs table
+
+-- Add missing columns
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "assignedToId" TEXT;
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "acknowledgedAt" TIMESTAMP(3);
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "deliveryCost" DOUBLE PRECISION;
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "processingFee" DOUBLE PRECISION;
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "vatAmount" DOUBLE PRECISION;
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "internalNotes" TEXT;
+ALTER TABLE "rfqs" ADD COLUMN IF NOT EXISTS "customerNotes" TEXT;

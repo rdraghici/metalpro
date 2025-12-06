@@ -7,62 +7,72 @@ import type {
   SearchResults,
   ProductFamily,
 } from '@/types';
-import {
-  allProducts,
-  categories,
-  getProductById as getProductByIdFromData,
-  getProductBySlug as getProductBySlugFromData,
-  getCategoryBySlug as getCategoryBySlugFromData,
-} from '@/data/products';
 
-// Simulated API delay for realistic UX
-const simulateDelay = (ms: number = 300) =>
-  new Promise(resolve => setTimeout(resolve, ms));
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
 // =====================================================
-// CATEGORIES API
-// =====================================================
-
-export const getAllCategories = async (): Promise<Category[]> => {
-  await simulateDelay(200);
-  return categories.filter(c => c.isActive);
-};
-
-export const getCategoryById = async (id: string): Promise<Category | null> => {
-  await simulateDelay(150);
-  const category = categories.find(c => c.id === id);
-  return category || null;
-};
-
-export const getCategoryBySlug = async (slug: string): Promise<Category | null> => {
-  await simulateDelay(150);
-  const category = getCategoryBySlugFromData(slug);
-  return category || null;
-};
-
-// =====================================================
-// PRODUCTS API
+// PRODUCTS API - Backend Integration
 // =====================================================
 
 export const getAllProducts = async (): Promise<Product[]> => {
-  await simulateDelay(300);
-  return allProducts.filter(p => p.isActive);
+  try {
+    const response = await fetch(`${API_URL}/api/products`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && Array.isArray(result.data)) {
+      return result.data.filter((p: Product) => p.isActive);
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error fetching all products:', error);
+    return [];
+  }
 };
 
 export const getProductById = async (id: string): Promise<Product | null> => {
-  await simulateDelay(150);
-  const product = getProductByIdFromData(id);
-  return product || null;
+  try {
+    const response = await fetch(`${API_URL}/api/products/${id}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      return result.data;
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching product by ID:', error);
+    return null;
+  }
 };
 
 export const getProductBySlug = async (slug: string): Promise<Product | null> => {
-  await simulateDelay(150);
-  const product = getProductBySlugFromData(slug);
-  return product || null;
+  try {
+    // Fetch all products and find by slug
+    const products = await getAllProducts();
+    const product = products.find(p => p.slug === slug);
+    return product || null;
+  } catch (error) {
+    console.error('Error fetching product by slug:', error);
+    return null;
+  }
 };
 
 // =====================================================
-// FILTERING & SEARCH
+// FILTERING & SEARCH - Client-side filtering
 // =====================================================
 
 const matchesFilters = (product: Product, filters: ProductFilters): boolean => {
@@ -176,31 +186,41 @@ export const getProductsWithFilters = async (
   page: number = 1,
   limit: number = 12
 ): Promise<ProductListResponse> => {
-  await simulateDelay(300);
+  try {
+    // Fetch all products from backend
+    let filteredProducts = await getAllProducts();
 
-  let filteredProducts = allProducts.filter(p => p.isActive);
+    // Apply filters client-side
+    if (filters) {
+      filteredProducts = filteredProducts.filter(p => matchesFilters(p, filters));
+    }
 
-  // Apply filters
-  if (filters) {
-    filteredProducts = filteredProducts.filter(p => matchesFilters(p, filters));
+    // Apply sorting
+    filteredProducts = applySorting(filteredProducts, sort);
+
+    // Pagination
+    const total = filteredProducts.length;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+    return {
+      products: paginatedProducts,
+      total,
+      page,
+      limit,
+      hasMore: endIndex < total,
+    };
+  } catch (error) {
+    console.error('Error fetching products with filters:', error);
+    return {
+      products: [],
+      total: 0,
+      page,
+      limit,
+      hasMore: false,
+    };
   }
-
-  // Apply sorting
-  filteredProducts = applySorting(filteredProducts, sort);
-
-  // Pagination
-  const total = filteredProducts.length;
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
-  const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-
-  return {
-    products: paginatedProducts,
-    total,
-    page,
-    limit,
-    hasMore: endIndex < total,
-  };
 };
 
 export const getProductsByFamily = async (
@@ -226,53 +246,54 @@ export const getProductsByFamily = async (
 // =====================================================
 
 export const searchProducts = async (query: string): Promise<SearchResults> => {
-  await simulateDelay(250);
+  try {
+    const queryLower = query.toLowerCase().trim();
 
-  const queryLower = query.toLowerCase().trim();
+    if (!queryLower) {
+      return {
+        categories: [],
+        products: [],
+        suggestions: [],
+      };
+    }
 
-  if (!queryLower) {
+    // Fetch all products
+    const allProducts = await getAllProducts();
+
+    // Search products
+    const matchedProducts = allProducts.filter(
+      p =>
+        p.title.toLowerCase().includes(queryLower) ||
+        p.sku.toLowerCase().includes(queryLower) ||
+        p.grade.toLowerCase().includes(queryLower) ||
+        p.standards.some(std => std.toLowerCase().includes(queryLower))
+    );
+
+    // Generate suggestions
+    const suggestions = matchedProducts.slice(0, 5).map(p => ({
+      type: 'product' as const,
+      label: p.title,
+      value: p.slug,
+      metadata: {
+        family: p.family,
+        sku: p.sku,
+        grade: p.grade,
+      },
+    }));
+
+    return {
+      categories: [], // Categories not implemented yet
+      products: matchedProducts.slice(0, 12),
+      suggestions,
+    };
+  } catch (error) {
+    console.error('Error searching products:', error);
     return {
       categories: [],
       products: [],
       suggestions: [],
     };
   }
-
-  // Search categories
-  const matchedCategories = categories.filter(
-    c =>
-      c.isActive &&
-      (c.name.toLowerCase().includes(queryLower) ||
-        c.slug.toLowerCase().includes(queryLower))
-  );
-
-  // Search products
-  const matchedProducts = allProducts.filter(
-    p =>
-      p.isActive &&
-      (p.title.toLowerCase().includes(queryLower) ||
-        p.sku.toLowerCase().includes(queryLower) ||
-        p.grade.toLowerCase().includes(queryLower) ||
-        p.standards.some(std => std.toLowerCase().includes(queryLower)))
-  );
-
-  // Generate suggestions
-  const suggestions = matchedProducts.slice(0, 5).map(p => ({
-    type: 'product' as const,
-    label: p.title,
-    value: p.slug,
-    metadata: {
-      family: p.family,
-      sku: p.sku,
-      grade: p.grade,
-    },
-  }));
-
-  return {
-    categories: matchedCategories.slice(0, 3),
-    products: matchedProducts.slice(0, 12),
-    suggestions,
-  };
 };
 
 // =====================================================
@@ -280,47 +301,129 @@ export const searchProducts = async (query: string): Promise<SearchResults> => {
 // =====================================================
 
 export const getAvailableGrades = async (family?: ProductFamily): Promise<string[]> => {
-  await simulateDelay(100);
+  try {
+    let products = await getAllProducts();
 
-  let products = allProducts.filter(p => p.isActive);
+    if (family) {
+      products = products.filter(p => p.family === family);
+    }
 
-  if (family) {
-    products = products.filter(p => p.family === family);
+    const grades = [...new Set(products.map(p => p.grade))];
+    return grades.sort();
+  } catch (error) {
+    console.error('Error fetching available grades:', error);
+    return [];
   }
-
-  const grades = [...new Set(products.map(p => p.grade))];
-  return grades.sort();
 };
 
 export const getAvailableStandards = async (family?: ProductFamily): Promise<string[]> => {
-  await simulateDelay(100);
+  try {
+    let products = await getAllProducts();
 
-  let products = allProducts.filter(p => p.isActive);
+    if (family) {
+      products = products.filter(p => p.family === family);
+    }
 
-  if (family) {
-    products = products.filter(p => p.family === family);
+    const standards = [...new Set(products.flatMap(p => p.standards))];
+    return standards.sort();
+  } catch (error) {
+    console.error('Error fetching available standards:', error);
+    return [];
   }
-
-  const standards = [...new Set(products.flatMap(p => p.standards))];
-  return standards.sort();
 };
 
 export const getAvailableProducers = async (family?: ProductFamily): Promise<string[]> => {
-  await simulateDelay(100);
+  try {
+    let products = await getAllProducts();
 
-  let products = allProducts.filter(p => p.isActive && p.producer);
+    if (family) {
+      products = products.filter(p => p.family === family);
+    }
 
-  if (family) {
-    products = products.filter(p => p.family === family);
+    const producers = [...new Set(products.map(p => p.producer).filter(Boolean) as string[])];
+    return producers.sort();
+  } catch (error) {
+    console.error('Error fetching available producers:', error);
+    return [];
   }
-
-  const producers = [...new Set(products.map(p => p.producer).filter(Boolean) as string[])];
-  return producers.sort();
 };
 
 export const getAvailableFamilies = async (): Promise<ProductFamily[]> => {
-  await simulateDelay(100);
+  try {
+    const products = await getAllProducts();
+    const families = [...new Set(products.map(p => p.family))];
+    return families.sort() as ProductFamily[];
+  } catch (error) {
+    console.error('Error fetching available families:', error);
+    return [];
+  }
+};
 
-  const families = [...new Set(allProducts.filter(p => p.isActive).map(p => p.family))];
-  return families.sort() as ProductFamily[];
+// =====================================================
+// CATEGORIES API - Mock data (keeping for backwards compatibility)
+// =====================================================
+
+import {
+  categories,
+  getCategoryBySlug as getCategoryBySlugFromData,
+} from '@/data/products';
+
+export const getAllCategories = async (): Promise<Category[]> => {
+  return categories.filter(c => c.isActive);
+};
+
+export const getCategoryById = async (id: string): Promise<Category | null> => {
+  const category = categories.find(c => c.id === id);
+  return category || null;
+};
+
+export const getCategoryBySlug = async (slug: string): Promise<Category | null> => {
+  const category = getCategoryBySlugFromData(slug);
+  return category || null;
+};
+
+// =====================================================
+// SIMILAR PRODUCTS API
+// =====================================================
+
+export const getSimilarProducts = async (
+  product: Product,
+  limit: number = 4
+): Promise<Product[]> => {
+  try {
+    const allProducts = await getAllProducts();
+
+    // Filter out current product and get similar ones
+    const similarProducts = allProducts
+      .filter(p => p.id !== product.id)
+      .map(p => {
+        let score = 0;
+
+        // Same family (highest priority)
+        if (p.family === product.family) score += 100;
+
+        // Same grade
+        if (p.grade === product.grade) score += 50;
+
+        // Matching standards
+        const commonStandards = p.standards.filter(std =>
+          product.standards.includes(std)
+        );
+        score += commonStandards.length * 20;
+
+        // Same availability
+        if (p.availability === product.availability) score += 10;
+
+        return { product: p, score };
+      })
+      .filter(({ score }) => score > 0) // Only include products with some similarity
+      .sort((a, b) => b.score - a.score) // Sort by score descending
+      .slice(0, limit)
+      .map(({ product }) => product);
+
+    return similarProducts;
+  } catch (error) {
+    console.error('Error fetching similar products:', error);
+    return [];
+  }
 };

@@ -183,31 +183,37 @@ export function buildFilterOptionsWithCounts(
 
   // Collect all unique values
   allProducts.forEach(product => {
-    familySet.add(product.family);
-    gradeSet.add(product.grade);
-    product.standards.forEach(standard => standardSet.add(standard));
-    availabilitySet.add(product.availability);
+    if (product.family) familySet.add(product.family);
+    if (product.grade) gradeSet.add(product.grade);
+    if (product.standards && Array.isArray(product.standards)) {
+      product.standards.forEach(standard => standardSet.add(standard));
+    }
+    if (product.availability) availabilitySet.add(product.availability);
     if (product.producer) producerSet.add(product.producer);
 
     // Price range
-    const price = product.indicativePrice.min || product.indicativePrice.max || 0;
-    if (price > 0) {
-      minPrice = Math.min(minPrice, price);
-      maxPrice = Math.max(maxPrice, price);
+    if (product.indicativePrice) {
+      const price = product.indicativePrice.min || product.indicativePrice.max || 0;
+      if (price > 0) {
+        minPrice = Math.min(minPrice, price);
+        maxPrice = Math.max(maxPrice, price);
+      }
     }
 
     // Dimension ranges
-    Object.entries(product.dimensions).forEach(([key, value]) => {
-      if (typeof value === 'number') {
-        const existing = dimensionMaps.get(key);
-        if (!existing) {
-          dimensionMaps.set(key, { min: value, max: value });
-        } else {
-          existing.min = Math.min(existing.min, value);
-          existing.max = Math.max(existing.max, value);
+    if (product.dimensions && typeof product.dimensions === 'object') {
+      Object.entries(product.dimensions).forEach(([key, value]) => {
+        if (typeof value === 'number') {
+          const existing = dimensionMaps.get(key);
+          if (!existing) {
+            dimensionMaps.set(key, { min: value, max: value });
+          } else {
+            existing.min = Math.min(existing.min, value);
+            existing.max = Math.max(existing.max, value);
+          }
         }
-      }
-    });
+      });
+    }
   });
 
   // Build filter options with accurate counts
@@ -231,25 +237,25 @@ export function buildFilterOptionsWithCounts(
       count: countForOption('family', value)
     }))
     .filter(option => option.count > 0) // Hide options with no products
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
 
   const grades: FilterOption[] = Array.from(gradeSet)
     .map(value => ({
       value,
-      label: value,
+      label: String(value || ''),
       count: countForOption('grade', value)
     }))
-    .filter(option => option.count > 0) // Hide options with no products
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .filter(option => option.count > 0 && option.label) // Hide options with no products or empty labels
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
 
   const standards: FilterOption[] = Array.from(standardSet)
     .map(value => ({
       value,
-      label: value,
+      label: String(value || ''),
       count: countForOption('standard', value)
     }))
-    .filter(option => option.count > 0) // Hide options with no products
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .filter(option => option.count > 0 && option.label) // Hide options with no products or empty labels
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
 
   const availabilities: FilterOption[] = Array.from(availabilitySet)
     .map(value => ({
@@ -258,16 +264,16 @@ export function buildFilterOptionsWithCounts(
       count: countForOption('availability', value)
     }))
     .filter(option => option.count > 0) // Hide options with no products
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .sort((a, b) => String(a.label || '').localeCompare(String(b.label || '')));
 
   const producers: FilterOption[] = Array.from(producerSet)
     .map(value => ({
       value,
-      label: value,
+      label: String(value || ''),
       count: countForOption('producer', value)
     }))
-    .filter(option => option.count > 0) // Hide options with no products
-    .sort((a, b) => a.label.localeCompare(b.label));
+    .filter(option => option.count > 0 && option.label) // Hide options with no products or empty labels
+    .sort((a, b) => String(a.label).localeCompare(String(b.label)));
 
   // Convert dimension maps to object
   const dimensionRanges: Record<string, { min: number; max: number }> = {};

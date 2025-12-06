@@ -92,17 +92,17 @@ const Footer = () => {
       <div className="border-t border-border">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-white">
               {t('footer.copyright')}
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
+              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
                 {t('footer.terms')}
               </Button>
-              <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
+              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
                 {t('footer.privacy')}
               </Button>
-              <Button variant="link" className="p-0 h-auto text-muted-foreground hover:text-foreground">
+              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
                 {t('footer.gdpr')}
               </Button>
             </div>

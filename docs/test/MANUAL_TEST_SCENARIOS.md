@@ -10680,3 +10680,890 @@ tail -5 backend/logs/combined.log | jq
 
 ---
 
+## Phase 10: Back-Office System & RFQ Management
+
+### Test Scenario 10.1: Back-Office Login
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User has back-office operator credentials
+
+**When**: User navigates to http://localhost:8081/backoffice/login
+
+**Then**:
+- [ ] Login page displays with MetalPro branding
+- [ ] "Back-Office Login" heading is visible
+- [ ] Email and password fields are present
+- [ ] "Sign In" button is visible
+- [ ] User enters valid operator email and password
+- [ ] User clicks "Sign In"
+- [ ] User is redirected to /backoffice/dashboard
+- [ ] No error messages are shown
+
+---
+
+### Test Scenario 10.2: Back-Office Login - Invalid Credentials
+
+**Priority**: High
+**Estimated Time**: 2 minutes
+
+**Given**: User is on back-office login page
+
+**When**: User enters invalid credentials
+
+**Then**:
+- [ ] User enters non-existent email and password
+- [ ] User clicks "Sign In"
+- [ ] Error message "Invalid credentials" is displayed
+- [ ] User remains on login page
+- [ ] Password field is cleared
+- [ ] Email field retains entered value
+
+---
+
+### Test Scenario 10.3: Back-Office Dashboard Display
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User views the dashboard at /backoffice/dashboard
+
+**Then**:
+- [ ] Dashboard heading "Dashboard Overview" is visible
+- [ ] KPI card "Total RFQs" displays with count
+- [ ] KPI card "Pending RFQs" displays with count in orange
+- [ ] KPI card "Total Value" displays amount in RON
+- [ ] KPI card "Active Products" displays product count
+- [ ] "Recent Activity" section displays latest RFQs
+- [ ] Each RFQ card shows: company name, reference number, status badge, date
+- [ ] Quick action cards are visible for RFQs and Products
+- [ ] Sidebar navigation is visible with links to Dashboard, RFQs, Products, Analytics
+
+---
+
+### Test Scenario 10.4: RFQ List View
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User navigates to /backoffice/rfqs
+
+**Then**:
+- [ ] "RFQ Management" heading is displayed
+- [ ] Search box "Search by company name..." is visible
+- [ ] Status filter dropdown shows "All Statuses" by default
+- [ ] RFQ cards are displayed in grid/list format
+- [ ] Each RFQ card shows: reference number, company name, contact person, status badge
+- [ ] Each RFQ card shows: submission date, estimated total (if available)
+- [ ] "View Details" button is present on each card
+- [ ] Pagination controls are visible at bottom (if more than 20 RFQs)
+- [ ] "Clear Filters" button is visible
+
+---
+
+### Test Scenario 10.5: RFQ Search and Filter
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on RFQ list page with multiple RFQs
+
+**When**: User searches and filters RFQs
+
+**Then**:
+- [ ] User enters company name in search box
+- [ ] Search results filter automatically or on button click
+- [ ] Only matching RFQs are displayed
+- [ ] User clears search and selects "Submitted" from status filter
+- [ ] Only RFQs with "Submitted" status are shown
+- [ ] User selects "Quoted" from status filter
+- [ ] Only RFQs with "Quoted" status are shown
+- [ ] User clicks "Clear Filters"
+- [ ] All RFQs are displayed again
+- [ ] Search box is cleared and filter is reset to "All Statuses"
+
+---
+
+### Test Scenario 10.6: RFQ Detail View
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User is on RFQ list page
+
+**When**: User clicks "View Details" on an RFQ
+
+**Then**:
+- [ ] User is navigated to /backoffice/rfqs/{id}
+- [ ] RFQ detail page displays company name as heading
+- [ ] Status badge is displayed next to heading
+- [ ] Reference number is shown below heading
+- [ ] "Company Information" card displays: company name, CUI, Reg. Com.
+- [ ] "Contact Information" card displays: contact person, email, phone
+- [ ] Email and phone are clickable links (mailto: and tel:)
+- [ ] "Delivery Address" card displays full address (if provided)
+- [ ] "Requested Items" table shows all line items
+- [ ] Items table includes: SKU, Product name, Quantity, Unit Price, Total
+- [ ] "Special Requirements" section displays notes (if any)
+- [ ] "Timeline" section shows: Submitted date, Acknowledged date (if set), Quoted date (if set)
+- [ ] "Update Status" button is visible
+- [ ] "Edit Pricing" button is visible
+- [ ] "Back to RFQs" button navigates back to list
+
+---
+
+### Test Scenario 10.7: RFQ Status Update
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User is viewing RFQ detail page
+
+**When**: User updates RFQ status
+
+**Then**:
+- [ ] User clicks "Update Status" button
+- [ ] Status update dialog opens
+- [ ] Current status is pre-selected in dropdown
+- [ ] Status options include: Submitted, Acknowledged, In Progress, Quoted, Completed, Cancelled
+- [ ] "Internal Notes" textarea is visible (not visible to customer)
+- [ ] "Customer Notes" textarea is visible (visible to customer)
+- [ ] User selects "Acknowledged" status
+- [ ] User enters internal note: "Customer called for clarification on delivery timeline"
+- [ ] User clicks "Update RFQ" button
+- [ ] Success toast notification appears: "RFQ status updated successfully"
+- [ ] Dialog closes
+- [ ] Page refreshes with new status badge showing "Acknowledged"
+- [ ] Timeline section now shows "Acknowledged" timestamp
+- [ ] Internal notes section displays the entered note
+
+---
+
+### Test Scenario 10.8: RFQ Pricing Editor - Access
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is viewing RFQ detail page
+
+**When**: User accesses pricing editor
+
+**Then**:
+- [ ] User clicks "Edit Pricing" button
+- [ ] User is navigated to /backoffice/rfqs/{id}/pricing
+- [ ] "Edit Pricing" heading is displayed
+- [ ] Company name and reference number shown below heading
+- [ ] Info alert displays: "Set the price per unit for each item. Totals will be calculated automatically."
+- [ ] "Line Items" table is visible
+- [ ] "Cancel" button is visible
+- [ ] "Save Pricing" button is visible
+
+---
+
+### Test Scenario 10.9: RFQ Pricing Editor - Set Prices
+
+**Priority**: Critical
+**Estimated Time**: 7 minutes
+
+**Given**: User is on pricing editor page
+
+**When**: User sets prices for line items
+
+**Then**:
+- [ ] Line items table shows columns: SKU, Product, Quantity, Price per Unit (input), Total
+- [ ] Each line item has an input field for "Price per Unit"
+- [ ] User enters price for first item (e.g., 5.50 RON)
+- [ ] Total for that item calculates automatically (e.g., 5.50 × quantity)
+- [ ] User enters prices for all remaining items
+- [ ] Subtotal row at bottom calculates sum of all line items
+- [ ] "Additional Costs" card is visible
+- [ ] User enters "Delivery Cost" (e.g., 150 RON)
+- [ ] User enters "Processing Fee" (e.g., 50 RON)
+- [ ] VAT Rate field shows default value (19%)
+- [ ] "Quote Summary" card displays:
+  - Subtotal (items)
+  - Delivery Cost (if > 0)
+  - Processing Fee (if > 0)
+  - VAT (19%)
+  - Total Quote (in large bold text with primary color)
+- [ ] All calculations update automatically as prices are entered
+- [ ] "Mark RFQ as 'Quoted' when saving" checkbox is checked by default
+
+---
+
+### Test Scenario 10.10: RFQ Pricing Editor - Save and Email
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: User has entered all pricing information
+
+**When**: User saves pricing
+
+**Then**:
+- [ ] User clicks "Save Pricing" button
+- [ ] Loading state is shown on button ("Saving...")
+- [ ] Success toast notification appears: "Pricing updated successfully"
+- [ ] User is redirected back to RFQ detail page (/backoffice/rfqs/{id})
+- [ ] RFQ status badge now shows "Quoted"
+- [ ] Items table now displays filled-in unit prices and totals
+- [ ] Pricing summary section shows: Subtotal, Delivery Cost, Processing Fee, VAT, Total
+- [ ] Total quote amount is prominently displayed
+- [ ] Email notification is sent to customer (check console logs in dev mode)
+- [ ] Console log shows: "Email sent successfully: Quote Ready to {customer_email}"
+
+---
+
+### Test Scenario 10.11: RFQ Pricing Editor - Validation
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is on pricing editor page
+
+**When**: User attempts to save without complete pricing
+
+**Then**:
+- [ ] User leaves some line items without prices
+- [ ] Warning alert is displayed: "Please set prices for all items before saving"
+- [ ] User clicks "Save Pricing"
+- [ ] Error toast appears: "Please set prices for all items before saving"
+- [ ] Form is not submitted
+- [ ] User remains on pricing editor page
+- [ ] User enters prices for all items
+- [ ] Warning alert disappears
+- [ ] User can now successfully save
+
+---
+
+### Test Scenario 10.12: Product List View
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User navigates to /backoffice/products
+
+**Then**:
+- [ ] "Product Management" heading is displayed
+- [ ] "Manage your product catalog" subtitle is shown
+- [ ] "Add Product" button is visible in top-right
+- [ ] Search box "Search products..." is present
+- [ ] Status filter dropdown shows "All Products" by default
+- [ ] "Clear Filters" button is visible
+- [ ] Products table displays with columns: Checkbox, SKU, Product, Category, Price, Status, Actions
+- [ ] Each product row shows: checkbox, SKU (monospace font), product title, category name, price in RON, status badge (Active/Inactive)
+- [ ] "Edit" button with icon is present for each product
+- [ ] Pagination controls are visible at bottom (if more than 20 products)
+- [ ] Total product count is shown: "Products ({total})"
+
+---
+
+### Test Scenario 10.13: Product Search and Filter
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is on product list page
+
+**When**: User searches and filters products
+
+**Then**:
+- [ ] User enters product name or SKU in search box
+- [ ] User clicks search icon or presses Enter
+- [ ] Products filter to show only matching results
+- [ ] User selects "Active Only" from status filter
+- [ ] Only products with isActive=true are displayed
+- [ ] User selects "Inactive Only"
+- [ ] Only products with isActive=false are displayed
+- [ ] User clicks "Clear Filters"
+- [ ] All products are displayed again
+- [ ] Search box is cleared and filter reset
+
+---
+
+### Test Scenario 10.14: Product Bulk Selection and Actions
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on product list page with multiple products
+
+**When**: User selects multiple products
+
+**Then**:
+- [ ] User clicks checkbox on first product row
+- [ ] Row is highlighted with selected state
+- [ ] Bulk actions bar appears at top: "{count} products selected"
+- [ ] Bulk action buttons are visible: Activate, Deactivate, Delete
+- [ ] User clicks checkbox on second product row
+- [ ] Bulk actions bar updates: "2 products selected"
+- [ ] User clicks "Select All" checkbox in table header
+- [ ] All visible products are selected
+- [ ] Bulk actions bar shows total count selected
+- [ ] User clicks "Select All" again
+- [ ] All products are deselected
+- [ ] Bulk actions bar disappears
+
+---
+
+### Test Scenario 10.15: Product Bulk Activate/Deactivate
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User has selected multiple inactive products
+
+**When**: User performs bulk activate action
+
+**Then**:
+- [ ] User selects 2-3 inactive products (with "Inactive" badge)
+- [ ] Bulk actions bar displays
+- [ ] User clicks "Activate" button
+- [ ] Loading state is shown
+- [ ] Success toast appears: "{count} products activated"
+- [ ] Product list refreshes
+- [ ] Previously selected products now show "Active" badge
+- [ ] Selection is cleared and bulk actions bar disappears
+- [ ] User selects 2-3 active products
+- [ ] User clicks "Deactivate" button
+- [ ] Success toast appears: "{count} products deactivated"
+- [ ] Selected products now show "Inactive" badge
+
+---
+
+### Test Scenario 10.16: Product Bulk Delete
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User has selected multiple products
+
+**When**: User performs bulk delete action
+
+**Then**:
+- [ ] User selects 2-3 products
+- [ ] User clicks "Delete" button in bulk actions bar
+- [ ] Delete confirmation dialog opens
+- [ ] Dialog title: "Delete Products"
+- [ ] Dialog shows: "Are you sure you want to delete {count} products? This action cannot be undone."
+- [ ] "Cancel" and "Delete" buttons are visible
+- [ ] User clicks "Cancel"
+- [ ] Dialog closes, products remain selected
+- [ ] User clicks "Delete" again
+- [ ] User clicks "Delete" in dialog
+- [ ] Loading state is shown
+- [ ] Success toast appears: "{count} products deleted"
+- [ ] Product list refreshes
+- [ ] Deleted products are no longer visible
+- [ ] Selection is cleared
+
+---
+
+### Test Scenario 10.17: Create New Product
+
+**Priority**: Critical
+**Estimated Time**: 7 minutes
+
+**Given**: User is on product list page
+
+**When**: User creates a new product
+
+**Then**:
+- [ ] User clicks "Add Product" button
+- [ ] User is navigated to /backoffice/products/new
+- [ ] "New Product" heading is displayed
+- [ ] Form displays with sections: Basic Information, Pricing & Units, Physical Properties, Status
+- [ ] "Cancel" and "Save Product" buttons are visible
+- [ ] User enters SKU: "PROD-TEST-001"
+- [ ] User enters Category ID (valid UUID)
+- [ ] User enters Product Title: "Test Product"
+- [ ] User enters Grade: "S235JR" (optional)
+- [ ] User enters Standard: "EN 10025" (optional)
+- [ ] User enters Dimensions: "100x50x5" (optional)
+- [ ] User enters Price per Unit: 12.50
+- [ ] User selects Base Unit: "kg"
+- [ ] User selects Availability: "In Stock"
+- [ ] User enters Weight: 15.5 kg (optional)
+- [ ] User enters Length: 6.0 m (optional)
+- [ ] "Product is active" checkbox is checked by default
+- [ ] User clicks "Save Product"
+- [ ] Success toast appears: "Product created successfully"
+- [ ] User is redirected to /backoffice/products
+- [ ] New product appears in the list
+
+---
+
+### Test Scenario 10.18: Create Product - Validation
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on create product page
+
+**When**: User attempts to save without required fields
+
+**Then**:
+- [ ] User leaves SKU field empty
+- [ ] User clicks "Save Product"
+- [ ] Error toast appears: "Please fill in all required fields"
+- [ ] Form is not submitted
+- [ ] User enters SKU but leaves Category ID empty
+- [ ] Error occurs again
+- [ ] User enters all required fields but sets Price to 0
+- [ ] User clicks "Save Product"
+- [ ] Error toast: "Price per unit must be greater than 0"
+- [ ] User enters valid price (e.g., 10.00)
+- [ ] User can now save successfully
+
+---
+
+### Test Scenario 10.19: Edit Existing Product
+
+**Priority**: Critical
+**Estimated Time**: 6 minutes
+
+**Given**: User is on product list page
+
+**When**: User edits an existing product
+
+**Then**:
+- [ ] User clicks "Edit" button on a product row
+- [ ] User is navigated to /backoffice/products/{id}/edit
+- [ ] "Edit Product" heading is displayed
+- [ ] Form is pre-filled with existing product data
+- [ ] All fields display current values
+- [ ] "Delete" button is visible in top-right (red/destructive style)
+- [ ] User modifies Product Title
+- [ ] User changes Price per Unit
+- [ ] User unchecks "Product is active" checkbox
+- [ ] User clicks "Save Product"
+- [ ] Success toast: "Product updated successfully"
+- [ ] User is redirected to /backoffice/products
+- [ ] Updated product shows new title, price, and "Inactive" status
+
+---
+
+### Test Scenario 10.20: Delete Single Product
+
+**Priority**: High
+**Estimated Time**: 4 minutes
+
+**Given**: User is editing a product
+
+**When**: User deletes the product
+
+**Then**:
+- [ ] User is on product edit page (/backoffice/products/{id}/edit)
+- [ ] User clicks "Delete" button
+- [ ] Delete confirmation dialog opens
+- [ ] Dialog title: "Delete Product"
+- [ ] Dialog message: "Are you sure you want to delete this product? This action cannot be undone."
+- [ ] "Cancel" and "Delete" buttons are visible
+- [ ] User clicks "Cancel"
+- [ ] Dialog closes, user remains on edit page
+- [ ] User clicks "Delete" again
+- [ ] User clicks "Delete" in dialog
+- [ ] Success toast: "Product deleted successfully"
+- [ ] User is redirected to /backoffice/products
+- [ ] Deleted product is no longer in the list
+
+---
+
+### Test Scenario 10.21: Analytics Dashboard Display
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User navigates to /backoffice/analytics
+
+**Then**:
+- [ ] "Analytics & Reports" heading is displayed
+- [ ] "Business insights and performance metrics" subtitle is shown
+- [ ] Date range filter is visible in top-right (default: "Last 30 days")
+- [ ] Four KPI cards are displayed:
+  - Total RFQs (with "All time" label)
+  - Pending RFQs (with orange color)
+  - Total Value (in thousands RON, green color)
+  - Avg. Response Time (in hours, blue color)
+- [ ] Each KPI card has appropriate icon
+- [ ] KPI values are displayed prominently
+
+---
+
+### Test Scenario 10.22: Analytics Charts Display
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is on analytics dashboard
+
+**When**: User views charts section
+
+**Then**:
+- [ ] "RFQ Status Distribution" pie chart is visible
+- [ ] Pie chart shows segments for: Submitted, In Progress, Quoted, Completed, Cancelled
+- [ ] Each segment has different color
+- [ ] Percentages are displayed on chart
+- [ ] "RFQ Volume Trend" line chart is visible
+- [ ] Line chart shows RFQ count over time (last 30 days)
+- [ ] X-axis shows dates, Y-axis shows count
+- [ ] "Revenue Trend" bar chart is visible
+- [ ] Bar chart shows revenue in RON over time
+- [ ] Tooltip appears on hover showing exact values
+- [ ] All charts are responsive and render properly
+
+---
+
+### Test Scenario 10.23: Analytics Recent Activity
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is on analytics dashboard
+
+**When**: User views recent activity section
+
+**Then**:
+- [ ] "Recent RFQ Activity" section is visible
+- [ ] Table displays latest 10 RFQs
+- [ ] Columns: Reference, Company, Status, Value, Submitted, Actions
+- [ ] Each row shows: reference number (monospace), company name, status badge, value in RON (or "-"), submission date
+- [ ] "View" button is present for each RFQ
+- [ ] User clicks "View" button
+- [ ] User is navigated to RFQ detail page (/backoffice/rfqs/{id})
+- [ ] Back button returns to analytics page
+
+---
+
+### Test Scenario 10.24: Analytics Performance Insights
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: User is on analytics dashboard
+
+**When**: User views performance insights section
+
+**Then**:
+- [ ] Three insight cards are displayed:
+  - Conversion Rate (blue background)
+  - Avg. Quote Value (green background)
+  - Active Customers (purple background)
+- [ ] Conversion Rate shows percentage with description "RFQs converted to quotes"
+- [ ] Avg. Quote Value shows amount in thousands RON with "Average per RFQ"
+- [ ] Active Customers shows count with "Unique companies"
+- [ ] All values are calculated correctly based on RFQ data
+
+---
+
+### Test Scenario 10.25: Analytics Date Range Filter
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is on analytics dashboard
+
+**When**: User changes date range
+
+**Then**:
+- [ ] User clicks date range dropdown (shows "Last 30 days")
+- [ ] Options are displayed: Last 7 days, Last 30 days, Last 90 days, Last year
+- [ ] User selects "Last 7 days"
+- [ ] Page refreshes with loading state
+- [ ] All KPIs update to show data for last 7 days
+- [ ] Charts update to reflect new date range
+- [ ] Recent activity updates (if different results)
+- [ ] User selects "Last year"
+- [ ] Data updates to show annual statistics
+- [ ] Charts show longer time periods
+
+---
+
+### Test Scenario 10.26: Back-Office Navigation
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User navigates between sections
+
+**Then**:
+- [ ] Sidebar is visible on all back-office pages
+- [ ] Sidebar contains links: Dashboard, RFQs, Products, Analytics
+- [ ] Each link has an icon
+- [ ] Active page link is highlighted
+- [ ] User clicks "Dashboard"
+- [ ] User is navigated to /backoffice/dashboard
+- [ ] Dashboard link is highlighted
+- [ ] User clicks "RFQs"
+- [ ] User is navigated to /backoffice/rfqs
+- [ ] RFQs link is highlighted
+- [ ] User clicks "Products"
+- [ ] User is navigated to /backoffice/products
+- [ ] User clicks "Analytics"
+- [ ] User is navigated to /backoffice/analytics
+- [ ] Navigation is smooth without page reload delays
+
+---
+
+### Test Scenario 10.27: Back-Office Logout
+
+**Priority**: Critical
+**Estimated Time**: 3 minutes
+
+**Given**: User is logged into back-office
+
+**When**: User logs out
+
+**Then**:
+- [ ] User profile dropdown is visible in sidebar or header
+- [ ] User clicks profile dropdown
+- [ ] "Logout" option is displayed
+- [ ] User clicks "Logout"
+- [ ] User is logged out
+- [ ] User is redirected to /backoffice/login
+- [ ] Subsequent attempt to access /backoffice/dashboard without login redirects to login page
+- [ ] Previous session is terminated
+
+---
+
+### Test Scenario 10.28: Back-Office Protected Routes
+
+**Priority**: Critical
+**Estimated Time**: 4 minutes
+
+**Given**: User is not logged into back-office
+
+**When**: User attempts to access protected routes
+
+**Then**:
+- [ ] User navigates to /backoffice/dashboard
+- [ ] User is automatically redirected to /backoffice/login
+- [ ] User navigates to /backoffice/rfqs
+- [ ] User is redirected to login
+- [ ] User navigates to /backoffice/products
+- [ ] User is redirected to login
+- [ ] User logs in with valid credentials
+- [ ] User is redirected to originally requested page (or dashboard)
+- [ ] User can now access all back-office pages
+
+---
+
+### Test Scenario 10.29: Email Notification - RFQ Acknowledgment
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Prerequisites**: Email service configured (or development mode active)
+
+**Given**: Operator is viewing an RFQ with status "Submitted"
+
+**When**: Operator acknowledges the RFQ
+
+**Then**:
+- [ ] Operator clicks "Update Status"
+- [ ] Operator selects "Acknowledged" status
+- [ ] Operator clicks "Update RFQ"
+- [ ] Status updates successfully
+- [ ] In development mode, console log shows: "[EMAIL - RFQ Acknowledgment] Would send email via SES"
+- [ ] Console displays email details: To, From, Subject
+- [ ] Email subject: "RFQ {reference} în Lucru - MetalPro"
+- [ ] In production mode with AWS SES: email is sent to customer
+- [ ] Customer receives acknowledgment email with:
+  - Status update
+  - Estimated processing time
+  - Link to order tracking
+
+---
+
+### Test Scenario 10.30: Email Notification - Quote Ready
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Prerequisites**: Email service configured (or development mode active)
+
+**Given**: Operator has set pricing for an RFQ
+
+**When**: Operator marks RFQ as "Quoted"
+
+**Then**:
+- [ ] Operator is on pricing editor page with all prices set
+- [ ] "Mark RFQ as 'Quoted' when saving" checkbox is checked
+- [ ] Operator clicks "Save Pricing"
+- [ ] Pricing saves successfully
+- [ ] RFQ status changes to "Quoted"
+- [ ] In development mode, console log shows: "[EMAIL - Quote Ready] Would send email via SES"
+- [ ] Console displays email details including quote amount
+- [ ] Email subject: "Ofertă Pregătită - {reference}"
+- [ ] In production: customer receives quote ready email with:
+  - Total quote amount prominently displayed
+  - Link to download quote PDF (placeholder)
+  - Contact information
+
+---
+
+### Test Scenario 10.31: Back-Office Responsive Design - Mobile
+
+**Priority**: Medium
+**Estimated Time**: 6 minutes
+
+**Given**: User is logged into back-office on mobile device (or browser DevTools mobile mode)
+
+**When**: User views back-office pages on mobile
+
+**Then**:
+- [ ] Sidebar collapses to hamburger menu on mobile
+- [ ] Dashboard displays KPI cards stacked vertically
+- [ ] RFQ list cards stack vertically with full width
+- [ ] RFQ detail page sections stack vertically
+- [ ] Pricing editor table scrolls horizontally on small screens
+- [ ] Product list table scrolls horizontally
+- [ ] Analytics charts resize responsively
+- [ ] All buttons and inputs are appropriately sized for touch
+- [ ] No horizontal scrolling on pages (except tables)
+- [ ] Text is readable without zooming
+
+---
+
+### Test Scenario 10.32: Back-Office Loading States
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is performing actions in back-office
+
+**When**: Data is being loaded or saved
+
+**Then**:
+- [ ] On initial page load, loading spinner is displayed
+- [ ] Spinner is centered with appropriate size
+- [ ] When saving RFQ status, button shows "Updating..." text
+- [ ] When saving pricing, button shows "Saving..." text
+- [ ] When creating product, button shows "Saving..." text
+- [ ] Buttons are disabled during loading
+- [ ] Multiple clicks are prevented during save
+- [ ] Loading states clear when operation completes
+- [ ] On error, loading state is removed and error is shown
+
+---
+
+### Test Scenario 10.33: Back-Office Error Handling
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: User is performing actions that may fail
+
+**When**: An error occurs
+
+**Then**:
+- [ ] User attempts to load RFQ with invalid ID
+- [ ] Error page or message is displayed: "RFQ not found"
+- [ ] "Back to RFQs" button is available
+- [ ] User attempts to save pricing without network
+- [ ] Error toast appears with descriptive message
+- [ ] Form data is not lost
+- [ ] User can retry after fixing issue
+- [ ] User attempts to create product with duplicate SKU
+- [ ] Validation error is shown
+- [ ] All error messages are user-friendly and in Romanian
+
+---
+
+### Test Scenario 10.34: Back-Office Toast Notifications
+
+**Priority**: Medium
+**Estimated Time**: 4 minutes
+
+**Given**: User is performing various actions
+
+**When**: Actions complete successfully or fail
+
+**Then**:
+- [ ] Success toast appears on RFQ status update (green checkmark)
+- [ ] Success toast appears on pricing save (green checkmark)
+- [ ] Success toast appears on product create/update (green checkmark)
+- [ ] Success toast appears on product delete (green checkmark)
+- [ ] Error toast appears on validation failure (red X)
+- [ ] Error toast appears on network error (red X)
+- [ ] Toasts auto-dismiss after 3-5 seconds
+- [ ] Multiple toasts stack vertically
+- [ ] Toasts are positioned consistently (top-right or bottom-right)
+- [ ] Toast messages are clear and actionable
+
+---
+
+### Test Scenario 10.35: Back-Office Data Consistency
+
+**Priority**: High
+**Estimated Time**: 6 minutes
+
+**Given**: Multiple operators are working on same data
+
+**When**: Data is updated by one operator
+
+**Then**:
+- [ ] Operator A views RFQ detail page
+- [ ] Operator B updates the same RFQ status
+- [ ] Operator A refreshes page
+- [ ] Page displays updated status from Operator B
+- [ ] Operator A sets pricing for RFQ
+- [ ] Operator B views same RFQ
+- [ ] Operator B sees updated pricing
+- [ ] Product list shows consistent data across all operators
+- [ ] Analytics dashboard reflects latest RFQ/product data
+- [ ] No stale data is displayed
+
+---
+
+## Phase 10 Test Summary
+
+**Total Test Scenarios**: 35 scenarios
+
+### By Priority:
+- **Critical**: 15 scenarios (Login, Dashboard, RFQ Management, Pricing, Product CRUD, Protected Routes)
+- **High**: 13 scenarios (Filters, Validation, Bulk Operations, Email Notifications, Error Handling)
+- **Medium**: 7 scenarios (Analytics, Responsive Design, Loading States, Notifications)
+
+### By Feature Area:
+- **Authentication & Authorization**: 3 scenarios (10.1, 10.2, 10.28)
+- **Dashboard**: 1 scenario (10.3)
+- **RFQ Management**: 10 scenarios (10.4 - 10.11, 10.29, 10.30)
+- **Product Management**: 10 scenarios (10.12 - 10.20)
+- **Analytics**: 5 scenarios (10.21 - 10.25)
+- **Navigation & UX**: 6 scenarios (10.26, 10.27, 10.31 - 10.34)
+- **Data Quality**: 1 scenario (10.35)
+
+### Test Coverage:
+- [x] Back-office authentication and authorization
+- [x] RFQ listing, filtering, and search
+- [x] RFQ detail view and status updates
+- [x] RFQ pricing editor with calculations
+- [x] Product CRUD operations
+- [x] Product bulk operations (activate, deactivate, delete)
+- [x] Product search and filtering
+- [x] Analytics dashboard with charts
+- [x] Email notifications (acknowledgment and quote ready)
+- [x] Navigation and routing
+- [x] Responsive design (mobile/desktop)
+- [x] Loading and error states
+- [x] Toast notifications
+- [x] Data consistency
+
+**Estimated Total Testing Time**: ~2.5 hours
+
+**Last Updated**: November 25, 2025
+**Next Review**: Before production release
+
+---

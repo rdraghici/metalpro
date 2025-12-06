@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ShoppingCart, Phone, User, LogOut, Package, History } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,13 +19,42 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
+
+interface Category {
+  id: string;
+  slug: string;
+  name: string;
+  nameEn: string;
+  sortOrder: number;
+}
+
 const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const analytics = useAnalytics();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { itemCount, toggleDrawer } = useCart();
   const { user, isGuest, logout } = useAuth();
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  // Fetch categories on component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/categories`);
+        if (!response.ok) throw new Error('Failed to fetch categories');
+
+        const result = await response.json();
+        setCategories(result.data || []);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        // Silently fail - navigation will just be empty
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleRequestQuote = () => {
     if (itemCount === 0) {
@@ -179,24 +209,13 @@ const Header = () => {
         {/* Navigation */}
         <nav className="mt-4 pt-4 border-t border-border">
           <div className="flex items-center gap-8">
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/profiles">{t('navigation.metal_profiles')}</Link>
-            </Button>
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/plates">{t('navigation.steel_plates')}</Link>
-            </Button>
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/pipes">{t('navigation.pipes_tubes')}</Link>
-            </Button>
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/fasteners">{t('navigation.fasteners')}</Link>
-            </Button>
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/stainless">{t('navigation.stainless_steel')}</Link>
-            </Button>
-            <Button variant="ghost" className="text-base font-medium" asChild>
-              <Link to="/catalog/nonferrous">{t('navigation.nonferrous_metals')}</Link>
-            </Button>
+            {categories.map((category) => (
+              <Button key={category.id} variant="ghost" className="text-base font-medium" asChild>
+                <Link to={`/catalog/${category.slug}`}>
+                  {locale === 'en' ? category.nameEn : category.name}
+                </Link>
+              </Button>
+            ))}
           </div>
         </nav>
       </div>

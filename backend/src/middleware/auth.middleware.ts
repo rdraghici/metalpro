@@ -95,3 +95,27 @@ export async function optionalAuth(req: AuthRequest, res: Response, next: NextFu
 
   next();
 }
+
+/**
+ * Require backoffice role (BACKOFFICE or ADMIN)
+ * Must be used after authenticate middleware
+ */
+export function requireBackoffice(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!req.user) {
+    return res.status(401).json({
+      success: false,
+      error: 'Unauthorized',
+    });
+  }
+
+  const userRole = req.user.role?.toLowerCase();
+
+  if (userRole !== 'admin' && userRole !== 'backoffice') {
+    return res.status(403).json({
+      success: false,
+      error: 'Forbidden - Backoffice access required',
+    });
+  }
+
+  next();
+}

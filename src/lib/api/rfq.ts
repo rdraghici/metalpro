@@ -1,64 +1,88 @@
 import type { RFQFormData, RFQSubmissionResponse, RFQ } from '@/types/rfq';
 import { createOrderHistoryEntry } from './orderHistory';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+/**
+ * Get auth token from localStorage
+ */
+function getAuthToken(): string | null {
+  return localStorage.getItem('token');
+}
+
 /**
  * Submit RFQ (Request for Quote)
  *
- * This is a MOCK implementation. In production, this would:
- * 1. Upload attachments to AWS S3
- * 2. Submit RFQ data to backend API (PostgreSQL database)
- * 3. Send email notifications to user and sales team (SendGrid)
- * 4. Return RFQ reference number and confirmation
+ * Submits RFQ to backend API which will:
+ * 1. Store RFQ in PostgreSQL database
+ * 2. Generate unique reference number
+ * 3. Send email notifications (future)
  *
  * @param data - Complete RFQ form data
  * @param userId - User ID if logged in (optional)
  * @returns Promise with submission response
  */
 export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQSubmissionResponse> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1500));
-
   try {
-    // Generate reference number
-    const year = new Date().getFullYear();
-    const random = Math.floor(Math.random() * 10000)
-      .toString()
-      .padStart(4, '0');
-    const referenceNumber = `RFQ-${year}-${random}`;
+    // Get auth token (optional - RFQ can be submitted by guests)
+    const token = getAuthToken();
 
-    // In production, this would:
-    // 1. Upload files to S3 and get URLs
-    const uploadedAttachments = data.attachments.map((att) => ({
-      ...att,
-      url: `https://s3.metal-direct.ro/rfq-attachments/${referenceNumber}/${att.name}`,
+    // Prepare items for backend
+    const items = data.cartSnapshot.lines.map((line) => ({
+      productId: line.productId,
+      productSku: line.product?.sku || `SKU-${line.productId}`,
+      productName: line.product?.name || `Product ${line.productId}`,
+      quantity: line.quantity,
+      unit: line.unit,
+      specs: line.specs,
+      grossPrice: line.indicativeSubtotal || 0,
     }));
 
-    // 2. Create RFQ record in database
-    const rfq: RFQ = {
-      id: `rfq_${Date.now()}`,
-      referenceNumber,
-      status: 'submitted',
-      company: data.company,
-      deliveryAddress: data.deliveryAddress,
-      cartSnapshot: data.cartSnapshot,
-      desiredDeliveryDate: data.desiredDeliveryDate,
+    // Calculate estimated total
+    const estimatedTotal = data.cartSnapshot.totals.grandTotal;
+
+    // Prepare request payload
+    const payload = {
+      companyName: data.company.legalName,
+      contactPerson: data.company.contact?.name || data.company.legalName || 'N/A',
+      email: data.company.contact?.email || data.email,
+      phone: data.company.contact?.phone || data.phone,
+      taxId: data.company.taxId,
+      registrationNumber: data.company.registrationNumber,
+      shippingAddress: data.deliveryAddress,
+      billingAddress: data.company.billingAddress,
       incoterm: data.incoterm,
-      paymentTermsPreference: data.paymentTermsPreference,
-      specialRequirements: data.specialRequirements,
-      notes: data.notes,
-      attachments: uploadedAttachments,
-      disclaimerAccepted: data.disclaimerAccepted,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      submittedAt: new Date().toISOString(),
+      deliveryDate: data.desiredDeliveryDate,
+      notes: [data.notes, data.specialRequirements].filter(Boolean).join('\n\n'),
+      items,
+      estimatedTotal,
     };
 
-    // 3. Send email notifications (SendGrid)
-    // - To user: Confirmation email with RFQ details
-    // - To sales team: New RFQ notification
-    await sendRFQNotifications(rfq);
+    // Submit to backend
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json',
+    };
 
-    // 4. Save to order history if user is logged in
+    // Add authorization header only if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}/api/rfq`, {
+      method: 'POST',
+      headers,
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Eroare la trimiterea cererii' }));
+      throw new Error(error.message || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    // Save to order history if user is logged in
     if (userId) {
       try {
         await createOrderHistoryEntry(userId, {
@@ -74,31 +98,50 @@ export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQ
         console.log('✅ Order saved to history for user:', userId);
       } catch (error) {
         console.error('Failed to save order to history:', error);
-        // Don't fail the whole RFQ submission if history save fails
       }
     }
 
-    // 5. Log for analytics
+    // Log for analytics
     console.log('RFQ Submitted:', {
-      referenceNumber,
+      referenceNumber: result.data.rfq.referenceNumber,
       company: data.company.legalName,
-      totalItems: data.cartSnapshot.lines.length,
-      totalValue: data.cartSnapshot.totals.grandTotal,
+      totalItems: items.length,
+      totalValue: estimatedTotal,
       userId: userId || 'guest',
     });
+
+    // Convert backend response to frontend RFQ format
+    const rfq: RFQ = {
+      id: result.data.rfq.id,
+      referenceNumber: result.data.rfq.referenceNumber,
+      status: result.data.rfq.status.toLowerCase(),
+      company: data.company,
+      deliveryAddress: data.deliveryAddress,
+      cartSnapshot: data.cartSnapshot,
+      desiredDeliveryDate: data.desiredDeliveryDate,
+      incoterm: data.incoterm,
+      paymentTermsPreference: data.paymentTermsPreference,
+      specialRequirements: data.specialRequirements,
+      notes: data.notes,
+      attachments: data.attachments,
+      disclaimerAccepted: data.disclaimerAccepted,
+      createdAt: result.data.rfq.submittedAt,
+      updatedAt: result.data.rfq.submittedAt,
+      submittedAt: result.data.rfq.submittedAt,
+    };
 
     return {
       success: true,
       rfq,
-      referenceNumber,
-      message: 'Cererea de ofertă a fost trimisă cu succes',
+      referenceNumber: result.data.rfq.referenceNumber,
+      message: result.message || 'Cererea de ofertă a fost trimisă cu succes',
     };
   } catch (error) {
     console.error('Error submitting RFQ:', error);
 
     return {
       success: false,
-      message: 'Eroare la trimiterea cererii de ofertă',
+      message: error instanceof Error ? error.message : 'Eroare la trimiterea cererii de ofertă',
       errors: [error instanceof Error ? error.message : 'Eroare necunoscută'],
     };
   }

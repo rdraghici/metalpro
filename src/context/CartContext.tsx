@@ -101,7 +101,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const stored = localStorage.getItem(CART_STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored) as EstimateCart;
-          setCart(parsed);
+          // Recalculate totals to ensure they're correct
+          const recalculatedTotals = calculateTotals(parsed.lines);
+          setCart({
+            ...parsed,
+            totals: recalculatedTotals,
+          });
         }
       } catch (error) {
         console.error('Failed to load cart from localStorage:', error);
@@ -196,8 +201,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Track cart update
       trackEstimateUpdate({
         itemCount: updatedLines.length,
-        totalWeight: updatedTotals.totalWeightKg,
-        totalPrice: updatedTotals.subtotal,
+        totalWeight: updatedTotals.estWeightKg,
+        totalPrice: updatedTotals.estSubtotal,
       });
 
       return {
@@ -253,8 +258,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Track cart update
       trackEstimateUpdate({
         itemCount: updatedLines.length,
-        totalWeight: updatedTotals.totalWeightKg,
-        totalPrice: updatedTotals.subtotal,
+        totalWeight: updatedTotals.estWeightKg,
+        totalPrice: updatedTotals.estSubtotal,
       });
 
       return {
@@ -275,8 +280,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Track cart update
       trackEstimateUpdate({
         itemCount: updatedLines.length,
-        totalWeight: updatedTotals.totalWeightKg,
-        totalPrice: updatedTotals.subtotal,
+        totalWeight: updatedTotals.estWeightKg,
+        totalPrice: updatedTotals.estSubtotal,
       });
 
       return {
