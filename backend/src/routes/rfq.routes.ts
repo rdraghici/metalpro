@@ -101,7 +101,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response, next: NextFun
           phone: rfq.phone,
           estimatedTotal: rfq.estimatedTotal,
           submittedAt: rfq.submittedAt,
-          items: rfq.items,
+          items: (rfq as any).items,
         },
       },
       message: `RFQ ${rfq.referenceNumber} submitted successfully`,

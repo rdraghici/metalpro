@@ -1,5 +1,5 @@
 import { prisma } from '../config/database';
-import { RFQStatus } from '@prisma/client';
+import { RFQStatus, Prisma } from '@prisma/client';
 import logger from '../config/logger';
 
 export interface CreateRFQItemData {
@@ -78,9 +78,17 @@ export class RFQService {
     // Generate reference number
     const referenceNumber = await this.generateReferenceNumber();
 
-    // Prepare cart snapshot
-    const cartSnapshot = {
-      items: data.items,
+    // Prepare cart snapshot - cast to Prisma.JsonObject for type safety
+    const cartSnapshot: Prisma.InputJsonValue = {
+      items: data.items.map(item => ({
+        productId: item.productId ?? null,
+        productSku: item.productSku,
+        productName: item.productName,
+        quantity: item.quantity,
+        unit: item.unit,
+        specs: item.specs ?? null,
+        grossPrice: item.grossPrice,
+      })),
       submittedAt: new Date().toISOString(),
     };
 

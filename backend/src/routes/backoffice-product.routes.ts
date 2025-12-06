@@ -231,7 +231,8 @@ router.post('/import', upload.single('file'), async (req: Request, res: Response
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const fileBuffer = req.file.buffer;
+    // Note: Using 'any' type assertion due to Node.js 20+ Buffer type incompatibility with ExcelJS
+    const fileBuffer: any = req.file.buffer;
     const isExcel = req.file.mimetype.includes('spreadsheet') || req.file.mimetype.includes('excel');
 
     let rows: any[] = [];
