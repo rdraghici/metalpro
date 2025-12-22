@@ -1,11 +1,12 @@
-import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 // Email configuration from environment
-const AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'noreply@metal-direct.ro';
-const OPERATOR_EMAIL = process.env.OPERATOR_EMAIL || 'sales@metal-direct.ro';
+const ZOHO_SMTP_HOST = process.env.ZOHO_SMTP_HOST || 'smtp.zoho.eu';
+const ZOHO_SMTP_PORT = parseInt(process.env.ZOHO_SMTP_PORT || '465');
+const ZOHO_MAIL_USER = process.env.ZOHO_MAIL_USER || 'no-reply@metal-direct.ro';
+const ZOHO_MAIL_PASSWORD = process.env.ZOHO_MAIL_PASSWORD;
+const OPERATOR_EMAIL = process.env.ZOHO_OPERATOR_EMAIL || 'sales@metal-direct.ro';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3001';
 
@@ -30,44 +31,38 @@ interface QuoteData {
 }
 
 export class EmailService {
-  private sesClient: SESClient | null = null;
-  private isDevelopment = process.env.NODE_ENV === 'development';
+  private transporter: Transporter | null = null;
 
   constructor() {
-    this.initializeSES();
+    this.initializeTransporter();
   }
 
-  /**
-   * Initialize AWS SES client
-   */
-  private initializeSES() {
-    // In development mode without AWS credentials, log emails to console
-    if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) {
-      console.log('📧 Email service running in DEVELOPMENT mode (no AWS credentials)');
-      console.log('📧 Emails will be logged to console instead of being sent via SES');
+  private initializeTransporter() {
+    if (!ZOHO_MAIL_PASSWORD) {
+      console.log('📧 Email service running in DEVELOPMENT mode (no Zoho credentials)');
+      console.log('📧 Emails will be logged to console instead of being sent');
       return;
     }
 
     try {
-      this.sesClient = new SESClient({
-        region: AWS_REGION,
-        credentials: {
-          accessKeyId: AWS_ACCESS_KEY_ID,
-          secretAccessKey: AWS_SECRET_ACCESS_KEY,
+      this.transporter = nodemailer.createTransport({
+        host: ZOHO_SMTP_HOST,
+        port: ZOHO_SMTP_PORT,
+        secure: true,
+        auth: {
+          user: ZOHO_MAIL_USER,
+          pass: ZOHO_MAIL_PASSWORD,
         },
       });
 
-      console.log(`📧 Email service initialized with AWS SES (Region: ${AWS_REGION})`);
+      console.log(`📧 Email service initialized with Zoho SMTP (${ZOHO_SMTP_HOST})`);
     } catch (error) {
-      console.error('❌ Failed to initialize AWS SES client:', error);
+      console.error('❌ Failed to initialize Zoho SMTP transporter:', error);
     }
   }
 
-  /**
-   * Send RFQ confirmation email to customer
-   */
   async sendRFQConfirmation(rfq: RFQData): Promise<void> {
-    const subject = `Confirmare RFQ ${rfq.referenceNumber} - MetalPro`;
+    const subject = `Confirmare RFQ ${rfq.referenceNumber} - Metal Direct`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -87,7 +82,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>MetalPro</h1>
+            <h1>Metal Direct</h1>
           </div>
           <div class="content">
             <h2>Cerere Ofertă Primită</h2>
@@ -108,10 +103,10 @@ export class EmailService {
             <p>Poți urmări statusul comenzii în contul tău:</p>
             <a href="${FRONTEND_URL}/account/orders" class="button">Vezi Istoric Comenzi</a>
 
-            <p>Cu stimă,<br/>Echipa MetalPro</p>
+            <p>Cu stimă,<br/>Echipa Metal Direct</p>
           </div>
           <div class="footer">
-            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
+            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
             <p>Acest email a fost trimis automat. Te rugăm să nu răspunzi la acest mesaj.</p>
           </div>
         </div>
@@ -122,9 +117,6 @@ export class EmailService {
     await this.sendEmail(rfq.email, subject, html, 'RFQ Confirmation');
   }
 
-  /**
-   * Notify operator about new RFQ
-   */
   async notifyOperatorNewRFQ(rfq: RFQData): Promise<void> {
     const subject = `[NOU RFQ] ${rfq.referenceNumber} - ${rfq.companyName}`;
     const html = `
@@ -146,11 +138,11 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🔔 RFQ Nou Primit</h1>
+            <h1>RFQ Nou Primit</h1>
           </div>
           <div class="content">
             <div class="urgent">
-              <strong>⚠️ Acțiune necesară:</strong> Clientul așteaptă ofertă
+              <strong>Actiune necesară:</strong> Clientul așteaptă ofertă
             </div>
 
             <div class="details">
@@ -171,7 +163,7 @@ export class EmailService {
               </ul>
             </div>
 
-            <a href="${BACKEND_URL}/admin/rfq/${rfq.id}" class="button">Vezi Detalii RFQ →</a>
+            <a href="${BACKEND_URL}/admin/rfq/${rfq.id}" class="button">Vezi Detalii RFQ</a>
 
             <p style="color: #666; font-size: 14px; margin-top: 20px;">
               Timpul mediu de răspuns așteptat: 2-4 ore în timpul programului de lucru
@@ -185,12 +177,9 @@ export class EmailService {
     await this.sendEmail(OPERATOR_EMAIL, subject, html, 'Operator Notification');
   }
 
-  /**
-   * Send email verification link to new user
-   */
   async sendVerificationEmail(email: string, userId: string, verificationToken: string): Promise<void> {
     const verificationUrl = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    const subject = 'Verifică adresa de email - MetalPro';
+    const subject = 'Verifică adresa de email - Metal Direct';
     const html = `
       <!DOCTYPE html>
       <html>
@@ -209,7 +198,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Bine ai venit la MetalPro!</h1>
+            <h1>Bine ai venit la Metal Direct!</h1>
           </div>
           <div class="content">
             <p>Te rugăm să verifici adresa de email făcând clic pe butonul de mai jos:</p>
@@ -222,15 +211,15 @@ export class EmailService {
             </p>
 
             <p style="color: #dc3545; margin-top: 20px;">
-              <strong>⏰ Important:</strong> Linkul este valabil 24 de ore.
+              <strong>Important:</strong> Linkul este valabil 24 de ore.
             </p>
 
             <p style="color: #666; margin-top: 20px;">
-              Dacă nu ai creat un cont pe MetalPro, te rugăm să ignori acest email.
+              Dacă nu ai creat un cont pe Metal Direct, te rugăm să ignori acest email.
             </p>
           </div>
           <div class="footer">
-            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
+            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
           </div>
         </div>
       </body>
@@ -240,12 +229,9 @@ export class EmailService {
     await this.sendEmail(email, subject, html, 'Email Verification');
   }
 
-  /**
-   * Send password reset email
-   */
   async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
     const resetUrl = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
-    const subject = 'Resetare Parolă - MetalPro';
+    const subject = 'Resetare Parolă - Metal Direct';
     const html = `
       <!DOCTYPE html>
       <html>
@@ -265,7 +251,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>🔐 Resetare Parolă</h1>
+            <h1>Resetare Parolă</h1>
           </div>
           <div class="content">
             <p>Am primit o solicitare de resetare a parolei pentru contul tău.</p>
@@ -279,16 +265,16 @@ export class EmailService {
             </p>
 
             <div class="warning">
-              <strong>⏰ Important:</strong> Linkul este valabil 1 oră.
+              <strong>Important:</strong> Linkul este valabil 1 oră.
             </div>
 
             <div class="warning">
-              <strong>🔒 Securitate:</strong> Dacă nu ai solicitat resetarea parolei, te rugăm să ignori acest email.
-              Parola ta va rămâne neschimbată și este posibil ca cineva să fi încercat să acceseze contul tău.
+              <strong>Securitate:</strong> Dacă nu ai solicitat resetarea parolei, te rugăm să ignori acest email.
+              Parola ta va rămâne neschimbată.
             </div>
           </div>
           <div class="footer">
-            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
+            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
           </div>
         </div>
       </body>
@@ -298,11 +284,8 @@ export class EmailService {
     await this.sendEmail(email, subject, html, 'Password Reset');
   }
 
-  /**
-   * Send RFQ acknowledgment email to customer
-   */
   async sendRFQAcknowledgment(rfq: RFQData): Promise<void> {
-    const subject = `RFQ ${rfq.referenceNumber} în Lucru - MetalPro`;
+    const subject = `RFQ ${rfq.referenceNumber} în Lucru - Metal Direct`;
     const html = `
       <!DOCTYPE html>
       <html>
@@ -322,16 +305,16 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>✅ RFQ Confirmat</h1>
+            <h1>RFQ Confirmat</h1>
           </div>
           <div class="content">
             <p>Bună ${rfq.contactPerson},</p>
             <p>Îți confirmăm că am primit și procesat cererea ta de ofertă cu referința <strong>${rfq.referenceNumber}</strong>.</p>
 
             <div class="status-box">
-              <strong>📋 Status:</strong> În lucru<br/>
-              <strong>⏱️ Timp estimat:</strong> 24-48 ore<br/>
-              <strong>📧 Referință:</strong> ${rfq.referenceNumber}
+              <strong>Status:</strong> În lucru<br/>
+              <strong>Timp estimat:</strong> 24-48 ore<br/>
+              <strong>Referință:</strong> ${rfq.referenceNumber}
             </div>
 
             <p>Echipa noastră de specialiști analizează în detaliu cererea ta și pregătește o ofertă personalizată.
@@ -341,17 +324,15 @@ export class EmailService {
             <a href="${FRONTEND_URL}/account/orders" class="button">Vezi Statusul Comenzii</a>
 
             <p style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-              <strong>📞 Întrebări?</strong><br/>
+              <strong>Întrebări?</strong><br/>
               Pentru clarificări sau modificări, ne poți contacta la:<br/>
-              Email: ${OPERATOR_EMAIL}<br/>
-              Telefon: +40 XXX XXX XXX
+              Email: ${OPERATOR_EMAIL}
             </p>
 
-            <p>Cu stimă,<br/>Echipa MetalPro</p>
+            <p>Cu stimă,<br/>Echipa Metal Direct</p>
           </div>
           <div class="footer">
-            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
-            <p>Acest email a fost trimis automat. Pentru întrebări, te rugăm să răspunzi la acest mesaj.</p>
+            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
           </div>
         </div>
       </body>
@@ -361,9 +342,6 @@ export class EmailService {
     await this.sendEmail(rfq.email, subject, html, 'RFQ Acknowledgment');
   }
 
-  /**
-   * Send quote ready notification to customer
-   */
   async sendQuoteReady(quote: QuoteData): Promise<void> {
     const subject = `Ofertă Pregătită - ${quote.referenceNumber}`;
     const html = `
@@ -386,7 +364,7 @@ export class EmailService {
       <body>
         <div class="container">
           <div class="header">
-            <h1>✅ Oferta Ta Este Gata!</h1>
+            <h1>Oferta Ta Este Gata!</h1>
           </div>
           <div class="content">
             <p>Bună ${quote.contactPerson},</p>
@@ -401,22 +379,22 @@ export class EmailService {
             </div>
 
             <p>Descarcă oferta detaliată:</p>
-            <a href="${quote.pdfUrl}" class="button">📄 Descarcă Oferta PDF</a>
+            <a href="${quote.pdfUrl}" class="button">Descarcă Oferta PDF</a>
 
             <p style="margin-top: 30px;">
               Pentru detalii sau modificări, te rugăm să ne contactezi telefonic sau să răspunzi acestui email.
             </p>
 
             <p style="background-color: #cfe2ff; padding: 15px; border-left: 4px solid #0d6efd; margin: 20px 0;">
-              <strong>📞 Contact:</strong><br/>
+              <strong>Contact:</strong><br/>
               Email: ${OPERATOR_EMAIL}<br/>
               Telefon: +40 XXX XXX XXX
             </p>
 
-            <p>Cu stimă,<br/>Echipa MetalPro</p>
+            <p>Cu stimă,<br/>Echipa Metal Direct</p>
           </div>
           <div class="footer">
-            <p>MetalPro - Partenerul tău pentru materiale metalice</p>
+            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
           </div>
         </div>
       </body>
@@ -426,69 +404,47 @@ export class EmailService {
     await this.sendEmail(quote.email, subject, html, 'Quote Ready');
   }
 
-  /**
-   * Internal method to send email via AWS SES
-   */
   private async sendEmail(to: string, subject: string, html: string, type: string): Promise<void> {
     try {
-      if (!this.sesClient) {
-        // Development mode: Log to console instead of sending
+      if (!this.transporter) {
         console.log('\n===========================================');
-        console.log(`📧 [EMAIL - ${type}] Would send email via SES:`);
+        console.log(`📧 [EMAIL - ${type}] Would send email via Zoho:`);
         console.log(`To: ${to}`);
-        console.log(`From: ${SES_FROM_EMAIL}`);
+        console.log(`From: ${ZOHO_MAIL_USER}`);
         console.log(`Subject: ${subject}`);
         console.log('===========================================\n');
         return;
       }
 
-      // Production mode: Send via AWS SES
-      const command = new SendEmailCommand({
-        Source: `MetalPro <${SES_FROM_EMAIL}>`,
-        Destination: {
-          ToAddresses: [to],
-        },
-        Message: {
-          Subject: {
-            Data: subject,
-            Charset: 'UTF-8',
-          },
-          Body: {
-            Html: {
-              Data: html,
-              Charset: 'UTF-8',
-            },
-          },
-        },
+      const info = await this.transporter.sendMail({
+        from: `Metal Direct <${ZOHO_MAIL_USER}>`,
+        to: to,
+        subject: subject,
+        html: html,
       });
 
-      const response = await this.sesClient.send(command);
-      console.log(`✅ Email sent successfully via SES: ${type} to ${to} (Message ID: ${response.MessageId})`);
+      console.log(`✅ Email sent via Zoho: ${type} to ${to} (ID: ${info.messageId})`);
     } catch (error) {
-      console.error(`❌ Error sending email via SES (${type}):`, error);
-      throw new Error(`Failed to send ${type} email via SES`);
+      console.error(`❌ Error sending email (${type}):`, error);
+      throw new Error(`Failed to send ${type} email`);
     }
   }
 
-  /**
-   * Verify SES configuration (useful for testing)
-   */
   async verifyConnection(): Promise<boolean> {
-    if (!this.sesClient) {
-      console.log('⚠️  No AWS SES client configured (development mode)');
+    if (!this.transporter) {
+      console.log('⚠️ No Zoho SMTP transporter configured (development mode)');
       return false;
     }
 
     try {
-      // You can add a test email send here if needed
-      console.log('✅ AWS SES client is configured and ready');
+      await this.transporter.verify();
+      console.log('✅ Zoho SMTP connection verified');
       return true;
     } catch (error) {
-      console.error('❌ AWS SES configuration verification failed:', error);
+      console.error('❌ Zoho SMTP verification failed:', error);
       return false;
     }
   }
 }
 
-// Export singleton instance
 export const emailService = new EmailService();
