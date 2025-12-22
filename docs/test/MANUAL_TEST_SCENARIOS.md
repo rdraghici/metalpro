@@ -11567,3 +11567,286 @@ tail -5 backend/logs/combined.log | jq
 **Next Review**: Before production release
 
 ---
+
+## Phase 11: Email Service (Zoho SMTP)
+
+### Overview
+
+This phase covers manual testing of the transactional email service powered by Zoho Mail SMTP. The system sends two types of emails:
+1. **RFQ Submitted Email** - Sent to customer when they submit an RFQ
+2. **RFQ Quoted Email** - Sent to customer when backoffice changes RFQ status to "Quoted"
+
+**Email Service Configuration:**
+- SMTP Host: smtp.zoho.eu
+- SMTP Port: 465 (SSL)
+- From Address: no-reply@metal-direct.ro
+
+---
+
+### Test Scenario 11.1: RFQ Submitted Email - Development Mode
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running in development mode (no ZOHO_MAIL_PASSWORD set)
+- User is on the RFQ submission page with items in cart
+
+**When**: User completes and submits an RFQ
+
+**Then**:
+- [ ] Backend logs show email details to console:
+  ```
+  ===========================================
+  📧 [EMAIL - RFQ Submitted]
+  To: customer@email.com
+  From: no-reply@metal-direct.ro
+  Subject: Confirmare cerere ofertă RFQ-2025-XXXX - Metal Direct
+  ===========================================
+  ```
+- [ ] RFQ is created successfully in database
+- [ ] User sees success confirmation page
+- [ ] No actual email is sent (development mode)
+
+---
+
+### Test Scenario 11.2: RFQ Submitted Email - Production Mode
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running with ZOHO_MAIL_PASSWORD configured
+- User is on the RFQ submission page with items in cart
+
+**When**: User completes and submits an RFQ
+
+**Then**:
+- [ ] Backend logs show: `✅ Email sent: RFQ Submitted to customer@email.com (ID: xxx)`
+- [ ] Customer receives email at provided address
+- [ ] Email contains:
+  - [ ] Subject: "Confirmare cerere ofertă RFQ-2025-XXXX - Metal Direct"
+  - [ ] Greeting with customer's contact person name
+  - [ ] RFQ reference number
+  - [ ] Table with products (columns: Produs, Cantitate, Preț estimat)
+  - [ ] Total estimated amount
+  - [ ] Metal Direct branding (blue header #1e40af)
+- [ ] Product names display correctly (not "Product UUID")
+- [ ] Quantities and prices are formatted correctly
+
+---
+
+### Test Scenario 11.3: RFQ Quoted Email - Development Mode
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running in development mode
+- An RFQ exists with status "SUBMITTED"
+- Operator is logged into backoffice
+
+**When**: Operator changes RFQ status to "QUOTED"
+
+**Then**:
+- [ ] Backend logs show email details to console:
+  ```
+  ===========================================
+  📧 [EMAIL - RFQ Quoted]
+  To: customer@email.com
+  From: no-reply@metal-direct.ro
+  Subject: Oferta RFQ-2025-XXXX este gata - Metal Direct
+  ===========================================
+  ```
+- [ ] RFQ status is updated to QUOTED in database
+- [ ] quotedAt timestamp is set
+- [ ] No actual email is sent (development mode)
+
+---
+
+### Test Scenario 11.4: RFQ Quoted Email - Production Mode
+
+**Priority**: Critical
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running with ZOHO_MAIL_PASSWORD configured
+- An RFQ exists with status "SUBMITTED" and pricing set
+- Operator is logged into backoffice
+
+**When**: Operator changes RFQ status to "QUOTED"
+
+**Then**:
+- [ ] Backend logs show: `✅ Email sent: RFQ Quoted to customer@email.com (ID: xxx)`
+- [ ] Customer receives email at provided address
+- [ ] Email contains:
+  - [ ] Subject: "Oferta RFQ-2025-XXXX este gata - Metal Direct"
+  - [ ] Greeting with customer's contact person name
+  - [ ] RFQ reference number
+  - [ ] Table with products (columns: Produs, Cantitate, Preț final)
+  - [ ] Final total amount
+  - [ ] Metal Direct branding (green header #166534)
+  - [ ] Call-to-action to contact for order confirmation
+- [ ] Final prices (if set) are displayed, otherwise gross prices
+
+---
+
+### Test Scenario 11.5: Email Not Sent on Non-QUOTED Status Change
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: 
+- An RFQ exists with status "SUBMITTED"
+- Operator is logged into backoffice
+
+**When**: Operator changes RFQ status to "ACKNOWLEDGED" or "IN_PROGRESS"
+
+**Then**:
+- [ ] RFQ status is updated successfully
+- [ ] NO email is sent to customer
+- [ ] No email-related logs appear in console
+
+---
+
+### Test Scenario 11.6: Email Not Sent on Repeated QUOTED Status
+
+**Priority**: High
+**Estimated Time**: 3 minutes
+
+**Given**: 
+- An RFQ exists with status already "QUOTED"
+- Operator is logged into backoffice
+
+**When**: Operator saves the RFQ without changing status (or changes other fields)
+
+**Then**:
+- [ ] RFQ is updated successfully
+- [ ] NO duplicate email is sent to customer
+- [ ] Email is only sent on first transition to QUOTED
+
+---
+
+### Test Scenario 11.7: Email Service Initialization Check
+
+**Priority**: Medium
+**Estimated Time**: 2 minutes
+
+**Given**: Backend server is starting up
+
+**When**: Server initialization completes
+
+**Then** (Development Mode - no password):
+- [ ] Logs show: `📧 Email service running in DEVELOPMENT mode (no Zoho credentials)`
+- [ ] Logs show: `📧 Emails will be logged to console instead of being sent`
+
+**Then** (Production Mode - password set):
+- [ ] Logs show: `📧 Email service initialized with Zoho SMTP (smtp.zoho.eu)`
+
+---
+
+### Test Scenario 11.8: Email Failure Handling
+
+**Priority**: High
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running with invalid ZOHO_MAIL_PASSWORD
+- User submits an RFQ
+
+**When**: Email sending fails
+
+**Then**:
+- [ ] RFQ is still created successfully (email failure doesn't block RFQ creation)
+- [ ] Error is logged: `❌ Error sending email (RFQ Submitted): ...`
+- [ ] User still sees success confirmation
+- [ ] No crash or unhandled exception
+
+---
+
+### Test Scenario 11.9: Email Content - Romanian Characters
+
+**Priority**: Medium
+**Estimated Time**: 3 minutes
+
+**Given**: 
+- Backend is running in production mode
+- Product names contain Romanian characters (ă, â, î, ș, ț)
+
+**When**: RFQ is submitted with products having Romanian names
+
+**Then**:
+- [ ] Email displays Romanian characters correctly
+- [ ] No encoding issues (no mojibake like Ã¢ or â€)
+- [ ] Product name example: "Țeavă rectangulară 100x60x3mm" displays correctly
+
+---
+
+### Test Scenario 11.10: Email Test Endpoints (Development Only)
+
+**Priority**: Low
+**Estimated Time**: 5 minutes
+
+**Given**: 
+- Backend is running
+- Test endpoints are available at /api/email-test/*
+
+**When**: POST request to /api/email-test/rfq-submitted with body:
+```json
+{ "email": "test@example.com" }
+```
+
+**Then**:
+- [ ] Response: `{ "success": true, "message": "Email RFQ Submitted sent (or logged to console)" }`
+- [ ] Email is sent/logged to specified address
+
+**When**: POST request to /api/email-test/rfq-quoted with body:
+```json
+{ "email": "test@example.com" }
+```
+
+**Then**:
+- [ ] Response: `{ "success": true, "message": "Email RFQ Quoted sent (or logged to console)" }`
+- [ ] Email is sent/logged to specified address
+
+---
+
+## Phase 11 Test Summary
+
+**Total Test Scenarios**: 10 scenarios
+
+### By Priority:
+- **Critical**: 4 scenarios (11.1-11.4 - Core email sending functionality)
+- **High**: 3 scenarios (11.5, 11.6, 11.8 - Edge cases and error handling)
+- **Medium**: 2 scenarios (11.7, 11.9 - Initialization and encoding)
+- **Low**: 1 scenario (11.10 - Test endpoints)
+
+### By Feature Area:
+- **RFQ Submitted Email**: 2 scenarios (11.1, 11.2)
+- **RFQ Quoted Email**: 2 scenarios (11.3, 11.4)
+- **Email Logic**: 2 scenarios (11.5, 11.6)
+- **Error Handling**: 1 scenario (11.8)
+- **Service Configuration**: 1 scenario (11.7)
+- **Content Quality**: 1 scenario (11.9)
+- **Test Utilities**: 1 scenario (11.10)
+
+### Test Coverage:
+- [x] Email sending in development mode (console logging)
+- [x] Email sending in production mode (actual delivery)
+- [x] RFQ Submitted email content and formatting
+- [x] RFQ Quoted email content and formatting
+- [x] Email trigger conditions (only on QUOTED transition)
+- [x] Email service initialization
+- [x] Error handling and graceful degradation
+- [x] Romanian character encoding
+- [x] Test endpoints for manual verification
+
+### Environment Requirements:
+- **Development Testing**: No special config needed (emails logged to console)
+- **Production Testing**: Requires ZOHO_MAIL_PASSWORD in environment
+
+**Estimated Total Testing Time**: ~40 minutes
+
+**Last Updated**: December 22, 2025
+
+---

@@ -1,6 +1,7 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { rfqService, CreateRFQData } from '../services/rfq.service';
 import { authenticate, optionalAuth } from '../middleware/auth.middleware';
+import { emailService } from '../services/email.service';
 import logger from '../config/logger';
 
 const router = Router();
@@ -87,6 +88,26 @@ router.post('/', optionalAuth, async (req: Request, res: Response, next: NextFun
       itemCount: items.length,
       estimatedTotal,
     });
+
+    // Send confirmation email to customer
+    try {
+      await emailService.sendRFQSubmittedEmail({
+        referenceNumber: rfq.referenceNumber,
+        customerEmail: rfq.email,
+        contactPerson: rfq.contactPerson,
+        companyName: rfq.companyName,
+        items: items.map(item => ({
+          productSku: item.productSku,
+          productName: item.productName,
+          quantity: item.quantity,
+          unit: item.unit,
+          grossPrice: item.grossPrice,
+        })),
+        estimatedTotal: rfq.estimatedTotal || estimatedTotal,
+      });
+    } catch (emailError) {
+      logger.error('Failed to send RFQ confirmation email', { error: emailError });
+    }
 
     res.status(201).json({
       success: true,

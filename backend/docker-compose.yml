@@ -68,12 +68,12 @@ services:
       BACKEND_URL: ${BACKEND_URL:-http://localhost:3001}
       UPLOAD_DIR: uploads
       ANAF_API_URL: https://webservicesp.anaf.ro/PlatitorTvaRest/api/v8/ws/tva
-      # AWS SES (Email Service)
-      AWS_REGION: ${AWS_REGION:-us-east-1}
-      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
-      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
-      SES_FROM_EMAIL: ${SES_FROM_EMAIL:-noreply@metalpro.ro}
-      OPERATOR_EMAIL: ${OPERATOR_EMAIL:-sales@metalpro.ro}
+      # Email Service (Zoho Mail via SMTP)
+      ZOHO_SMTP_HOST: ${ZOHO_SMTP_HOST:-smtp.zoho.eu}
+      ZOHO_SMTP_PORT: ${ZOHO_SMTP_PORT:-465}
+      ZOHO_MAIL_USER: ${ZOHO_MAIL_USER:-no-reply@metal-direct.ro}
+      ZOHO_MAIL_PASSWORD: ${ZOHO_MAIL_PASSWORD:-}
+      ZOHO_OPERATOR_EMAIL: ${ZOHO_OPERATOR_EMAIL:-sales@metal-direct.ro}
       # Logging
       LOG_LEVEL: ${LOG_LEVEL:-info}
     volumes:

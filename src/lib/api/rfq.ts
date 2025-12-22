@@ -28,15 +28,25 @@ export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQ
     const token = getAuthToken();
 
     // Prepare items for backend
-    const items = data.cartSnapshot.lines.map((line) => ({
-      productId: line.productId,
-      productSku: line.product?.sku || `SKU-${line.productId}`,
-      productName: line.product?.name || `Product ${line.productId}`,
-      quantity: line.quantity,
-      unit: line.unit,
-      specs: line.specs,
-      grossPrice: line.indicativeSubtotal || 0,
-    }));
+    const items = data.cartSnapshot.lines.map((line) => {
+      // Debug: log product info to verify title is being captured
+      console.log('📦 Cart line product:', {
+        productId: line.productId,
+        hasProduct: !!line.product,
+        title: line.product?.title,
+        sku: line.product?.sku,
+      });
+
+      return {
+        productId: line.productId,
+        productSku: line.product?.sku || `SKU-${line.productId}`,
+        productName: line.product?.title || `Product ${line.productId}`,
+        quantity: line.quantity,
+        unit: line.unit,
+        specs: line.specs,
+        grossPrice: line.indicativeSubtotal || 0,
+      };
+    });
 
     // Calculate estimated total
     const estimatedTotal = data.cartSnapshot.totals.grandTotal;

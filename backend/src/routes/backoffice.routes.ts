@@ -3,6 +3,7 @@ import { prisma } from '../config/database';
 import { authenticate, requireBackoffice } from '../middleware/auth.middleware';
 import logger from '../config/logger';
 import backofficeProductRoutes from './backoffice-product.routes';
+import { emailService } from '../services/email.service';
 
 const router = Router();
 
@@ -226,6 +227,30 @@ router.patch('/rfqs/:id/status', async (req: Request, res: Response, next: NextF
       status,
       updatedBy: (req as any).user.id,
     });
+
+    // Send email when status changes to QUOTED
+    if (status === 'QUOTED' && currentRFQ.status !== 'QUOTED') {
+      try {
+        await emailService.sendRFQQuotedEmail({
+          referenceNumber: rfq.referenceNumber,
+          customerEmail: rfq.email,
+          contactPerson: rfq.contactPerson,
+          companyName: rfq.companyName,
+          items: rfq.items.map(item => ({
+            productSku: item.productSku,
+            productName: item.productName,
+            quantity: item.quantity,
+            unit: item.unit,
+            grossPrice: item.grossPrice,
+            finalPrice: item.finalPrice || undefined,
+          })),
+          finalTotal: rfq.finalQuoteAmount || rfq.estimatedTotal || 0,
+        });
+        logger.info('RFQ Quoted email sent', { rfqId: id, email: rfq.email });
+      } catch (emailError) {
+        logger.error('Failed to send RFQ quoted email', { error: emailError });
+      }
+    }
 
     res.json({
       success: true,

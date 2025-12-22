@@ -234,42 +234,31 @@ export class BackofficeRFQService {
       },
     });
 
-    // Send email notifications based on status change
-    try {
-      // Send acknowledgment email when status changes to ACKNOWLEDGED
-      if (data.status === RFQStatus.ACKNOWLEDGED && oldStatus !== RFQStatus.ACKNOWLEDGED) {
-        await emailService.sendRFQAcknowledgment({
-          id: updatedRFQ.id,
-          referenceNumber: updatedRFQ.referenceNumber,
-          companyName: updatedRFQ.companyName,
-          cui: updatedRFQ.cui || undefined,
-          contactPerson: updatedRFQ.contactPerson,
-          email: updatedRFQ.email,
-          phone: updatedRFQ.phone,
-          estimatedTotal: updatedRFQ.estimatedTotal || undefined,
-          deliveryDate: updatedRFQ.deliveryDate
-            ? updatedRFQ.deliveryDate.toISOString().split('T')[0]
-            : undefined,
+    // Send email when status changes to QUOTED
+    if (data.status === RFQStatus.QUOTED && oldStatus !== RFQStatus.QUOTED) {
+      try {
+        const rfqItems = await prisma.rFQItem.findMany({
+          where: { rfqId: id },
         });
-      }
 
-      // Send quote ready email when status changes to QUOTED and has pricing
-      if (
-        data.status === RFQStatus.QUOTED &&
-        oldStatus !== RFQStatus.QUOTED &&
-        updatedRFQ.finalQuoteAmount
-      ) {
-        await emailService.sendQuoteReady({
+        await emailService.sendRFQQuotedEmail({
           referenceNumber: updatedRFQ.referenceNumber,
+          customerEmail: updatedRFQ.email,
           contactPerson: updatedRFQ.contactPerson,
-          email: updatedRFQ.email,
-          finalQuoteAmount: updatedRFQ.finalQuoteAmount,
-          pdfUrl: `${process.env.FRONTEND_URL}/rfq/${updatedRFQ.id}/quote`, // Placeholder URL
+          companyName: updatedRFQ.companyName,
+          items: rfqItems.map(item => ({
+            productSku: item.productSku,
+            productName: item.productName,
+            quantity: item.quantity,
+            unit: item.unit,
+            grossPrice: item.grossPrice,
+            finalPrice: item.finalPrice || undefined,
+          })),
+          finalTotal: updatedRFQ.finalQuoteAmount || updatedRFQ.estimatedTotal || 0,
         });
+      } catch (emailError) {
+        console.error('Failed to send RFQ quoted email:', emailError);
       }
-    } catch (emailError) {
-      // Log email error but don't fail the status update
-      console.error('Failed to send status change email:', emailError);
     }
 
     return updatedRFQ;
