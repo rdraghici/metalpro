@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -31,11 +32,12 @@ const Footer = () => {
           <div>
             <h3 className="font-semibold mb-4">{t('footer.main_categories')}</h3>
             <div className="space-y-2 text-sm text-secondary-foreground/80">
-              <p>{t('footer.category_profiles')}</p>
-              <p>{t('footer.category_plates')}</p>
-              <p>{t('footer.category_pipes')}</p>
-              <p>{t('footer.category_fasteners')}</p>
-              <p>{t('footer.category_stainless')}</p>
+              <Link to="/catalog/profiles" className="block hover:text-primary transition-colors">Profile Metalice</Link>
+              <Link to="/catalog/plates" className="block hover:text-primary transition-colors">Table de Oțel</Link>
+              <Link to="/catalog/pipes" className="block hover:text-primary transition-colors">Țevi și Tuburi</Link>
+              <Link to="/catalog/fasteners" className="block hover:text-primary transition-colors">Elemente de Fixare</Link>
+              <Link to="/catalog/stainless" className="block hover:text-primary transition-colors">Inox</Link>
+              <Link to="/catalog/nonferrous" className="block hover:text-primary transition-colors">Metale Neferoase</Link>
             </div>
           </div>
 
@@ -72,7 +74,7 @@ const Footer = () => {
                   className="hover:text-primary transition-colors"
                   onClick={() => analytics.trackContactClick('email')}
                 >
-                  vanzari@metal-direct.ro
+                  sales@metal-direct.ro
                 </a>
               </div>
               <div className="flex items-center gap-3 text-sm">
