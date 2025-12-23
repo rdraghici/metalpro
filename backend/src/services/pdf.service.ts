@@ -49,25 +49,27 @@ interface QuotePDFData {
 
 const TECHNICAL_CONDITIONS_RO = {
   title: removeDiacritics('2. Conditii tehnice'),
-  intro: removeDiacritics(`Executia cofectiilor metalice se va realiza in baza documentatiei complete: piese desenate, inclusiv detalii, in format dwg si pdf, lista cu subansamble, repere si materiale cu viza "bun pentru executie", caiete de sarcini.`),
-
-  section2_1_title: removeDiacritics('2.1. Conditii tehnice pentru materiale debitate'),
-  section2_1_items: [
-    removeDiacritics('Achizitia de materiale de baza - S235JR, insotite de Certificate de calitate pentru materiale tip: 2.1 - EN 10204 / 3.1 - EN 10204'),
-    removeDiacritics('Toleranta la grosimea tablei - SREN 10029'),
-    removeDiacritics('Aspect exterior al suprafetei materialului SREN 10163'),
-    removeDiacritics('Toleranta la debitare oxigaz SREN ISO 9013 cls.2'),
-  ],
-
-  section2_2_title: removeDiacritics('2.2. Conditii tehnice pentru confectii'),
-  section2_2_items: [
-    removeDiacritics('Materiale de aport SREN 10204 (Certificate de calitate)'),
-    removeDiacritics('Clase de calitate a imbinarilor sudate SR EN ISO 5817-C'),
-    removeDiacritics('Tolerante generale pentru structuri sudate SR EN ISO 13920 cls BF'),
-    removeDiacritics('Verificari dimensionale 100%'),
-    removeDiacritics('Controale nedistructive suduri 100% vizual'),
-    removeDiacritics('Clasa de executie EXC2'),
-    removeDiacritics('Protectie anticoroziva - un strat grund si unul de vopsea'),
+  sections: [
+    {
+      title: removeDiacritics('2.1 Domeniu & standarde'),
+      text: removeDiacritics('Materie prima pentru proiecte B2B. Orientativ: EN 10025-2 (S235JR/S355JR), EN 10365 (HEA/HEB/IPE/UNP), EN 10034 (tolerante grinzi), EN 10219/10210 (tevi), EN 10130/10025 (tabla), EN 10088 (inox), EN AW (Al).'),
+    },
+    {
+      title: removeDiacritics('2.2 Tolerante & suprafata'),
+      text: removeDiacritics('Greutatile sunt teoretice (p~7,85 t/m3); abateri conforme standardelor. Lungimi comerciale; debitari la cerere (uzual +/-2-3 mm mecanic; taieri termice au tolerante specifice). Urmele de laminare/formare sunt normale.'),
+    },
+    {
+      title: removeDiacritics('2.3 Certificare & trasabilitate'),
+      text: removeDiacritics('La cerere/unde se aplica: EN 10204 - 3.1 per lot (heat/batch); marcajele de pachet se mentin pana la receptie.'),
+    },
+    {
+      title: removeDiacritics('2.4 Livrare & receptie'),
+      text: removeDiacritics('Conform ofertei (Incoterms, termene, unitati: kg/m, kg/buc, m2). Receptie cantitativa/calitativa la descarcare; deteriorarile vizibile se consemneaza pe documentul de transport. Posibile livrari partiale.'),
+    },
+    {
+      title: removeDiacritics('2.5 Limitari'),
+      text: removeDiacritics('Datele tehnice sunt orientative; pot exista variatii in limitele standardelor sau intre furnizori. Proiectarea/montajul revin beneficiarului; Metal-Direct nu garanteaza performanta structurala in utilizare.'),
+    },
   ],
 };
 
@@ -285,14 +287,6 @@ export class PDFService {
       });
 
       yPosition -= 18;
-
-      // Draw row separator
-      firstPage.drawLine({
-        start: { x: leftMargin, y: yPosition + 5 },
-        end: { x: rightMargin, y: yPosition + 5 },
-        thickness: 0.5,
-        color: rgb(0.8, 0.8, 0.8),
-      });
     });
 
     // Total row
@@ -356,77 +350,44 @@ export class PDFService {
     primaryBlue: any
   ): number {
     let yPosition = startY;
-    const lineHeight = 14;
-    const sectionGap = 20;
+    const lineHeight = 12;
+    const sectionGap = 16;
 
-    // Section title
+    // Main title
     page.drawText(TECHNICAL_CONDITIONS_RO.title, {
       x: leftMargin,
       y: yPosition,
-      size: 12,
+      size: 11,
       font: helveticaBold,
       color: primaryBlue,
     });
     yPosition -= sectionGap;
 
-    // Intro text (wrap manually)
-    const introLines = this.wrapText(TECHNICAL_CONDITIONS_RO.intro, 90);
-    introLines.forEach(line => {
-      page.drawText(line, {
+    // Draw each section
+    TECHNICAL_CONDITIONS_RO.sections.forEach((section) => {
+      // Section title
+      page.drawText(section.title, {
         x: leftMargin,
         y: yPosition,
         size: 9,
-        font: helvetica,
+        font: helveticaBold,
         color: textBlack,
       });
       yPosition -= lineHeight;
-    });
-    yPosition -= 10;
 
-    // Section 2.1
-    page.drawText(TECHNICAL_CONDITIONS_RO.section2_1_title, {
-      x: leftMargin,
-      y: yPosition,
-      size: 10,
-      font: helveticaBold,
-      color: textBlack,
-    });
-    yPosition -= lineHeight + 2;
-
-    TECHNICAL_CONDITIONS_RO.section2_1_items.forEach(item => {
-      const lines = this.wrapText(`- ${item}`, 95);
-      lines.forEach((line, idx) => {
-        page.drawText(idx === 0 ? line : `  ${line}`, {
+      // Section text (wrap)
+      const lines = this.wrapText(section.text, 95);
+      lines.forEach((line) => {
+        page.drawText(line, {
           x: leftMargin,
           y: yPosition,
-          size: 9,
+          size: 8,
           font: helvetica,
           color: textBlack,
         });
-        yPosition -= lineHeight;
+        yPosition -= lineHeight - 2;
       });
-    });
-    yPosition -= 10;
-
-    // Section 2.2
-    page.drawText(TECHNICAL_CONDITIONS_RO.section2_2_title, {
-      x: leftMargin,
-      y: yPosition,
-      size: 10,
-      font: helveticaBold,
-      color: textBlack,
-    });
-    yPosition -= lineHeight + 2;
-
-    TECHNICAL_CONDITIONS_RO.section2_2_items.forEach(item => {
-      page.drawText(`- ${item}`, {
-        x: leftMargin,
-        y: yPosition,
-        size: 9,
-        font: helvetica,
-        color: textBlack,
-      });
-      yPosition -= lineHeight;
+      yPosition -= 6;
     });
 
     return yPosition;
