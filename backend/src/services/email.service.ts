@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { pdfService } from './pdf.service';
 
 const ZOHO_SMTP_HOST = process.env.ZOHO_SMTP_HOST || 'smtp.zoho.eu';
 const ZOHO_SMTP_PORT = parseInt(process.env.ZOHO_SMTP_PORT || '465');
@@ -125,6 +126,7 @@ export class EmailService {
 
   /**
    * Email 2: Sent when RFQ status changes to QUOTED in backoffice
+   * Includes PDF attachment with the formal quote
    */
   async sendRFQQuotedEmail(data: RFQQuotedData): Promise<void> {
     const itemsHtml = data.items.map(item => {
@@ -171,7 +173,8 @@ export class EmailService {
               <strong style="font-size: 18px;">Total: ${data.finalTotal.toFixed(2)} RON</strong>
             </div>
 
-            <p style="margin-top: 20px;">Pentru întrebări sau pentru a confirma comanda, te rugăm să ne contactezi.</p>
+            <p style="margin-top: 20px;"><strong>📎 Atașat găsiți oferta în format PDF.</strong></p>
+            <p>Pentru întrebări sau pentru a confirma comanda, te rugăm să ne contactezi.</p>
             <p>Cu stimă,<br/>Echipa Metal Direct</p>
           </div>
 
@@ -183,10 +186,52 @@ export class EmailService {
       </html>
     `;
 
-    await this.sendEmail(data.customerEmail, subject, html, 'RFQ Quoted');
+    // Generate PDF attachment
+    let pdfBuffer: Buffer | null = null;
+    try {
+      pdfBuffer = await pdfService.generateQuotePDF({
+        referenceNumber: data.referenceNumber,
+        companyName: data.companyName,
+        contactPerson: data.contactPerson,
+        items: data.items.map(item => ({
+          productName: item.productName,
+          quantity: item.quantity,
+          unit: item.unit,
+          finalPrice: item.finalPrice ?? item.grossPrice,
+        })),
+        finalTotal: data.finalTotal,
+        quoteDate: new Date(),
+      });
+      console.log(`📄 PDF generated for ${data.referenceNumber}`);
+    } catch (pdfError) {
+      console.error('❌ Failed to generate PDF:', pdfError);
+      // Continue without PDF attachment
+    }
+
+    await this.sendEmailWithAttachment(
+      data.customerEmail,
+      subject,
+      html,
+      'RFQ Quoted',
+      pdfBuffer ? [{
+        filename: `${data.referenceNumber}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      }] : []
+    );
   }
 
   private async sendEmail(to: string, subject: string, html: string, type: string): Promise<void> {
+    await this.sendEmailWithAttachment(to, subject, html, type, []);
+  }
+
+  private async sendEmailWithAttachment(
+    to: string,
+    subject: string,
+    html: string,
+    type: string,
+    attachments: Array<{ filename: string; content: Buffer; contentType: string }>
+  ): Promise<void> {
     try {
       if (!this.transporter) {
         console.log('\n===========================================');
@@ -194,6 +239,9 @@ export class EmailService {
         console.log(`To: ${to}`);
         console.log(`From: ${ZOHO_MAIL_USER}`);
         console.log(`Subject: ${subject}`);
+        if (attachments.length > 0) {
+          console.log(`Attachments: ${attachments.map(a => a.filename).join(', ')}`);
+        }
         console.log('===========================================\n');
         return;
       }
@@ -203,9 +251,14 @@ export class EmailService {
         to: to,
         subject: subject,
         html: html,
+        attachments: attachments.map(att => ({
+          filename: att.filename,
+          content: att.content,
+          contentType: att.contentType,
+        })),
       });
 
-      console.log(`✅ Email sent: ${type} to ${to} (ID: ${info.messageId})`);
+      console.log(`✅ Email sent: ${type} to ${to} (ID: ${info.messageId})${attachments.length > 0 ? ` with ${attachments.length} attachment(s)` : ''}`);
     } catch (error) {
       console.error(`❌ Error sending email (${type}):`, error);
       throw new Error(`Failed to send ${type} email`);

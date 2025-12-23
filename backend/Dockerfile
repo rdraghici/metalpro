@@ -48,6 +48,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Copy templates (PDF templates for quote generation)
+COPY --from=builder /app/dist/templates ./dist/templates
+
 # Create uploads directory
 RUN mkdir -p uploads
 
