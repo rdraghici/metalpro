@@ -6,7 +6,13 @@ import { useTranslation } from "@/hooks/useTranslation";
 
 const Footer = () => {
   const analytics = useAnalytics();
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
+
+  const downloadDocument = (docType: 'terms' | 'privacy' | 'gdpr') => {
+    const lang = currentLanguage === 'ro' ? 'ro' : 'en';
+    const url = `/documents/${docType}-${lang}.pdf`;
+    window.open(url, '_blank');
+  };
   return (
     <footer className="bg-secondary text-secondary-foreground">
       {/* Main Footer */}
@@ -98,13 +104,25 @@ const Footer = () => {
               {t('footer.copyright')}
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
+              <Button
+                variant="link"
+                className="p-0 h-auto text-white hover:text-gray-200"
+                onClick={() => downloadDocument('terms')}
+              >
                 {t('footer.terms')}
               </Button>
-              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
+              <Button
+                variant="link"
+                className="p-0 h-auto text-white hover:text-gray-200"
+                onClick={() => downloadDocument('privacy')}
+              >
                 {t('footer.privacy')}
               </Button>
-              <Button variant="link" className="p-0 h-auto text-white hover:text-gray-200">
+              <Button
+                variant="link"
+                className="p-0 h-auto text-white hover:text-gray-200"
+                onClick={() => downloadDocument('gdpr')}
+              >
                 {t('footer.gdpr')}
               </Button>
             </div>

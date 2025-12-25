@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { ro } from 'date-fns/locale';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,6 +44,13 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 }) => {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const { currentLanguage } = useTranslation();
+
+  const openTermsDocument = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const lang = currentLanguage === 'ro' ? 'ro' : 'en';
+    window.open(`/documents/terms-${lang}.pdf`, '_blank');
+  }, [currentLanguage]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ro-RO', {
@@ -358,7 +366,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
               </Label>
               <p className="text-xs text-muted-foreground">
                 Prin trimiterea acestei cereri, accept{' '}
-                <a href="#" className="underline">
+                <a href="#" className="underline" onClick={openTermsDocument}>
                   termenii și condițiile
                 </a>{' '}
                 MetalDirect și sunt de acord ca datele mele să fie procesate pentru generarea ofertei.
