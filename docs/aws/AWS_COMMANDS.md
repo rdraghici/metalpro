@@ -412,6 +412,28 @@ aws cloudfront create-invalidation \
   --paths "/*"
 ```
 
+### CloudFront Function (www to apex redirect)
+
+A CloudFront Function is configured to redirect `www.metal-direct.ro` to `metal-direct.ro` for canonical URL consistency.
+
+**Function Name**: `www-to-apex-redirect`
+**Function ARN**: `arn:aws:cloudfront::952956873675:function/www-to-apex-redirect`
+
+**List Functions**
+```bash
+aws cloudfront list-functions --query 'FunctionList.Items[*].{Name:Name,Stage:FunctionMetadata.Stage}'
+```
+
+**Describe Function**
+```bash
+aws cloudfront describe-function --name www-to-apex-redirect
+```
+
+**Get Function Code**
+```bash
+aws cloudfront get-function --name www-to-apex-redirect --stage LIVE --output text --query 'FunctionCode' | base64 -d
+```
+
 ---
 
 ## CloudWatch Logs
@@ -525,12 +547,17 @@ aws s3api put-bucket-cors \
   --bucket metalpro-product-images \
   --cors-configuration '{
     "CORSRules": [{
-      "AllowedOrigins": ["http://localhost:8080", "https://metal-direct.ro"],
+      "AllowedOrigins": [
+        "http://localhost:8080",
+        "https://metal-direct.ro",
+        "https://www.metal-direct.ro"
+      ],
       "AllowedMethods": ["GET", "PUT", "POST", "DELETE"],
       "AllowedHeaders": ["*"],
       "MaxAgeSeconds": 3000
     }]
-  }'
+  }' \
+  --region eu-central-1
 ```
 
 ### Product Image Operations

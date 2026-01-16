@@ -22,6 +22,27 @@ const app: Express = express();
 const PORT = Number(process.env.PORT) || 3001;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 
+// Build allowed origins list (support both www and non-www versions)
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [FRONTEND_URL];
+
+  // Add www variant if not already included
+  if (FRONTEND_URL.includes('://') && !FRONTEND_URL.includes('localhost')) {
+    const url = new URL(FRONTEND_URL);
+    if (url.hostname.startsWith('www.')) {
+      // Add non-www version
+      origins.push(FRONTEND_URL.replace('www.', ''));
+    } else {
+      // Add www version
+      origins.push(FRONTEND_URL.replace('://', '://www.'));
+    }
+  }
+
+  return origins;
+};
+
+const allowedOrigins = getAllowedOrigins();
+
 // =====================================================
 // MIDDLEWARE
 // =====================================================
@@ -36,10 +57,26 @@ app.use(
   })
 );
 
-// CORS configuration
+// CORS configuration - allow both www and non-www origins
 app.use(
   cors({
-    origin: FRONTEND_URL,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, Postman, server-to-server)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Log rejected origins in development
+      if (process.env.NODE_ENV === 'development') {
+        console.warn(`CORS: Rejected origin ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -68,7 +105,12 @@ app.use(requestLogger);
 // Serve static files from uploads directory with CORS headers
 const uploadDir = process.env.UPLOAD_DIR || 'uploads';
 app.use('/uploads', (req: Request, res: Response, next: NextFunction) => {
-  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
+  // Check if request origin is in allowed list, otherwise use primary FRONTEND_URL
+  const requestOrigin = req.get('Origin');
+  const corsOrigin = requestOrigin && allowedOrigins.includes(requestOrigin)
+    ? requestOrigin
+    : FRONTEND_URL;
+  res.header('Access-Control-Allow-Origin', corsOrigin);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -258,6 +300,7 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(banner);
   console.log(`📡 Server running on: http://0.0.0.0:${PORT}`);
   console.log(`🌐 Frontend URL: ${FRONTEND_URL}`);
+  console.log(`🔒 CORS Allowed Origins: ${allowedOrigins.join(', ')}`);
   console.log(`🏭 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🗄️  Database: PostgreSQL (metalpro)`);
   console.log(`💾 Cache: Redis`);
@@ -273,6 +316,7 @@ app.listen(PORT, '0.0.0.0', () => {
     port: PORT,
     environment: process.env.NODE_ENV || 'development',
     frontendUrl: FRONTEND_URL,
+    allowedOrigins,
   });
 });
 
