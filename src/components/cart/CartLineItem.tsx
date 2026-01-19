@@ -13,6 +13,7 @@ import {
 import { Trash2, Package, Weight, Edit2, Check, X } from 'lucide-react';
 import type { CartLine, Unit } from '@/types/cart';
 import { useCart } from '@/context/CartContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CartLineItemProps {
   line: CartLine;
@@ -21,6 +22,7 @@ interface CartLineItemProps {
 
 const CartLineItem: React.FC<CartLineItemProps> = ({ line, editable = true }) => {
   const { updateCartLine, removeCartLine } = useCart();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [editedQuantity, setEditedQuantity] = useState(line.quantity);
   const [editedUnit, setEditedUnit] = useState<Unit>(line.unit);
@@ -108,7 +110,7 @@ const CartLineItem: React.FC<CartLineItemProps> = ({ line, editable = true }) =>
           {/* Cut List Summary */}
           {line.specs.cutList && line.specs.cutList.length > 0 && (
             <div className="text-xs text-muted-foreground">
-              <strong>Debitări:</strong> {line.specs.cutList.length} poziții
+              <strong>{t('cart.cuts_label')}</strong> {line.specs.cutList.length} {t('cart.cuts_positions')}
               {' • '}
               Total:{' '}
               {line.specs.cutList.reduce((sum, cut) => sum + cut.lengthM * cut.qty, 0).toFixed(1)}
@@ -132,10 +134,10 @@ const CartLineItem: React.FC<CartLineItemProps> = ({ line, editable = true }) =>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="m">Metri (m)</SelectItem>
-                  <SelectItem value="kg">Kilograme (kg)</SelectItem>
-                  <SelectItem value="pcs">Bucăți (buc)</SelectItem>
-                  <SelectItem value="bundle">Pachet</SelectItem>
+                  <SelectItem value="m">{t('cart.unit_meters')}</SelectItem>
+                  <SelectItem value="kg">{t('cart.unit_kilograms')}</SelectItem>
+                  <SelectItem value="pcs">{t('cart.unit_pieces')}</SelectItem>
+                  <SelectItem value="bundle">{t('cart.unit_bundle')}</SelectItem>
                 </SelectContent>
               </Select>
               <Button size="sm" variant="ghost" onClick={handleSaveEdit}>
@@ -148,7 +150,7 @@ const CartLineItem: React.FC<CartLineItemProps> = ({ line, editable = true }) =>
           ) : (
             <div className="flex items-center gap-2 text-sm">
               <span className="font-medium">
-                Cantitate: {line.quantity} {line.unit}
+                {t('cart.quantity_label')} {line.quantity} {line.unit}
               </span>
               {editable && (
                 <Button
@@ -197,7 +199,7 @@ const CartLineItem: React.FC<CartLineItemProps> = ({ line, editable = true }) =>
               className="w-full mt-2"
             >
               <Trash2 className="h-4 w-4 mr-1" />
-              Șterge
+              {t('cart.remove_item')}
             </Button>
           )}
         </div>

@@ -4,6 +4,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Package } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { CartTotals } from '@/types/cart';
 
 interface TotalsPanelProps {
@@ -21,6 +22,8 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
   onDisclaimerChange,
   showDisclaimer = true,
 }) => {
+  const { t } = useTranslation();
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ro-RO', {
       style: 'decimal',
@@ -34,13 +37,13 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
       <CardHeader>
         <CardTitle className="text-lg flex items-center gap-2">
           <Package className="h-5 w-5" />
-          Total Estimare
+          {t('cart.totals_title')}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Weight */}
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">Greutate totală estimată:</span>
+          <span className="text-muted-foreground">{t('cart.total_estimated_weight')}</span>
           <span className="font-medium">{formatCurrency(totals.estWeightKg)} kg</span>
         </div>
 
@@ -49,7 +52,7 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
         {/* Price Breakdown */}
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Subtotal produse:</span>
+            <span className="text-muted-foreground">{t('cart.subtotal_products')}</span>
             <span className="font-medium">
               {formatCurrency(totals.estSubtotal)} {currency}
             </span>
@@ -57,7 +60,7 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
 
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">
-              TVA ({((totals.vatRate || 0.19) * 100).toFixed(0)}%):
+              {t('cart.vat_percent').replace('{{percent}}', ((totals.vatRate || 0.19) * 100).toFixed(0))}
             </span>
             <span className="font-medium">
               {formatCurrency(totals.vatIndicative || 0)} {currency}
@@ -65,7 +68,7 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
           </div>
 
           <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Livrare estimată:</span>
+            <span className="text-muted-foreground">{t('cart.estimated_delivery')}</span>
             <span className="font-medium text-xs">{totals.deliveryFeeBand}</span>
           </div>
         </div>
@@ -74,7 +77,7 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
 
         {/* Grand Total */}
         <div className="flex justify-between text-lg font-bold">
-          <span>Total estimativ:</span>
+          <span>{t('cart.estimated_total_label')}</span>
           <span className="text-primary">
             {formatCurrency(totals.grandTotal || 0)} {currency}
           </span>
@@ -87,9 +90,8 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
             <Alert variant="default" className="bg-orange-50 border-orange-200">
               <AlertCircle className="h-4 w-4 text-orange-600" />
               <AlertDescription className="text-sm text-orange-800">
-                <strong>Notă importantă:</strong> Prețurile afișate sunt{' '}
-                <strong>strict estimative</strong>. Oferta finală cu prețuri exacte va fi
-                confirmată de echipa noastră de vânzări după procesarea cererii dumneavoastră.
+                <strong>{t('cart.important_note')}</strong> {t('cart.prices_estimated')}{' '}
+                <strong>{t('cart.strictly_estimated')}</strong>{t('cart.final_quote_notice')}
               </AlertDescription>
             </Alert>
 
@@ -105,10 +107,10 @@ const TotalsPanel: React.FC<TotalsPanelProps> = ({
                     htmlFor="disclaimer"
                     className="text-sm font-medium leading-snug cursor-pointer"
                   >
-                    Înțeleg că acestea sunt estimări
+                    {t('cart.understand_estimates')}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Prețurile finale vor fi comunicate de echipa de vânzări.
+                    {t('cart.final_prices_notice')}
                   </p>
                 </div>
               </div>

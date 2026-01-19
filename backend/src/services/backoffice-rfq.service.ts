@@ -237,9 +237,32 @@ export class BackofficeRFQService {
     // Send email when status changes to QUOTED
     if (data.status === RFQStatus.QUOTED && oldStatus !== RFQStatus.QUOTED) {
       try {
+        // Fetch fresh RFQ data with language field explicitly
+        const rfqForEmail = await prisma.rFQ.findUnique({
+          where: { id },
+          select: {
+            language: true,
+            referenceNumber: true,
+            email: true,
+            contactPerson: true,
+            companyName: true,
+            finalQuoteAmount: true,
+            estimatedTotal: true,
+          },
+        });
+
         const rfqItems = await prisma.rFQItem.findMany({
           where: { rfqId: id },
         });
+
+        // Debug: Log language value
+        console.log('🌍 Quoted email language debug:', {
+          rfqId: id,
+          rfqForEmailLanguage: rfqForEmail?.language,
+        });
+
+        // Use the freshly fetched language
+        const emailLanguage = (rfqForEmail?.language as 'ro' | 'en') || 'ro';
 
         await emailService.sendRFQQuotedEmail({
           referenceNumber: updatedRFQ.referenceNumber,
@@ -255,6 +278,7 @@ export class BackofficeRFQService {
             finalPrice: item.finalPrice || undefined,
           })),
           finalTotal: updatedRFQ.finalQuoteAmount || updatedRFQ.estimatedTotal || 0,
+          language: emailLanguage,
         });
       } catch (emailError) {
         console.error('Failed to send RFQ quoted email:', emailError);

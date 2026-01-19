@@ -33,7 +33,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const analytics = useAnalytics();
-  const { t, locale } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const { itemCount, toggleDrawer } = useCart();
   const { user, isGuest, logout } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -212,7 +212,7 @@ const Header = () => {
             {categories.map((category) => (
               <Button key={category.id} variant="ghost" className="text-base font-medium" asChild>
                 <Link to={`/catalog/${category.slug}`}>
-                  {locale === 'en' ? category.nameEn : category.name}
+                  {currentLanguage === 'en' ? category.nameEn : category.name}
                 </Link>
               </Button>
             ))}

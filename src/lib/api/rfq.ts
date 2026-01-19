@@ -20,10 +20,19 @@ function getAuthToken(): string | null {
  *
  * @param data - Complete RFQ form data
  * @param userId - User ID if logged in (optional)
+ * @param language - Language for emails/PDFs ('ro' or 'en')
  * @returns Promise with submission response
  */
-export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQSubmissionResponse> {
+export async function submitRFQ(data: RFQFormData, userId?: string, language: 'ro' | 'en' = 'ro'): Promise<RFQSubmissionResponse> {
   try {
+    // Normalize language code (handle variants like 'en-US', 'en-GB', etc.)
+    const normalizedLanguage: 'ro' | 'en' = language?.startsWith('en') ? 'en' : language?.startsWith('ro') ? 'ro' : 'ro';
+
+    console.log('🌍 RFQ Language Debug:', {
+      originalLanguage: language,
+      normalizedLanguage
+    });
+
     // Get auth token (optional - RFQ can be submitted by guests)
     const token = getAuthToken();
 
@@ -66,6 +75,7 @@ export async function submitRFQ(data: RFQFormData, userId?: string): Promise<RFQ
       notes: [data.notes, data.specialRequirements].filter(Boolean).join('\n\n'),
       items,
       estimatedTotal,
+      language: normalizedLanguage, // Language for emails/PDFs (normalized)
     };
 
     // Submit to backend

@@ -26,6 +26,7 @@ export interface CreateRFQData {
   incoterm?: string;
   deliveryDate?: string;
   notes?: string;
+  language?: 'ro' | 'en'; // Language for emails/PDFs
 
   // Cart data
   items: CreateRFQItemData[];
@@ -99,6 +100,7 @@ export class RFQService {
         userId: userId || undefined,
         referenceNumber,
         status: RFQStatus.SUBMITTED,
+        language: data.language || 'ro',
 
         // Contact information
         companyName: data.companyName,

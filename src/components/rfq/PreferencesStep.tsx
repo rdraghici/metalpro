@@ -14,24 +14,25 @@ import {
 } from '@/components/ui/select';
 import { Settings2, Info } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { Incoterm } from '@/types/rfq';
 
-// Incoterm descriptions for user guidance
-const INCOTERM_INFO: Record<Incoterm, string> = {
-  EXW: 'Ex Works - Cumpărătorul preia marfa din depozitul vânzătorului',
-  FCA: 'Free Carrier - Vânzătorul livrează marfa transportatorului desemnat de cumpărător',
-  CPT: 'Carriage Paid To - Vânzătorul plătește transportul până la destinație',
-  DAP: 'Delivered at Place - Vânzătorul livrează marfa la adresa specificată',
-  DDP: 'Delivered Duty Paid - Vânzătorul livrează marfa cu toate taxele plătite',
-};
-
-const preferencesSchema = z.object({
-  incoterm: z.enum(['EXW', 'FCA', 'CPT', 'DAP', 'DDP']).optional(),
-  paymentTermsPreference: z.string().optional(),
-  specialRequirements: z.string().max(1000, 'Maxim 1000 caractere').optional(),
+// Incoterm descriptions for user guidance - will be replaced with translations
+const getIncotermInfo = (t: (key: string) => string): Record<Incoterm, string> => ({
+  EXW: t('rfq.incoterm_exw_desc'),
+  FCA: t('rfq.incoterm_fca_desc'),
+  CPT: t('rfq.incoterm_cpt_desc'),
+  DAP: t('rfq.incoterm_dap_desc'),
+  DDP: t('rfq.incoterm_ddp_desc'),
 });
 
-type PreferencesFormData = z.infer<typeof preferencesSchema>;
+const createPreferencesSchema = (t: (key: string) => string) => z.object({
+  incoterm: z.enum(['EXW', 'FCA', 'CPT', 'DAP', 'DDP']).optional(),
+  paymentTermsPreference: z.string().optional(),
+  specialRequirements: z.string().max(1000, t('rfq.max_1000_chars')).optional(),
+});
+
+type PreferencesFormData = z.infer<ReturnType<typeof createPreferencesSchema>>;
 
 interface PreferencesStepProps {
   initialData?: {
@@ -48,6 +49,10 @@ interface PreferencesStepProps {
 }
 
 const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, onBack }) => {
+  const { t } = useTranslation();
+  const preferencesSchema = createPreferencesSchema(t);
+  const INCOTERM_INFO = getIncotermInfo(t);
+
   const {
     register,
     handleSubmit,
@@ -79,23 +84,22 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Settings2 className="h-5 w-5" />
-            Preferințe & Cerințe Speciale
+            {t('rfq.preferences_title')}
           </CardTitle>
           <CardDescription>
-            Specificați preferințele dumneavoastră pentru livrare și condiții de plată. Aceste
-            informații ne vor ajuta să pregătim o ofertă personalizată.
+            {t('rfq.preferences_description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Incoterm Selection */}
           <div className="space-y-2">
-            <Label htmlFor="incoterm">Incoterm Preferat (opțional)</Label>
+            <Label htmlFor="incoterm">{t('rfq.preferred_incoterm')}</Label>
             <Select
               onValueChange={(value) => setValue('incoterm', value as Incoterm)}
               defaultValue={selectedIncoterm}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Selectează Incoterm (sau lasă implicit)" />
+                <SelectValue placeholder={t('rfq.select_incoterm')} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="EXW">EXW - Ex Works</SelectItem>
@@ -114,20 +118,19 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
               </Alert>
             )}
             <p className="text-xs text-muted-foreground">
-              Incotermul final va fi negociat și specificat în oferta finală. Dacă nu sunteți
-              sigur, lăsați acest câmp necompletat.
+              {t('rfq.incoterm_note')}
             </p>
           </div>
 
           {/* Payment Terms Preferences */}
           <div className="space-y-2">
             <Label htmlFor="paymentTermsPreference">
-              Preferințe Condiții de Plată (opțional)
+              {t('rfq.payment_terms_preference')}
             </Label>
             <Textarea
               id="paymentTermsPreference"
               {...register('paymentTermsPreference')}
-              placeholder="De exemplu: 30 zile, plată la livrare, avans 50%, etc."
+              placeholder={t('rfq.payment_terms_placeholder')}
               rows={3}
               className={errors.paymentTermsPreference ? 'border-destructive' : ''}
             />
@@ -135,18 +138,17 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
               <p className="text-sm text-destructive">{errors.paymentTermsPreference.message}</p>
             )}
             <p className="text-xs text-muted-foreground">
-              Specificați condițiile de plată dorite. Condițiile finale vor fi negociate cu echipa
-              de vânzări.
+              {t('rfq.payment_terms_note')}
             </p>
           </div>
 
           {/* Special Requirements */}
           <div className="space-y-2">
-            <Label htmlFor="specialRequirements">Cerințe Speciale (opțional)</Label>
+            <Label htmlFor="specialRequirements">{t('rfq.special_requirements')}</Label>
             <Textarea
               id="specialRequirements"
               {...register('specialRequirements')}
-              placeholder="Specificați orice cerințe speciale: pregătire specială a materialelor, ambalare specială, condiții de transport, urgență livrare, etc."
+              placeholder={t('rfq.special_requirements_placeholder')}
               rows={5}
               className={errors.specialRequirements ? 'border-destructive' : ''}
             />
@@ -154,9 +156,9 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
               <p className="text-sm text-destructive">{errors.specialRequirements.message}</p>
             )}
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>Descrieți orice cerințe specifice pentru această comandă</span>
+              <span>{t('rfq.special_requirements_hint')}</span>
               <span>
-                {watch('specialRequirements')?.length || 0} / 1000 caractere
+                {watch('specialRequirements')?.length || 0} / 1000 {t('rfq.characters')}
               </span>
             </div>
           </div>
@@ -165,13 +167,13 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>
-              <strong className="block mb-1">Sugestii pentru cerințe speciale:</strong>
+              <strong className="block mb-1">{t('rfq.suggestions_title')}</strong>
               <ul className="list-disc list-inside text-sm space-y-1">
-                <li>Debitare la dimensiuni specifice</li>
-                <li>Certificări sau agremente necesare</li>
-                <li>Urgența comenzii</li>
-                <li>Condiții speciale de ambalare sau transport</li>
-                <li>Documente tehnice sau agremente necesare</li>
+                <li>{t('rfq.suggestion_cutting')}</li>
+                <li>{t('rfq.suggestion_certifications')}</li>
+                <li>{t('rfq.suggestion_urgency')}</li>
+                <li>{t('rfq.suggestion_packaging')}</li>
+                <li>{t('rfq.suggestion_documents')}</li>
               </ul>
             </AlertDescription>
           </Alert>
@@ -181,9 +183,9 @@ const PreferencesStep: React.FC<PreferencesStepProps> = ({ initialData, onNext, 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack}>
-          Înapoi
+          {t('rfq.back')}
         </Button>
-        <Button type="submit">Continuă</Button>
+        <Button type="submit">{t('rfq.continue')}</Button>
       </div>
     </form>
   );

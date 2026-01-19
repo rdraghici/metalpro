@@ -11,11 +11,13 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { ShoppingCart, FileText, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import CartLineItem from './CartLineItem';
 import TotalsPanel from './TotalsPanel';
 
 const EstimateCartDrawer: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { cart, itemCount, isDrawerOpen, closeDrawer, acceptDisclaimer } = useCart();
 
   const handleViewFullCart = () => {
@@ -35,12 +37,12 @@ const EstimateCartDrawer: React.FC = () => {
         <SheetHeader className="px-6 py-4 border-b">
           <SheetTitle className="flex items-center gap-2 text-lg">
             <ShoppingCart className="h-5 w-5" />
-            Coș Estimare
+            {t('cart.drawer_title')}
           </SheetTitle>
           <SheetDescription>
             {itemCount === 0
-              ? 'Coșul tău este gol'
-              : `${itemCount} ${itemCount === 1 ? 'produs' : 'produse'} în coș`}
+              ? t('cart.empty')
+              : `${itemCount} ${itemCount === 1 ? t('cart.products_in_cart') : t('cart.products_in_cart_plural')}`}
           </SheetDescription>
         </SheetHeader>
 
@@ -48,11 +50,11 @@ const EstimateCartDrawer: React.FC = () => {
         {itemCount === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 text-center">
             <ShoppingBag className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="font-semibold text-lg mb-2">Coșul tău este gol</h3>
+            <h3 className="font-semibold text-lg mb-2">{t('cart.empty')}</h3>
             <p className="text-sm text-muted-foreground mb-6">
-              Adaugă produse pentru a crea o estimare de preț
+              {t('cart.empty_action')}
             </p>
-            <Button onClick={closeDrawer}>Explorează Catalogul</Button>
+            <Button onClick={closeDrawer}>{t('cart.explore_catalog')}</Button>
           </div>
         ) : (
           <>
@@ -86,17 +88,17 @@ const EstimateCartDrawer: React.FC = () => {
                   disabled={!cart.disclaimerAccepted}
                 >
                   <FileText className="h-5 w-5 mr-2" />
-                  Cere Ofertă Finală
+                  {t('cart.request_final_quote')}
                   <ArrowRight className="h-4 w-4 ml-auto" />
                 </Button>
 
                 <Button variant="outline" className="w-full" onClick={handleViewFullCart}>
-                  Vezi Coș Complet
+                  {t('cart.view_full_cart')}
                 </Button>
 
                 {!cart.disclaimerAccepted && (
                   <p className="text-xs text-center text-destructive">
-                    Acceptați termenii pentru a cere ofertă
+                    {t('cart.accept_terms_to_request')}
                   </p>
                 )}
               </div>

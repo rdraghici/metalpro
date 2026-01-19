@@ -41,36 +41,90 @@ interface QuotePDFData {
   items: QuoteItem[];
   finalTotal: number;
   quoteDate: Date;
+  language?: 'ro' | 'en';
 }
 
 // =====================================================
-// TECHNICAL CONDITIONS TEXT (Romanian)
+// PDF TRANSLATIONS
 // =====================================================
 
-const TECHNICAL_CONDITIONS_RO = {
-  title: removeDiacritics('2. Conditii tehnice'),
-  sections: [
-    {
-      title: removeDiacritics('2.1 Domeniu & standarde'),
-      text: removeDiacritics('Materie prima pentru proiecte B2B. Orientativ: EN 10025-2 (S235JR/S355JR), EN 10365 (HEA/HEB/IPE/UNP), EN 10034 (tolerante grinzi), EN 10219/10210 (tevi), EN 10130/10025 (tabla), EN 10088 (inox), EN AW (Al).'),
+const PDF_TRANSLATIONS = {
+  ro: {
+    quoteTitle: (ref: string) => removeDiacritics(`OFERTA ${ref}`),
+    date: 'Data:',
+    to: 'Catre:',
+    attention: 'Att:',
+    intro: removeDiacritics('In urma cererii dumneavoastra, va transmitem oferta noastra:'),
+    productsTitle: '1. Produse si preturi',
+    tableNr: 'Nr.',
+    tableProduct: 'Produs',
+    tableQuantity: 'Cantitate',
+    tablePrice: 'Pret (RON)',
+    total: 'TOTAL:',
+    technicalConditions: {
+      title: removeDiacritics('2. Conditii tehnice'),
+      sections: [
+        {
+          title: removeDiacritics('2.1 Domeniu & standarde'),
+          text: removeDiacritics('Materie prima pentru proiecte B2B. Orientativ: EN 10025-2 (S235JR/S355JR), EN 10365 (HEA/HEB/IPE/UNP), EN 10034 (tolerante grinzi), EN 10219/10210 (tevi), EN 10130/10025 (tabla), EN 10088 (inox), EN AW (Al).'),
+        },
+        {
+          title: removeDiacritics('2.2 Tolerante & suprafata'),
+          text: removeDiacritics('Greutatile sunt teoretice (p~7,85 t/m3); abateri conforme standardelor. Lungimi comerciale; debitari la cerere (uzual +/-2-3 mm mecanic; taieri termice au tolerante specifice). Urmele de laminare/formare sunt normale.'),
+        },
+        {
+          title: removeDiacritics('2.3 Certificare & trasabilitate'),
+          text: removeDiacritics('La cerere/unde se aplica: EN 10204 - 3.1 per lot (heat/batch); marcajele de pachet se mentin pana la receptie.'),
+        },
+        {
+          title: removeDiacritics('2.4 Livrare & receptie'),
+          text: removeDiacritics('Conform ofertei (Incoterms, termene, unitati: kg/m, kg/buc, m2). Receptie cantitativa/calitativa la descarcare; deteriorarile vizibile se consemneaza pe documentul de transport. Posibile livrari partiale.'),
+        },
+        {
+          title: removeDiacritics('2.5 Limitari'),
+          text: removeDiacritics('Datele tehnice sunt orientative; pot exista variatii in limitele standardelor sau intre furnizori. Proiectarea/montajul revin beneficiarului; Metal-Direct nu garanteaza performanta structurala in utilizare.'),
+        },
+      ],
     },
-    {
-      title: removeDiacritics('2.2 Tolerante & suprafata'),
-      text: removeDiacritics('Greutatile sunt teoretice (p~7,85 t/m3); abateri conforme standardelor. Lungimi comerciale; debitari la cerere (uzual +/-2-3 mm mecanic; taieri termice au tolerante specifice). Urmele de laminare/formare sunt normale.'),
+  },
+  en: {
+    quoteTitle: (ref: string) => `QUOTE ${ref}`,
+    date: 'Date:',
+    to: 'To:',
+    attention: 'Att:',
+    intro: 'Following your request, please find our quote below:',
+    productsTitle: '1. Products and prices',
+    tableNr: 'No.',
+    tableProduct: 'Product',
+    tableQuantity: 'Quantity',
+    tablePrice: 'Price (RON)',
+    total: 'TOTAL:',
+    technicalConditions: {
+      title: '2. Technical conditions',
+      sections: [
+        {
+          title: '2.1 Scope & standards',
+          text: 'Raw materials for B2B projects. Reference: EN 10025-2 (S235JR/S355JR), EN 10365 (HEA/HEB/IPE/UNP), EN 10034 (beam tolerances), EN 10219/10210 (pipes), EN 10130/10025 (sheets), EN 10088 (stainless), EN AW (Al).',
+        },
+        {
+          title: '2.2 Tolerances & surface',
+          text: 'Weights are theoretical (p~7.85 t/m3); deviations per standards. Commercial lengths; cutting on request (typically +/-2-3 mm mechanical; thermal cuts have specific tolerances). Rolling/forming marks are normal.',
+        },
+        {
+          title: '2.3 Certification & traceability',
+          text: 'On request/where applicable: EN 10204 - 3.1 per lot (heat/batch); package markings maintained until reception.',
+        },
+        {
+          title: '2.4 Delivery & reception',
+          text: 'Per quote (Incoterms, deadlines, units: kg/m, kg/pcs, m2). Quantitative/qualitative reception at unloading; visible damage noted on transport document. Partial deliveries possible.',
+        },
+        {
+          title: '2.5 Limitations',
+          text: 'Technical data is indicative; variations within standard limits or between suppliers may occur. Design/installation is the responsibility of the buyer; Metal-Direct does not guarantee structural performance in use.',
+        },
+      ],
     },
-    {
-      title: removeDiacritics('2.3 Certificare & trasabilitate'),
-      text: removeDiacritics('La cerere/unde se aplica: EN 10204 - 3.1 per lot (heat/batch); marcajele de pachet se mentin pana la receptie.'),
-    },
-    {
-      title: removeDiacritics('2.4 Livrare & receptie'),
-      text: removeDiacritics('Conform ofertei (Incoterms, termene, unitati: kg/m, kg/buc, m2). Receptie cantitativa/calitativa la descarcare; deteriorarile vizibile se consemneaza pe documentul de transport. Posibile livrari partiale.'),
-    },
-    {
-      title: removeDiacritics('2.5 Limitari'),
-      text: removeDiacritics('Datele tehnice sunt orientative; pot exista variatii in limitele standardelor sau intre furnizori. Proiectarea/montajul revin beneficiarului; Metal-Direct nu garanteaza performanta structurala in utilizare.'),
-    },
-  ],
+  },
 };
 
 // =====================================================
@@ -89,6 +143,9 @@ export class PDFService {
    * Generate a quote PDF with the Metal Direct template
    */
   async generateQuotePDF(data: QuotePDFData): Promise<Buffer> {
+    const lang = data.language || 'ro';
+    const t = PDF_TRANSLATIONS[lang];
+
     // Load the template PDF
     let templateBytes: Uint8Array;
 
@@ -125,7 +182,7 @@ export class PDFService {
     // DOCUMENT TITLE
     // =====================================================
 
-    firstPage.drawText(removeDiacritics(`OFERTA ${data.referenceNumber}`), {
+    firstPage.drawText(t.quoteTitle(data.referenceNumber), {
       x: leftMargin,
       y: yPosition,
       size: 18,
@@ -135,12 +192,13 @@ export class PDFService {
     yPosition -= 30;
 
     // Date
-    const formattedDate = data.quoteDate.toLocaleDateString('ro-RO', {
+    const dateLocale = lang === 'en' ? 'en-GB' : 'ro-RO';
+    const formattedDate = data.quoteDate.toLocaleDateString(dateLocale, {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
     });
-    firstPage.drawText(`Data: ${formattedDate}`, {
+    firstPage.drawText(`${t.date} ${formattedDate}`, {
       x: leftMargin,
       y: yPosition,
       size: 10,
@@ -153,7 +211,7 @@ export class PDFService {
     // CLIENT INFO
     // =====================================================
 
-    firstPage.drawText('Catre:', {
+    firstPage.drawText(t.to, {
       x: leftMargin,
       y: yPosition,
       size: 10,
@@ -171,7 +229,7 @@ export class PDFService {
     });
     yPosition -= 12;
 
-    firstPage.drawText(removeDiacritics(`Att: ${data.contactPerson}`), {
+    firstPage.drawText(removeDiacritics(`${t.attention} ${data.contactPerson}`), {
       x: leftMargin,
       y: yPosition,
       size: 10,
@@ -184,8 +242,7 @@ export class PDFService {
     // INTRO TEXT
     // =====================================================
 
-    const introText = removeDiacritics('In urma cererii dumneavoastra, va transmitem oferta noastra:');
-    firstPage.drawText(introText, {
+    firstPage.drawText(t.intro, {
       x: leftMargin,
       y: yPosition,
       size: 10,
@@ -199,7 +256,7 @@ export class PDFService {
     // =====================================================
 
     // Section title
-    firstPage.drawText('1. Produse si preturi', {
+    firstPage.drawText(t.productsTitle, {
       x: leftMargin,
       y: yPosition,
       size: 12,
@@ -228,13 +285,13 @@ export class PDFService {
 
     // Table headers
     let xPos = leftMargin + 5;
-    firstPage.drawText('Nr.', { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
+    firstPage.drawText(t.tableNr, { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
     xPos += colWidths.nr;
-    firstPage.drawText('Produs', { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
+    firstPage.drawText(t.tableProduct, { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
     xPos += colWidths.product;
-    firstPage.drawText('Cantitate', { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
+    firstPage.drawText(t.tableQuantity, { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
     xPos += colWidths.quantity;
-    firstPage.drawText('Pret (RON)', { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
+    firstPage.drawText(t.tablePrice, { x: xPos, y: yPosition - 10, size: 9, font: helveticaBold, color: textBlack });
 
     yPosition -= 25;
 
@@ -300,7 +357,7 @@ export class PDFService {
     });
 
     xPos = leftMargin + colWidths.nr + colWidths.product + 5;
-    firstPage.drawText('TOTAL:', {
+    firstPage.drawText(t.total, {
       x: xPos,
       y: yPosition - 5,
       size: 10,
@@ -327,9 +384,9 @@ export class PDFService {
       const newPage = pdfDoc.addPage([width, height]);
       yPosition = height - 80;
       // Add technical conditions to new page
-      this.drawTechnicalConditions(newPage, helvetica, helveticaBold, leftMargin, yPosition, textBlack, primaryBlue);
+      this.drawTechnicalConditions(newPage, helvetica, helveticaBold, leftMargin, yPosition, textBlack, primaryBlue, t.technicalConditions);
     } else {
-      this.drawTechnicalConditions(firstPage, helvetica, helveticaBold, leftMargin, yPosition, textBlack, primaryBlue);
+      this.drawTechnicalConditions(firstPage, helvetica, helveticaBold, leftMargin, yPosition, textBlack, primaryBlue, t.technicalConditions);
     }
 
     // Save the PDF
@@ -347,14 +404,15 @@ export class PDFService {
     leftMargin: number,
     startY: number,
     textBlack: any,
-    primaryBlue: any
+    primaryBlue: any,
+    conditions: { title: string; sections: Array<{ title: string; text: string }> }
   ): number {
     let yPosition = startY;
     const lineHeight = 12;
     const sectionGap = 16;
 
     // Main title
-    page.drawText(TECHNICAL_CONDITIONS_RO.title, {
+    page.drawText(conditions.title, {
       x: leftMargin,
       y: yPosition,
       size: 11,
@@ -364,7 +422,7 @@ export class PDFService {
     yPosition -= sectionGap;
 
     // Draw each section
-    TECHNICAL_CONDITIONS_RO.sections.forEach((section) => {
+    conditions.sections.forEach((section) => {
       // Section title
       page.drawText(section.title, {
         x: leftMargin,

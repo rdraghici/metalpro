@@ -15,6 +15,7 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { RFQAttachment } from '@/types/rfq';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -48,6 +49,7 @@ interface AttachmentsStepProps {
 }
 
 const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, onBack }) => {
+  const { t } = useTranslation();
   const [attachments, setAttachments] = useState<RFQAttachment[]>(initialData?.attachments || []);
   const [notes, setNotes] = useState(initialData?.notes || '');
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
@@ -86,12 +88,12 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
   const validateFile = (file: File): string | null => {
     // Check file size
     if (file.size > MAX_FILE_SIZE) {
-      return `Fișierul "${file.name}" este prea mare (maxim 10MB)`;
+      return t('rfq.file_too_large').replace('{{name}}', file.name);
     }
 
     // Check file type
     if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-      return `Tipul fișierului "${file.name}" nu este permis`;
+      return t('rfq.file_type_not_allowed').replace('{{name}}', file.name);
     }
 
     return null;
@@ -170,17 +172,16 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Paperclip className="h-5 w-5" />
-            Atașamente & Notițe
+            {t('rfq.attachments_title')}
           </CardTitle>
           <CardDescription>
-            Încărcați fișiere relevante pentru cererea dumneavoastră: liste BOM, desene tehnice,
-            specificații, sau alte documente.
+            {t('rfq.attachments_description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* File Upload Area */}
           <div className="space-y-2">
-            <Label>Fișiere (opțional)</Label>
+            <Label>{t('rfq.files_optional')}</Label>
             <div
               onDragOver={handleDragOver}
               onDrop={handleDrop}
@@ -189,13 +190,13 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
             >
               <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
               <p className="text-sm font-medium mb-1">
-                Clic pentru a încărca sau drag & drop fișiere
+                {t('rfq.upload_click')}
               </p>
               <p className="text-xs text-muted-foreground mb-3">
-                CSV, XLSX, PDF, JPG, PNG (maxim 10MB per fișier)
+                {t('rfq.upload_formats')}
               </p>
               <Button type="button" variant="outline" size="sm">
-                Selectează Fișiere
+                {t('rfq.select_files')}
               </Button>
               <input
                 ref={fileInputRef}
@@ -213,7 +214,7 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                <strong>Erori la încărcare:</strong>
+                <strong>{t('rfq.upload_errors')}:</strong>
                 <ul className="list-disc list-inside mt-1 text-sm">
                   {uploadErrors.map((error, index) => (
                     <li key={index}>{error}</li>
@@ -226,7 +227,7 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
           {/* Uploaded Files List */}
           {attachments.length > 0 && (
             <div className="space-y-2">
-              <Label>Fișiere încărcate ({attachments.length})</Label>
+              <Label>{t('rfq.uploaded_files')} ({attachments.length})</Label>
               <div className="space-y-2">
                 {attachments.map((attachment) => (
                   <div
@@ -259,7 +260,7 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
               <Alert className="bg-green-50 border-green-200">
                 <CheckCircle2 className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800 text-sm">
-                  Fișierele vor fi atașate cererii dumneavoastră de ofertă.
+                  {t('rfq.files_will_be_attached')}
                 </AlertDescription>
               </Alert>
             </div>
@@ -267,18 +268,18 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notițe Adiționale (opțional)</Label>
+            <Label htmlFor="notes">{t('rfq.additional_notes')}</Label>
             <Textarea
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Adăugați orice informații suplimentare care ar putea fi relevante pentru ofertă..."
+              placeholder={t('rfq.notes_placeholder')}
               rows={5}
               maxLength={2000}
             />
             <div className="flex justify-between items-center text-xs text-muted-foreground">
-              <span>Notițe, instrucțiuni speciale, sau alte detalii</span>
-              <span>{notes.length} / 2000 caractere</span>
+              <span>{t('rfq.notes_hint')}</span>
+              <span>{notes.length} / 2000 {t('rfq.characters')}</span>
             </div>
           </div>
 
@@ -286,13 +287,13 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              <strong className="block mb-1">Ce documente pot fi utile:</strong>
+              <strong className="block mb-1">{t('rfq.useful_documents')}</strong>
               <ul className="list-disc list-inside text-sm space-y-1">
-                <li>Liste BOM (Bill of Materials) în format CSV sau Excel</li>
-                <li>Desene tehnice sau planuri</li>
-                <li>Specificații tehnice detaliate</li>
-                <li>Certificate sau agremente necesare</li>
-                <li>Comenzi anterioare sau referințe</li>
+                <li>{t('rfq.doc_bom')}</li>
+                <li>{t('rfq.doc_drawings')}</li>
+                <li>{t('rfq.doc_specs')}</li>
+                <li>{t('rfq.doc_certificates')}</li>
+                <li>{t('rfq.doc_references')}</li>
               </ul>
             </AlertDescription>
           </Alert>
@@ -302,9 +303,9 @@ const AttachmentsStep: React.FC<AttachmentsStepProps> = ({ initialData, onNext, 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack}>
-          Înapoi
+          {t('rfq.back')}
         </Button>
-        <Button type="submit">Continuă la Verificare</Button>
+        <Button type="submit">{t('rfq.continue_to_review')}</Button>
       </div>
     </form>
   );

@@ -63,6 +63,12 @@ router.post('/', optionalAuth, async (req: Request, res: Response, next: NextFun
       }
     }
 
+    // Debug: Log language from request
+    console.log('🌍 Backend RFQ language from request:', {
+      language: req.body.language,
+      languageType: typeof req.body.language
+    });
+
     const rfqData: CreateRFQData = {
       companyName,
       contactPerson,
@@ -75,6 +81,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response, next: NextFun
       incoterm: req.body.incoterm,
       deliveryDate: req.body.deliveryDate,
       notes: req.body.notes,
+      language: req.body.language || 'ro', // Language for emails/PDFs
       items,
       estimatedTotal,
     };
@@ -104,6 +111,7 @@ router.post('/', optionalAuth, async (req: Request, res: Response, next: NextFun
           grossPrice: item.grossPrice,
         })),
         estimatedTotal: rfq.estimatedTotal || estimatedTotal,
+        language: rfq.language as 'ro' | 'en',
       });
     } catch (emailError) {
       logger.error('Failed to send RFQ confirmation email', { error: emailError });

@@ -231,6 +231,9 @@ router.patch('/rfqs/:id/status', async (req: Request, res: Response, next: NextF
     // Send email when status changes to QUOTED
     if (status === 'QUOTED' && currentRFQ.status !== 'QUOTED') {
       try {
+        // Use the language stored in the RFQ
+        const emailLanguage = (rfq.language as 'ro' | 'en') || 'ro';
+
         await emailService.sendRFQQuotedEmail({
           referenceNumber: rfq.referenceNumber,
           customerEmail: rfq.email,
@@ -245,8 +248,9 @@ router.patch('/rfqs/:id/status', async (req: Request, res: Response, next: NextF
             finalPrice: item.finalPrice || undefined,
           })),
           finalTotal: rfq.finalQuoteAmount || rfq.estimatedTotal || 0,
+          language: emailLanguage,
         });
-        logger.info('RFQ Quoted email sent', { rfqId: id, email: rfq.email });
+        logger.info('RFQ Quoted email sent', { rfqId: id, email: rfq.email, language: emailLanguage });
       } catch (emailError) {
         logger.error('Failed to send RFQ quoted email', { error: emailError });
       }

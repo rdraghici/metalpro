@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -16,39 +16,12 @@ import { useAuth } from '@/context/AuthContext';
 import { submitRFQ } from '@/lib/api/rfq';
 import { useToast } from '@/hooks/use-toast';
 import { useAnalytics } from '@/hooks/useAnalytics';
-import type { RFQFormData, RFQFormStep } from '@/types/rfq';
+import { useTranslation } from '@/hooks/useTranslation';
+import type { RFQFormData, RFQFormStep, FormStep } from '@/types/rfq';
 
 const RFQ_FORM_STORAGE_KEY = 'metalpro-rfq-form-data';
 const RFQ_STEP_STORAGE_KEY = 'metalpro-rfq-current-step';
 const RFQ_COMPLETED_STEPS_KEY = 'metalpro-rfq-completed-steps';
-
-const STEPS = [
-  {
-    number: 1,
-    title: 'Companie',
-    description: 'Informații firmă',
-  },
-  {
-    number: 2,
-    title: 'Livrare',
-    description: 'Adresă & dată',
-  },
-  {
-    number: 3,
-    title: 'Preferințe',
-    description: 'Incoterm & cerințe',
-  },
-  {
-    number: 4,
-    title: 'Atașamente',
-    description: 'Documente',
-  },
-  {
-    number: 5,
-    title: 'Verificare',
-    description: 'Confirmare',
-  },
-];
 
 const RFQForm = () => {
   const navigate = useNavigate();
@@ -56,6 +29,16 @@ const RFQForm = () => {
   const { cart, itemCount } = useCart();
   const { user } = useAuth();
   const analytics = useAnalytics();
+  const { t, currentLanguage } = useTranslation();
+
+  // Translated steps array
+  const STEPS: FormStep[] = useMemo(() => [
+    { number: 1, title: t('rfq.step_company'), description: t('rfq.step_company_desc') },
+    { number: 2, title: t('rfq.step_delivery'), description: t('rfq.step_delivery_desc') },
+    { number: 3, title: t('rfq.step_preferences'), description: t('rfq.step_preferences_desc') },
+    { number: 4, title: t('rfq.step_attachments'), description: t('rfq.step_attachments_desc') },
+    { number: 5, title: t('rfq.step_review'), description: t('rfq.step_review_desc') },
+  ], [t]);
 
   // Load initial state from sessionStorage
   const loadStoredStep = (): RFQFormStep => {
@@ -170,15 +153,15 @@ const RFQForm = () => {
           <div className="container mx-auto px-4 py-16 max-w-2xl">
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Coșul este gol</AlertTitle>
+              <AlertTitle>{t('rfq.cart_empty')}</AlertTitle>
               <AlertDescription>
-                Pentru a putea cere o ofertă, trebuie să adaugi produse în coș.
+                {t('rfq.cart_empty_message')}
               </AlertDescription>
             </Alert>
             <div className="mt-6 flex justify-center">
               <Button onClick={() => navigate('/catalog')}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Înapoi la Catalog
+                {t('rfq.back_to_catalog')}
               </Button>
             </div>
           </div>
@@ -223,8 +206,8 @@ const RFQForm = () => {
       setCurrentStep(targetStep);
     } else {
       toast({
-        title: 'Pasul nu este accesibil',
-        description: 'Vă rugăm să completați pașii anteriori mai întâi.',
+        title: t('rfq.step_not_accessible'),
+        description: t('rfq.complete_previous_steps'),
         variant: 'destructive',
       });
     }
@@ -236,7 +219,7 @@ const RFQForm = () => {
     try {
       // Ensure we have all required data
       if (!formData.company || !formData.deliveryAddress) {
-        throw new Error('Date incomplete');
+        throw new Error(t('rfq.incomplete_data'));
       }
 
       // Build complete RFQ data
@@ -254,8 +237,9 @@ const RFQForm = () => {
         disclaimerAccepted: true,
       };
 
-      // Submit RFQ (pass userId if user is logged in)
-      const response = await submitRFQ(rfqData, user?.id);
+      // Submit RFQ (pass userId and current language)
+      console.log('🌍 RFQForm currentLanguage:', currentLanguage);
+      const response = await submitRFQ(rfqData, user?.id, currentLanguage as 'ro' | 'en');
 
       if (response.success && response.referenceNumber) {
         // Track RFQ submission
@@ -273,16 +257,16 @@ const RFQForm = () => {
         // Navigate to confirmation page
         navigate(`/rfq/confirmation?ref=${response.referenceNumber}`);
       } else {
-        throw new Error(response.message || 'Eroare la trimiterea cererii');
+        throw new Error(response.message || t('rfq.submit_error'));
       }
     } catch (error) {
       console.error('Error submitting RFQ:', error);
       toast({
-        title: 'Eroare',
+        title: t('rfq.error'),
         description:
           error instanceof Error
             ? error.message
-            : 'Nu s-a putut trimite cererea de ofertă. Vă rugăm încercați din nou.',
+            : t('rfq.submit_error_retry'),
         variant: 'destructive',
       });
       setIsSubmitting(false);
@@ -299,16 +283,15 @@ const RFQForm = () => {
           <div className="mb-8">
             <Button variant="ghost" onClick={() => navigate('/cart')} className="gap-2 -ml-2 mb-4">
               <ArrowLeft className="h-4 w-4" />
-              Înapoi la Coș
+              {t('rfq.back_to_cart')}
             </Button>
 
             <div className="flex items-center gap-3 mb-2">
               <FileText className="h-8 w-8 text-primary" />
-              <h1 className="text-3xl font-bold">Cerere de Ofertă (RFQ)</h1>
+              <h1 className="text-3xl font-bold">{t('rfq.title')}</h1>
             </div>
             <p className="text-muted-foreground">
-              Completați formularul pentru a primi o ofertă personalizată de la echipa noastră de
-              vânzări.
+              {t('rfq.description')}
             </p>
           </div>
 

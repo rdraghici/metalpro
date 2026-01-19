@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Building2, CheckCircle2, Loader2, AlertCircle, Info } from 'lucide-react';
 import { validateCUI, lookupCUIFromANAF } from '@/lib/validation/cuiValidator';
 import { useAuth } from '@/context/AuthContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { CompanyInfo } from '@/types/rfq';
 
 // Romanian counties for dropdown
@@ -29,21 +30,21 @@ const ROMANIAN_COUNTIES = [
   'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea', 'Vâlcea', 'Vaslui', 'Vrancea',
 ];
 
-// Validation schema
-const companyInfoSchema = z.object({
-  legalName: z.string().min(3, 'Denumirea trebuie să aibă minim 3 caractere'),
-  cuiVat: z.string().min(2, 'CUI/VAT este obligatoriu'),
-  street: z.string().min(5, 'Adresa trebuie să aibă minim 5 caractere'),
-  city: z.string().min(2, 'Orașul este obligatoriu'),
-  county: z.string().min(2, 'Județul este obligatoriu'),
-  postalCode: z.string().regex(/^\d{6}$/, 'Cod poștal invalid (6 cifre)').optional().or(z.literal('')),
+// Validation schema - will be created inside the component to use translations
+const createCompanyInfoSchema = (t: (key: string) => string) => z.object({
+  legalName: z.string().min(3, t('rfq.validation.company_name_min')),
+  cuiVat: z.string().min(2, t('rfq.validation.cui_required')),
+  street: z.string().min(5, t('rfq.validation.address_min')),
+  city: z.string().min(2, t('rfq.validation.city_required')),
+  county: z.string().min(2, t('rfq.validation.county_required')),
+  postalCode: z.string().regex(/^\d{6}$/, t('rfq.validation.postal_code_invalid')).optional().or(z.literal('')),
   country: z.string().default('România'),
-  contactPerson: z.string().min(3, 'Numele persoanei de contact este obligatoriu'),
-  phone: z.string().regex(/^(\+40|0040|0)\d{9}$/, 'Număr de telefon invalid'),
-  email: z.string().email('Email invalid'),
+  contactPerson: z.string().min(3, t('rfq.validation.contact_person_required')),
+  phone: z.string().regex(/^(\+40|0040|0)\d{9}$/, t('rfq.validation.phone_invalid')),
+  email: z.string().email(t('rfq.validation.email_invalid')),
 });
 
-type CompanyInfoFormData = z.infer<typeof companyInfoSchema>;
+type CompanyInfoFormData = z.infer<ReturnType<typeof createCompanyInfoSchema>>;
 
 interface CompanyInfoStepProps {
   initialData?: Partial<CompanyInfo>;
@@ -53,7 +54,11 @@ interface CompanyInfoStepProps {
 
 const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, onBack }) => {
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [isAutoFilled, setIsAutoFilled] = useState(false);
+
+  // Create schema with translations
+  const companyInfoSchema = createCompanyInfoSchema(t);
 
   const [cuiValidationState, setCuiValidationState] = useState<{
     isValidating: boolean;
@@ -107,10 +112,10 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
           setCuiValidationState({
             isValidating: false,
             isValid: true,
-            message: 'CUI verificat din contul tău',
+            message: t('rfq.cui_verified_from_account'),
             details: {
               legalName: user.company.name,
-              status: 'Activ',
+              status: t('rfq.status_active'),
               county: user.company.county,
             },
           });
@@ -139,7 +144,7 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
         setCuiValidationState({
           isValidating: false,
           isValid: false,
-          message: basicValidation.message || 'CUI/VAT invalid',
+          message: basicValidation.message || t('rfq.cui_invalid'),
         });
         return;
       }
@@ -162,21 +167,21 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
         setCuiValidationState({
           isValidating: false,
           isValid: true,
-          message: anafValidation.message || 'CUI/VAT validat',
+          message: anafValidation.message || t('rfq.cui_validated'),
           details: anafValidation.details,
         });
       } else {
         setCuiValidationState({
           isValidating: false,
           isValid: false,
-          message: anafValidation.message || 'CUI/VAT nu a putut fi validat',
+          message: anafValidation.message || t('rfq.cui_validation_failed'),
         });
       }
     } catch (error) {
       setCuiValidationState({
         isValidating: false,
         isValid: false,
-        message: 'Eroare la validarea CUI/VAT',
+        message: t('rfq.cui_validation_error'),
       });
     }
   };
@@ -209,11 +214,10 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Building2 className="h-5 w-5" />
-            Informații Companie
+            {t('rfq.company_info_title')}
           </CardTitle>
           <CardDescription>
-            Vă rugăm să introduceți datele companiei dumneavoastră. Aceste informații vor fi folosite
-            pentru generarea ofertei.
+            {t('rfq.company_info_description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -222,8 +226,8 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
             <Alert className="bg-blue-50 border-blue-200">
               <Info className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
-                <strong>Datele au fost pre-completate</strong> din contul tău.{' '}
-                {user?.company ? 'Poți edita orice câmp înainte de a continua.' : 'Completează restul informațiilor.'}
+                <strong>{t('rfq.data_prefilled')}</strong> {t('rfq.data_prefilled_from_account')}{' '}
+                {user?.company ? t('rfq.can_edit_fields') : t('rfq.complete_remaining')}
               </AlertDescription>
             </Alert>
           )}
@@ -231,13 +235,13 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
           {/* CUI/VAT Number with Validation */}
           <div className="space-y-2">
             <Label htmlFor="cuiVat">
-              CUI / Cod TVA <span className="text-destructive">*</span>
+              {t('rfq.cui_vat_label')} <span className="text-destructive">*</span>
             </Label>
             <div className="flex gap-2">
               <Input
                 id="cuiVat"
                 {...register('cuiVat')}
-                placeholder="RO12345678 sau 12345678"
+                placeholder={t('rfq.cui_placeholder')}
                 className={errors.cuiVat ? 'border-destructive' : ''}
               />
               <Button
@@ -249,10 +253,10 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
                 {cuiValidationState.isValidating ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Validare...
+                    {t('rfq.validating')}
                   </>
                 ) : (
-                  'Validează'
+                  t('rfq.validate')
                 )}
               </Button>
             </div>
@@ -283,12 +287,12 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
           {/* Legal Name */}
           <div className="space-y-2">
             <Label htmlFor="legalName">
-              Denumire Companie <span className="text-destructive">*</span>
+              {t('rfq.company_name_label')} <span className="text-destructive">*</span>
             </Label>
             <Input
               id="legalName"
               {...register('legalName')}
-              placeholder="S.C. EXEMPLU S.R.L."
+              placeholder={t('rfq.company_name_placeholder')}
               className={errors.legalName ? 'border-destructive' : ''}
             />
             {errors.legalName && (
@@ -298,16 +302,16 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
 
           {/* Billing Address */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Adresa de Facturare</h3>
+            <h3 className="text-sm font-semibold">{t('rfq.billing_address')}</h3>
 
             <div className="space-y-2">
               <Label htmlFor="street">
-                Stradă, Număr <span className="text-destructive">*</span>
+                {t('rfq.street_label')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="street"
                 {...register('street')}
-                placeholder="Str. Exemplu, nr. 123"
+                placeholder={t('rfq.street_placeholder')}
                 className={errors.street ? 'border-destructive' : ''}
               />
               {errors.street && (
@@ -318,12 +322,12 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">
-                  Oraș <span className="text-destructive">*</span>
+                  {t('rfq.city_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="city"
                   {...register('city')}
-                  placeholder="București"
+                  placeholder={t('rfq.city_placeholder')}
                   className={errors.city ? 'border-destructive' : ''}
                 />
                 {errors.city && (
@@ -333,14 +337,14 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
 
               <div className="space-y-2">
                 <Label htmlFor="county">
-                  Județ <span className="text-destructive">*</span>
+                  {t('rfq.county_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   onValueChange={(value) => setValue('county', value)}
                   defaultValue={watch('county')}
                 >
                   <SelectTrigger className={errors.county ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Selectează județul" />
+                    <SelectValue placeholder={t('rfq.county_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {ROMANIAN_COUNTIES.map((county) => (
@@ -358,7 +362,7 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="postalCode">Cod Poștal</Label>
+                <Label htmlFor="postalCode">{t('rfq.postal_code_label')}</Label>
                 <Input
                   id="postalCode"
                   {...register('postalCode')}
@@ -372,7 +376,7 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Țară</Label>
+                <Label htmlFor="country">{t('rfq.country_label')}</Label>
                 <Input id="country" {...register('country')} disabled />
               </div>
             </div>
@@ -380,16 +384,16 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
 
           {/* Contact Information */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">Persoană de Contact</h3>
+            <h3 className="text-sm font-semibold">{t('rfq.contact_person')}</h3>
 
             <div className="space-y-2">
               <Label htmlFor="contactPerson">
-                Nume Complet <span className="text-destructive">*</span>
+                {t('rfq.full_name_label')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="contactPerson"
                 {...register('contactPerson')}
-                placeholder="Ion Popescu"
+                placeholder={t('rfq.full_name_placeholder')}
                 className={errors.contactPerson ? 'border-destructive' : ''}
               />
               {errors.contactPerson && (
@@ -400,7 +404,7 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phone">
-                  Telefon <span className="text-destructive">*</span>
+                  {t('rfq.phone_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="phone"
@@ -415,13 +419,13 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
 
               <div className="space-y-2">
                 <Label htmlFor="email">
-                  Email <span className="text-destructive">*</span>
+                  {t('rfq.email_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="email"
                   type="email"
                   {...register('email')}
-                  placeholder="contact@companie.ro"
+                  placeholder={t('rfq.email_placeholder')}
                   className={errors.email ? 'border-destructive' : ''}
                 />
                 {errors.email && (
@@ -437,12 +441,12 @@ const CompanyInfoStep: React.FC<CompanyInfoStepProps> = ({ initialData, onNext, 
       <div className="flex justify-between">
         {onBack ? (
           <Button type="button" variant="outline" onClick={onBack}>
-            Înapoi
+            {t('rfq.back')}
           </Button>
         ) : (
           <div />
         )}
-        <Button type="submit">Continuă</Button>
+        <Button type="submit">{t('rfq.continue')}</Button>
       </div>
     </form>
   );

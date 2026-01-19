@@ -23,6 +23,7 @@ interface RFQSubmittedData {
   companyName: string;
   items: RFQItem[];
   estimatedTotal: number;
+  language?: 'ro' | 'en';
 }
 
 interface RFQQuotedData {
@@ -32,7 +33,74 @@ interface RFQQuotedData {
   companyName: string;
   items: RFQItem[];
   finalTotal: number;
+  language?: 'ro' | 'en';
 }
+
+// Email translations
+const EMAIL_TRANSLATIONS = {
+  ro: {
+    submitted: {
+      subject: (ref: string) => `Confirmare cerere ofertă ${ref} - Metal Direct`,
+      greeting: (name: string) => `Bună ${name},`,
+      received: (ref: string) => `Am primit cererea ta de ofertă cu numărul <strong>${ref}</strong>.`,
+      processing: 'Echipa noastră va analiza solicitarea și va reveni cu o ofertă în cel mai scurt timp.',
+      productsTitle: 'Produse solicitate:',
+      tableProduct: 'Produs',
+      tableQuantity: 'Cantitate',
+      tablePrice: 'Preț estimat',
+      estimatedTotal: 'Total estimat:',
+      regards: 'Cu stimă,',
+      team: 'Echipa Metal Direct',
+      footer: 'Metal Direct - Partenerul tău pentru materiale metalice',
+    },
+    quoted: {
+      subject: (ref: string) => `Oferta ${ref} este gata - Metal Direct`,
+      greeting: (name: string) => `Bună ${name},`,
+      ready: (ref: string) => `Oferta pentru cererea <strong>${ref}</strong> este gata!`,
+      detailsTitle: 'Detalii ofertă:',
+      tableProduct: 'Produs',
+      tableQuantity: 'Cantitate',
+      tablePrice: 'Preț final',
+      total: 'Total:',
+      attachment: '📎 Atașat găsiți oferta în format PDF.',
+      contact: 'Pentru întrebări sau pentru a confirma comanda, te rugăm să ne contactezi.',
+      regards: 'Cu stimă,',
+      team: 'Echipa Metal Direct',
+      footer: 'Metal Direct - Partenerul tău pentru materiale metalice',
+    },
+  },
+  en: {
+    submitted: {
+      subject: (ref: string) => `Quote Request Confirmation ${ref} - Metal Direct`,
+      greeting: (name: string) => `Hello ${name},`,
+      received: (ref: string) => `We have received your quote request with reference number <strong>${ref}</strong>.`,
+      processing: 'Our team will analyze your request and get back to you with a quote as soon as possible.',
+      productsTitle: 'Requested products:',
+      tableProduct: 'Product',
+      tableQuantity: 'Quantity',
+      tablePrice: 'Estimated price',
+      estimatedTotal: 'Estimated total:',
+      regards: 'Best regards,',
+      team: 'The Metal Direct Team',
+      footer: 'Metal Direct - Your partner for metal materials',
+    },
+    quoted: {
+      subject: (ref: string) => `Quote ${ref} is ready - Metal Direct`,
+      greeting: (name: string) => `Hello ${name},`,
+      ready: (ref: string) => `The quote for request <strong>${ref}</strong> is ready!`,
+      detailsTitle: 'Quote details:',
+      tableProduct: 'Product',
+      tableQuantity: 'Quantity',
+      tablePrice: 'Final price',
+      total: 'Total:',
+      attachment: '📎 Please find the quote attached as a PDF.',
+      contact: 'For questions or to confirm the order, please contact us.',
+      regards: 'Best regards,',
+      team: 'The Metal Direct Team',
+      footer: 'Metal Direct - Your partner for metal materials',
+    },
+  },
+};
 
 export class EmailService {
   private transporter: Transporter | null = null;
@@ -68,6 +136,9 @@ export class EmailService {
    * Email 1: Sent when RFQ is submitted by customer
    */
   async sendRFQSubmittedEmail(data: RFQSubmittedData): Promise<void> {
+    const lang = data.language || 'ro';
+    const t = EMAIL_TRANSLATIONS[lang].submitted;
+
     const itemsHtml = data.items.map(item => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #ddd;">${item.productName}</td>
@@ -76,7 +147,7 @@ export class EmailService {
       </tr>
     `).join('');
 
-    const subject = `Confirmare cerere ofertă ${data.referenceNumber} - Metal Direct`;
+    const subject = t.subject(data.referenceNumber);
     const html = `
       <!DOCTYPE html>
       <html>
@@ -88,17 +159,17 @@ export class EmailService {
           </div>
 
           <div style="padding: 20px; background-color: #f9f9f9;">
-            <p>Bună ${data.contactPerson},</p>
-            <p>Am primit cererea ta de ofertă cu numărul <strong>${data.referenceNumber}</strong>.</p>
-            <p>Echipa noastră va analiza solicitarea și va reveni cu o ofertă în cel mai scurt timp.</p>
+            <p>${t.greeting(data.contactPerson)}</p>
+            <p>${t.received(data.referenceNumber)}</p>
+            <p>${t.processing}</p>
 
-            <h3 style="margin-top: 20px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">Produse solicitate:</h3>
+            <h3 style="margin-top: 20px; border-bottom: 2px solid #1e40af; padding-bottom: 5px;">${t.productsTitle}</h3>
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
               <thead>
                 <tr style="background-color: #e5e7eb;">
-                  <th style="padding: 8px; text-align: left;">Produs</th>
-                  <th style="padding: 8px; text-align: center;">Cantitate</th>
-                  <th style="padding: 8px; text-align: right;">Preț estimat</th>
+                  <th style="padding: 8px; text-align: left;">${t.tableProduct}</th>
+                  <th style="padding: 8px; text-align: center;">${t.tableQuantity}</th>
+                  <th style="padding: 8px; text-align: right;">${t.tablePrice}</th>
                 </tr>
               </thead>
               <tbody>
@@ -107,14 +178,14 @@ export class EmailService {
             </table>
 
             <div style="margin-top: 20px; padding: 15px; background-color: #dbeafe; border-left: 4px solid #1e40af;">
-              <strong>Total estimat: ${data.estimatedTotal.toFixed(2)} RON</strong>
+              <strong>${t.estimatedTotal} ${data.estimatedTotal.toFixed(2)} RON</strong>
             </div>
 
-            <p style="margin-top: 20px;">Cu stimă,<br/>Echipa Metal Direct</p>
+            <p style="margin-top: 20px;">${t.regards}<br/>${t.team}</p>
           </div>
 
           <div style="text-align: center; padding: 15px; color: #666; font-size: 12px;">
-            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
+            <p>${t.footer}</p>
           </div>
         </div>
       </body>
@@ -129,6 +200,13 @@ export class EmailService {
    * Includes PDF attachment with the formal quote
    */
   async sendRFQQuotedEmail(data: RFQQuotedData): Promise<void> {
+    const lang = data.language || 'ro';
+    console.log('🌍 sendRFQQuotedEmail language debug:', {
+      receivedLanguage: data.language,
+      resolvedLang: lang,
+    });
+    const t = EMAIL_TRANSLATIONS[lang].quoted;
+
     const itemsHtml = data.items.map(item => {
       const price = item.finalPrice ?? item.grossPrice;
       return `
@@ -140,7 +218,7 @@ export class EmailService {
       `;
     }).join('');
 
-    const subject = `Oferta ${data.referenceNumber} este gata - Metal Direct`;
+    const subject = t.subject(data.referenceNumber);
     const html = `
       <!DOCTYPE html>
       <html>
@@ -152,16 +230,16 @@ export class EmailService {
           </div>
 
           <div style="padding: 20px; background-color: #f9f9f9;">
-            <p>Bună ${data.contactPerson},</p>
-            <p>Oferta pentru cererea <strong>${data.referenceNumber}</strong> este gata!</p>
+            <p>${t.greeting(data.contactPerson)}</p>
+            <p>${t.ready(data.referenceNumber)}</p>
 
-            <h3 style="margin-top: 20px; border-bottom: 2px solid #166534; padding-bottom: 5px;">Detalii ofertă:</h3>
+            <h3 style="margin-top: 20px; border-bottom: 2px solid #166534; padding-bottom: 5px;">${t.detailsTitle}</h3>
             <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
               <thead>
                 <tr style="background-color: #e5e7eb;">
-                  <th style="padding: 8px; text-align: left;">Produs</th>
-                  <th style="padding: 8px; text-align: center;">Cantitate</th>
-                  <th style="padding: 8px; text-align: right;">Preț final</th>
+                  <th style="padding: 8px; text-align: left;">${t.tableProduct}</th>
+                  <th style="padding: 8px; text-align: center;">${t.tableQuantity}</th>
+                  <th style="padding: 8px; text-align: right;">${t.tablePrice}</th>
                 </tr>
               </thead>
               <tbody>
@@ -170,16 +248,16 @@ export class EmailService {
             </table>
 
             <div style="margin-top: 20px; padding: 15px; background-color: #dcfce7; border-left: 4px solid #166534;">
-              <strong style="font-size: 18px;">Total: ${data.finalTotal.toFixed(2)} RON</strong>
+              <strong style="font-size: 18px;">${t.total} ${data.finalTotal.toFixed(2)} RON</strong>
             </div>
 
-            <p style="margin-top: 20px;"><strong>📎 Atașat găsiți oferta în format PDF.</strong></p>
-            <p>Pentru întrebări sau pentru a confirma comanda, te rugăm să ne contactezi.</p>
-            <p>Cu stimă,<br/>Echipa Metal Direct</p>
+            <p style="margin-top: 20px;"><strong>${t.attachment}</strong></p>
+            <p>${t.contact}</p>
+            <p>${t.regards}<br/>${t.team}</p>
           </div>
 
           <div style="text-align: center; padding: 15px; color: #666; font-size: 12px;">
-            <p>Metal Direct - Partenerul tău pentru materiale metalice</p>
+            <p>${t.footer}</p>
           </div>
         </div>
       </body>
@@ -201,6 +279,7 @@ export class EmailService {
         })),
         finalTotal: data.finalTotal,
         quoteDate: new Date(),
+        language: lang,
       });
       console.log(`📄 PDF generated for ${data.referenceNumber}`);
     } catch (pdfError) {

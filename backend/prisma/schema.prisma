@@ -187,6 +187,7 @@ model RFQ {
 
   referenceNumber String    @unique // RFQ-2025-00042
   status          RFQStatus @default(SUBMITTED)
+  language        String    @default("ro") // 'ro' or 'en' - for emails/PDFs
 
   // Company Info (snapshot at submission time)
   companyName    String

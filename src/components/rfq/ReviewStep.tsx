@@ -44,7 +44,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
 }) => {
   const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const { currentLanguage } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
 
   const openTermsDocument = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,10 +74,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       {/* Summary Alert */}
       <Alert className="bg-blue-50 border-blue-200">
         <CheckCircle2 className="h-4 w-4 text-blue-600" />
-        <AlertTitle className="text-blue-900">Verificați Informațiile</AlertTitle>
+        <AlertTitle className="text-blue-900">{t('rfq.review_title')}</AlertTitle>
         <AlertDescription className="text-blue-800">
-          Vă rugăm să verificați toate informațiile înainte de a trimite cererea de ofertă. Puteți
-          edita orice secțiune făcând clic pe butonul "Editează".
+          {t('rfq.review_description')}
         </AlertDescription>
       </Alert>
 
@@ -88,25 +87,25 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Informații Companie
+                {t('rfq.company_info')}
               </CardTitle>
               <Button variant="outline" size="sm" onClick={() => onEdit(1)}>
                 <Edit2 className="h-4 w-4 mr-2" />
-                Editează
+                {t('rfq.edit')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Denumire Companie</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfq.company_name_label')}</p>
                 <p className="font-semibold">{formData.company.legalName}</p>
               </div>
               <div>
-                <p className="text-sm font-medium text-muted-foreground">CUI / Cod TVA</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfq.cui_vat_label')}</p>
                 <p className="font-semibold font-mono">{formData.company.cuiVat}</p>
                 {formData.company.isVerifiedBusiness && (
-                  <Badge className="mt-1 bg-green-100 text-green-800">Verificat</Badge>
+                  <Badge className="mt-1 bg-green-100 text-green-800">{t('rfq.verified')}</Badge>
                 )}
               </div>
             </div>
@@ -114,7 +113,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <Separator />
 
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Adresa de Facturare</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">{t('rfq.billing_address')}</p>
               <p className="text-sm">
                 {formData.company.billingAddress.street}
                 <br />
@@ -130,16 +129,16 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <Separator />
 
             <div>
-              <p className="text-sm font-medium text-muted-foreground mb-2">Persoană de Contact</p>
+              <p className="text-sm font-medium text-muted-foreground mb-2">{t('rfq.contact_person')}</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <strong>Nume:</strong> {formData.company.contact.person}
+                  <strong>{t('rfq.contact_name')}:</strong> {formData.company.contact.person}
                 </div>
                 <div>
-                  <strong>Telefon:</strong> {formData.company.contact.phone}
+                  <strong>{t('rfq.phone_label')}:</strong> {formData.company.contact.phone}
                 </div>
                 <div>
-                  <strong>Email:</strong> {formData.company.contact.email}
+                  <strong>{t('rfq.email_label')}:</strong> {formData.company.contact.email}
                 </div>
               </div>
             </div>
@@ -154,17 +153,17 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="h-5 w-5" />
-                Adresa de Livrare
+                {t('rfq.delivery_address')}
               </CardTitle>
               <Button variant="outline" size="sm" onClick={() => onEdit(2)}>
                 <Edit2 className="h-4 w-4 mr-2" />
-                Editează
+                {t('rfq.edit')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {formData.sameAsBilling ? (
-              <Badge variant="outline">Identică cu adresa de facturare</Badge>
+              <Badge variant="outline">{t('rfq.same_as_billing')}</Badge>
             ) : null}
 
             <p className="text-sm">
@@ -180,9 +179,9 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
               <>
                 <Separator />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Data Dorită de Livrare</p>
+                  <p className="text-sm font-medium text-muted-foreground">{t('rfq.delivery_deadline')}</p>
                   <p className="font-semibold">
-                    {format(new Date(formData.desiredDeliveryDate), 'PPP', { locale: ro })}
+                    {format(new Date(formData.desiredDeliveryDate), 'PPP', { locale: currentLanguage === 'ro' ? ro : undefined })}
                   </p>
                 </div>
               </>
@@ -197,10 +196,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
-              Produse Estimate ({cart.lines.length})
+              {t('rfq.estimated_products')} ({cart.lines.length})
             </CardTitle>
           </div>
-          <CardDescription>Greutate totală: {formatCurrency(cart.totals.estWeightKg)} kg</CardDescription>
+          <CardDescription>{t('rfq.total_weight')}: {formatCurrency(cart.totals.estWeightKg)} kg</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Cart Items */}
@@ -227,20 +226,20 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           {/* Totals */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Subtotal:</span>
+              <span className="text-muted-foreground">{t('rfq.subtotal')}:</span>
               <span>{formatCurrency(cart.totals.estSubtotal)} RON</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">TVA (19%):</span>
+              <span className="text-muted-foreground">{t('rfq.vat_19')}:</span>
               <span>{formatCurrency(cart.totals.vatIndicative || 0)} RON</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Livrare (estimată):</span>
+              <span className="text-muted-foreground">{t('rfq.shipping_estimated')}:</span>
               <span className="text-xs">{cart.totals.deliveryFeeBand}</span>
             </div>
             <Separator />
             <div className="flex justify-between font-bold text-lg">
-              <span>Total estimativ:</span>
+              <span>{t('rfq.estimated_total')}:</span>
               <span className="text-primary">{formatCurrency(cart.totals.grandTotal || 0)} RON</span>
             </div>
           </div>
@@ -254,32 +253,32 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Settings2 className="h-5 w-5" />
-                Preferințe & Cerințe
+                {t('rfq.preferences_title')}
               </CardTitle>
               <Button variant="outline" size="sm" onClick={() => onEdit(3)}>
                 <Edit2 className="h-4 w-4 mr-2" />
-                Editează
+                {t('rfq.edit')}
               </Button>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {formData.incoterm && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Incoterm</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfq.incoterm')}</p>
                 <Badge variant="outline">{formData.incoterm}</Badge>
               </div>
             )}
 
             {formData.paymentTermsPreference && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Condiții de Plată</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfq.payment_terms')}</p>
                 <p className="text-sm">{formData.paymentTermsPreference}</p>
               </div>
             )}
 
             {formData.specialRequirements && (
               <div>
-                <p className="text-sm font-medium text-muted-foreground">Cerințe Speciale</p>
+                <p className="text-sm font-medium text-muted-foreground">{t('rfq.special_requirements')}</p>
                 <p className="text-sm whitespace-pre-wrap">{formData.specialRequirements}</p>
               </div>
             )}
@@ -294,11 +293,11 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Paperclip className="h-5 w-5" />
-                Atașamente ({formData.attachments.length})
+                {t('rfq.attachments')} ({formData.attachments.length})
               </CardTitle>
               <Button variant="outline" size="sm" onClick={() => onEdit(4)}>
                 <Edit2 className="h-4 w-4 mr-2" />
-                Editează
+                {t('rfq.edit')}
               </Button>
             </div>
           </CardHeader>
@@ -319,7 +318,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
               <>
                 <Separator className="my-4" />
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Notițe</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-2">{t('rfq.notes')}</p>
                   <p className="text-sm whitespace-pre-wrap">{formData.notes}</p>
                 </div>
               </>
@@ -331,7 +330,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       {/* Terms & Disclaimers */}
       <Card className="border-primary/50">
         <CardHeader>
-          <CardTitle>Acceptare Termeni</CardTitle>
+          <CardTitle>{t('rfq.terms_acceptance')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-start space-x-3">
@@ -342,12 +341,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             />
             <div className="grid gap-1.5 leading-none">
               <Label htmlFor="disclaimer" className="text-sm font-medium leading-snug cursor-pointer">
-                Înțeleg că prețurile sunt <strong>strict estimative</strong>
+                {t('rfq.understand_prices_estimated')}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Prețurile afișate în această cerere sunt orientative și pot varia în funcție de
-                disponibilitatea materialelor, condițiile de piață și volumul comenzii. Oferta finală
-                cu prețuri exacte va fi comunicată de echipa de vânzări.
+                {t('rfq.prices_disclaimer')}
               </p>
             </div>
           </div>
@@ -362,14 +359,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
             />
             <div className="grid gap-1.5 leading-none">
               <Label htmlFor="terms" className="text-sm font-medium leading-snug cursor-pointer">
-                Accept termenii și condițiile
+                {t('rfq.accept_terms')}
               </Label>
               <p className="text-xs text-muted-foreground">
-                Prin trimiterea acestei cereri, accept{' '}
-                <a href="#" className="underline" onClick={openTermsDocument}>
-                  termenii și condițiile
-                </a>{' '}
-                MetalDirect și sunt de acord ca datele mele să fie procesate pentru generarea ofertei.
+                {t('rfq.terms_agreement')}
               </p>
             </div>
           </div>
@@ -379,7 +372,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack} disabled={isSubmitting}>
-          Înapoi
+          {t('rfq.back')}
         </Button>
         <Button
           type="button"
@@ -391,11 +384,11 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
           {isSubmitting ? (
             <>
               <span className="animate-spin mr-2">⏳</span>
-              Se trimite...
+              {t('rfq.submitting')}
             </>
           ) : (
             <>
-              Trimite Cerere de Ofertă
+              {t('rfq.submit_rfq')}
             </>
           )}
         </Button>
@@ -405,7 +398,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Vă rugăm să acceptați ambii termeni pentru a putea trimite cererea de ofertă.
+            {t('rfq.please_accept_terms')}
           </AlertDescription>
         </Alert>
       )}

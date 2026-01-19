@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/select';
 import { MapPin, Calendar as CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { Address, CompanyInfo } from '@/types/rfq';
 
 // Romanian counties
@@ -36,15 +37,15 @@ const ROMANIAN_COUNTIES = [
   'Sibiu', 'Suceava', 'Teleorman', 'Timiș', 'Tulcea', 'Vâlcea', 'Vaslui', 'Vrancea',
 ];
 
-const deliveryAddressSchema = z.object({
-  street: z.string().min(5, 'Adresa trebuie să aibă minim 5 caractere'),
-  city: z.string().min(2, 'Orașul este obligatoriu'),
-  county: z.string().min(2, 'Județul este obligatoriu'),
-  postalCode: z.string().regex(/^\d{6}$/, 'Cod poștal invalid (6 cifre)').optional().or(z.literal('')),
+const createDeliveryAddressSchema = (t: (key: string) => string) => z.object({
+  street: z.string().min(5, t('rfq.validation.address_min')),
+  city: z.string().min(2, t('rfq.validation.city_required')),
+  county: z.string().min(2, t('rfq.validation.county_required')),
+  postalCode: z.string().regex(/^\d{6}$/, t('rfq.validation.postal_code_invalid')).optional().or(z.literal('')),
   country: z.string().default('România'),
 });
 
-type DeliveryAddressFormData = z.infer<typeof deliveryAddressSchema>;
+type DeliveryAddressFormData = z.infer<ReturnType<typeof createDeliveryAddressSchema>>;
 
 interface DeliveryAddressStepProps {
   companyInfo: CompanyInfo;
@@ -67,6 +68,9 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
   onNext,
   onBack,
 }) => {
+  const { t, currentLanguage } = useTranslation();
+  const deliveryAddressSchema = createDeliveryAddressSchema(t);
+
   const [sameAsBilling, setSameAsBilling] = useState(initialData?.sameAsBilling ?? true);
   const [desiredDate, setDesiredDate] = useState<Date | undefined>(
     initialData?.desiredDeliveryDate ? new Date(initialData.desiredDeliveryDate) : undefined
@@ -138,11 +142,10 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
-            Adresa de Livrare
+            {t('rfq.delivery_address')}
           </CardTitle>
           <CardDescription>
-            Specificați adresa unde doriți să fie livrate materialele. Puteți folosi adresa de
-            facturare sau să introduceți o adresă diferită.
+            {t('rfq.delivery_address_description')}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -155,7 +158,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
             />
             <div className="grid gap-1.5 leading-none">
               <Label htmlFor="sameAsBilling" className="text-sm font-medium cursor-pointer">
-                Identică cu adresa de facturare
+                {t('rfq.same_as_billing')}
               </Label>
               <p className="text-xs text-muted-foreground">
                 {companyInfo.billingAddress.street}, {companyInfo.billingAddress.city},{' '}
@@ -168,12 +171,12 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="street">
-                Stradă, Număr <span className="text-destructive">*</span>
+                {t('rfq.street_label')} <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="street"
                 {...register('street')}
-                placeholder="Str. Livrare, nr. 456"
+                placeholder={t('rfq.delivery_street_placeholder')}
                 disabled={sameAsBilling}
                 className={errors.street ? 'border-destructive' : ''}
               />
@@ -185,12 +188,12 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="city">
-                  Oraș <span className="text-destructive">*</span>
+                  {t('rfq.city_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="city"
                   {...register('city')}
-                  placeholder="Cluj-Napoca"
+                  placeholder={t('rfq.city_placeholder')}
                   disabled={sameAsBilling}
                   className={errors.city ? 'border-destructive' : ''}
                 />
@@ -201,7 +204,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
 
               <div className="space-y-2">
                 <Label htmlFor="county">
-                  Județ <span className="text-destructive">*</span>
+                  {t('rfq.county_label')} <span className="text-destructive">*</span>
                 </Label>
                 <Select
                   onValueChange={(value) => setValue('county', value)}
@@ -209,7 +212,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
                   disabled={sameAsBilling}
                 >
                   <SelectTrigger className={errors.county ? 'border-destructive' : ''}>
-                    <SelectValue placeholder="Selectează județul" />
+                    <SelectValue placeholder={t('rfq.county_placeholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {ROMANIAN_COUNTIES.map((county) => (
@@ -227,7 +230,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="postalCode">Cod Poștal</Label>
+                <Label htmlFor="postalCode">{t('rfq.postal_code_label')}</Label>
                 <Input
                   id="postalCode"
                   {...register('postalCode')}
@@ -242,7 +245,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">Țară</Label>
+                <Label htmlFor="country">{t('rfq.country_label')}</Label>
                 <Input id="country" {...register('country')} disabled />
               </div>
             </div>
@@ -250,7 +253,7 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
 
           {/* Desired Delivery Date */}
           <div className="space-y-2">
-            <Label>Data Dorită de Livrare (opțional)</Label>
+            <Label>{t('rfq.desired_delivery_date')}</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -262,9 +265,9 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {desiredDate ? (
-                    format(desiredDate, 'PPP', { locale: ro })
+                    format(desiredDate, 'PPP', { locale: currentLanguage === 'ro' ? ro : undefined })
                   ) : (
-                    <span>Selectează o dată</span>
+                    <span>{t('rfq.select_date')}</span>
                   )}
                 </Button>
               </PopoverTrigger>
@@ -275,13 +278,12 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
                   onSelect={setDesiredDate}
                   initialFocus
                   disabled={(date) => date < new Date()}
-                  locale={ro}
+                  locale={currentLanguage === 'ro' ? ro : undefined}
                 />
               </PopoverContent>
             </Popover>
             <p className="text-xs text-muted-foreground">
-              Data efectivă de livrare va fi confirmată în ofertă, în funcție de disponibilitatea
-              materialelor.
+              {t('rfq.delivery_date_note')}
             </p>
           </div>
         </CardContent>
@@ -290,9 +292,9 @@ const DeliveryAddressStep: React.FC<DeliveryAddressStepProps> = ({
       {/* Navigation Buttons */}
       <div className="flex justify-between">
         <Button type="button" variant="outline" onClick={onBack}>
-          Înapoi
+          {t('rfq.back')}
         </Button>
-        <Button type="submit">Continuă</Button>
+        <Button type="submit">{t('rfq.continue')}</Button>
       </div>
     </form>
   );
