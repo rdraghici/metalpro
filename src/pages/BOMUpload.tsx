@@ -16,12 +16,9 @@ import { useAnalytics } from '@/hooks/useAnalytics';
 import { downloadBOMTemplate } from '@/lib/utils/csvExport';
 import { parseBOM } from '@/lib/utils/bomParser';
 import * as projectsApi from '@/lib/api/projects';
+import * as productsApi from '@/lib/api/products';
 import type { BOMRow, BOMUploadResult } from '@/types/bom';
-import type { Product } from '@/types';
-
-// Import product catalog
-import { allProducts } from '@/data/products';
-import { categories } from '@/data/products';
+import type { Product, Category } from '@/types';
 
 const BOMUpload = () => {
   const navigate = useNavigate();
@@ -35,6 +32,35 @@ const BOMUpload = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [editingRow, setEditingRow] = useState<BOMRow | null>(null);
   const [resetKey, setResetKey] = useState(0);
+
+  // Product catalog from API
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCatalog, setIsLoadingCatalog] = useState(true);
+
+  // Fetch products and categories from API on mount
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const [productsData, categoriesData] = await Promise.all([
+          productsApi.getAllProducts(),
+          productsApi.getAllCategories(),
+        ]);
+        setProducts(productsData);
+        setCategories(categoriesData);
+      } catch (error) {
+        console.error('Failed to load product catalog:', error);
+        toast({
+          title: 'Eroare',
+          description: 'Nu s-a putut încărca catalogul de produse.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoadingCatalog(false);
+      }
+    };
+    loadCatalog();
+  }, [toast]);
 
   // Check for loaded project from account page
   useEffect(() => {
@@ -72,7 +98,7 @@ const BOMUpload = () => {
 
     try {
       // Parse BOM file
-      const result = await parseBOM(file, allProducts);
+      const result = await parseBOM(file, products);
 
       setUploadResult(result);
       setBomRows(result.rows);
@@ -137,7 +163,7 @@ const BOMUpload = () => {
   };
 
   const handleManualMapConfirm = (row: BOMRow, productId: string) => {
-    const product = allProducts.find((p) => p.id === productId);
+    const product = products.find((p) => p.id === productId);
     if (!product) return;
 
     // Update the row with manual mapping
@@ -167,7 +193,7 @@ const BOMUpload = () => {
     let addedCount = 0;
 
     for (const row of selectedRows) {
-      const product = allProducts.find((p) => p.id === row.matchedProductId);
+      const product = products.find((p) => p.id === row.matchedProductId);
       if (!product) continue;
 
       try {
@@ -351,8 +377,13 @@ const BOMUpload = () => {
                     onFileSelected={handleFileSelected}
                     acceptedTypes={['.csv', '.xlsx', '.xls']}
                     maxSizeMB={10}
-                    disabled={isProcessing}
+                    disabled={isProcessing || isLoadingCatalog}
                   />
+                  {isLoadingCatalog && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Se încarcă catalogul de produse...
+                    </p>
+                  )}
                 </CardContent>
               </Card>
 
@@ -396,7 +427,7 @@ const BOMUpload = () => {
               {bomRows.length > 0 && (
                 <BOMMapper
                   rows={bomRows}
-                  products={allProducts}
+                  products={products}
                   onRowEdit={handleRowEdit}
                   onRowDelete={handleRowDelete}
                   onAddToCart={handleAddToCart}
@@ -425,7 +456,7 @@ const BOMUpload = () => {
       {/* Manual Mapper Dialog */}
       <UnmatchedRowMapper
         row={editingRow}
-        products={allProducts}
+        products={products}
         categories={categories}
         onConfirm={handleManualMapConfirm}
         onCancel={() => setEditingRow(null)}

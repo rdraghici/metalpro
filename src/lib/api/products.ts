@@ -360,26 +360,80 @@ export const getAvailableFamilies = async (): Promise<ProductFamily[]> => {
 };
 
 // =====================================================
-// CATEGORIES API - Mock data (keeping for backwards compatibility)
+// CATEGORIES API - Backend Integration
 // =====================================================
 
-import {
-  categories,
-  getCategoryBySlug as getCategoryBySlugFromData,
-} from '@/data/products';
-
 export const getAllCategories = async (): Promise<Category[]> => {
-  return categories.filter(c => c.isActive);
+  try {
+    const response = await fetch(`${API_URL}/api/categories`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && Array.isArray(result.data)) {
+      // Map backend category format to frontend Category type
+      return result.data.map((cat: any) => ({
+        id: cat.id,
+        slug: cat.slug,
+        name: cat.name,
+        description: cat.description || undefined,
+        parentId: cat.parentId || null,
+        displayOrder: cat.sortOrder || 0,
+        isActive: cat.isActive !== false,
+      }));
+    }
+
+    return [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
 };
 
 export const getCategoryById = async (id: string): Promise<Category | null> => {
-  const category = categories.find(c => c.id === id);
-  return category || null;
+  try {
+    const categories = await getAllCategories();
+    return categories.find(c => c.id === id) || null;
+  } catch (error) {
+    console.error('Error fetching category by ID:', error);
+    return null;
+  }
 };
 
 export const getCategoryBySlug = async (slug: string): Promise<Category | null> => {
-  const category = getCategoryBySlugFromData(slug);
-  return category || null;
+  try {
+    const response = await fetch(`${API_URL}/api/categories/${slug}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      const cat = result.data;
+      return {
+        id: cat.id,
+        slug: cat.slug,
+        name: cat.name,
+        description: cat.description || undefined,
+        parentId: cat.parentId || null,
+        displayOrder: cat.sortOrder || 0,
+        isActive: cat.isActive !== false,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error('Error fetching category by slug:', error);
+    return null;
+  }
 };
 
 // =====================================================
